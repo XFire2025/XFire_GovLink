@@ -1,4 +1,3 @@
-"use client";
 import React from 'react';
 import Link from 'next/link';
 // --- COLOR PALETTE (From GovLink Landing Page) ---
@@ -79,9 +78,10 @@ const ChatInput = () => (
 
 // --- MAIN PAGE COMPONENT ---
 // This is a Server Component, so we can directly access searchParams.
-export default function GovLinkChatPage({ searchParams }: { searchParams: { q?: string } }) {
+export default async function GovLinkChatPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   // Get the user's query from the URL, e.g., /chat?q=How+do+I+renew
-  const userQuery = searchParams.q || "You haven't asked a question yet.";
+  const { q } = await searchParams;
+  const userQuery = q || "You haven't asked a question yet.";
 
   // A hardcoded bot response for demonstration purposes
   const botResponse = `Of course! To renew your Sri Lankan passport, you will need to submit the 'K' form, along with your current passport, National Identity Card, and two recent passport-sized photos. You can download the form from the Department of Immigration and Emigration website or collect one from our head office. Would you like a direct link to the form?`;
