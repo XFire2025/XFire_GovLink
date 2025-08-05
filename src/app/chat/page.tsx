@@ -1,5 +1,7 @@
+"use client";
 import React from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 // --- COLOR PALETTE (From GovLink Landing Page) ---
 // Maroon: #8D153A
 // Gold:   #FFC72C
@@ -28,7 +30,7 @@ const Header = () => (
         <div className="text-2xl font-bold text-[#FFC72C]">
           GovLink
         </div>
-        <Link href="/" className="bg-transparent border border-[#FFC72C] text-[#FFC72C] px-4 py-2 rounded-md hover:bg-[#FFC72C] hover:text-black transition-colors font-semibold">
+        <Link href="/" className="bg-transparent border border-[#FFC72C] text-[#FFC72C] px-4 py-2 rounded-md hover:bg-[#FFC72C] hover:text:black transition-colors font-semibold">
           New Chat
         </Link>
       </nav>
@@ -77,10 +79,10 @@ const ChatInput = () => (
 );
 
 // --- MAIN PAGE COMPONENT ---
-// This is a Server Component, so we can directly access searchParams.
-export default async function GovLinkChatPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
-  // Get the user's query from the URL, e.g., /chat?q=How+do+I+renew
-  const { q } = await searchParams;
+// Convert to a Client Component and read query string via useSearchParams
+export default function GovLinkChatPage() {
+  const searchParams = useSearchParams();
+  const q = searchParams.get('q') ?? undefined;
   const userQuery = q || "You haven't asked a question yet.";
 
   // A hardcoded bot response for demonstration purposes
