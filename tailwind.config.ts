@@ -4,9 +4,9 @@ const config: Config = {
   // Make sure you have darkMode enabled
   darkMode: 'class',
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -46,11 +46,6 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // Your brand colors - updated to match your code usage
-        'brand-maroon': '#8D153A',
-        'brand-gold': '#FFC72C',
-        'brand-orange': '#FF5722',
-        'brand-green': '#008060',
       },
       borderRadius: {
         lg: `var(--radius)`,

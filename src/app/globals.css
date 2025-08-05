@@ -1,5 +1,6 @@
 /* globals.css */
 @import "tailwindcss";
+
 /* 
   CSS custom properties for theming
   Using HSL for better browser compatibility and easier manipulation
@@ -27,6 +28,12 @@
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
     --radius: 0.5rem;
+    
+    /* Brand color variables */
+    --brand-maroon: #8D153A;
+    --brand-gold: #FFC72C;
+    --brand-orange: #FF5722;
+    --brand-green: #008060;
   }
 
   /* Dark mode variables */
@@ -54,11 +61,12 @@
 
   /* Base styles */
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
     transition: color 0.3s ease, background-color 0.3s ease;
   }

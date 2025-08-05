@@ -25,7 +25,7 @@ const InfoIcon = (props: React.SVGProps<SVGSVGElement>) => (
 // --- PAGE SECTION COMPONENTS ---
 
 const Hero = () => (
-  <section className="relative bg-brand-maroon text-primary-foreground">
+  <section className="relative bg-[var(--brand-maroon)] text-primary-foreground">
     <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background to-transparent" />
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -34,7 +34,7 @@ const Hero = () => (
       className="container mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center relative z-10"
     >
       <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-white">
-        Simplifying Government for <span className="text-brand-gold">Every Sri Lankan</span>
+        Simplifying Government for <span className="text-[var(--brand-gold)]">Every Sri Lankan</span>
       </h1>
       <motion.p 
         initial={{ opacity: 0 }}
@@ -52,7 +52,7 @@ const Hero = () => (
         <form action="/chat" method="GET" className="relative">
           <textarea
             name="q"
-            className="w-full bg-white/10 dark:bg-black/20 placeholder-gray-400 dark:placeholder-gray-500 text-white p-4 pr-20 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all duration-300 shadow-lg text-lg backdrop-blur-sm border border-white/20"
+            className="w-full bg-white/10 dark:bg-black/20 placeholder-gray-400 dark:placeholder-gray-500 text-white p-4 pr-20 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--brand-gold)] transition-all duration-300 shadow-lg text-lg backdrop-blur-sm border border-white/20"
             placeholder="e.g., How do I renew my passport?"
             rows={1}
             onInput={(e) => {
@@ -60,9 +60,18 @@ const Hero = () => (
               target.style.height = 'auto';
               target.style.height = `${target.scrollHeight}px`;
             }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const form = e.currentTarget.closest('form');
+                if (form) {
+                  form.requestSubmit();
+                }
+              }
+            }}
           />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-brand-gold hover:bg-yellow-400 rounded-lg transition-colors duration-200 group">
-            <ArrowRightIcon className="h-6 w-6 text-brand-maroon transition-transform group-hover:translate-x-1" />
+          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-[var(--brand-gold)] hover:bg-yellow-400 rounded-lg transition-colors duration-200 group">
+            <ArrowRightIcon className="h-6 w-6 text-[var(--brand-maroon)] transition-transform group-hover:translate-x-1" />
           </button>
         </form>
       </motion.div>
@@ -72,9 +81,24 @@ const Hero = () => (
 
 const Features = () => {
   const featuresList = [
-    { icon: <DocumentIcon className="h-8 w-8 text-brand-orange" />, title: "Access Forms & Documents", description: "Instantly find and download official government forms for passports, licenses, and more.", iconBgColor: "bg-brand-orange/20" },
-    { icon: <InfoIcon className="h-8 w-8 text-brand-green" />, title: "Get Instant Information", description: "Ask any question about public services and get clear, step-by-step guidance.", iconBgColor: "bg-brand-green/20" },
-    { icon: <CalendarIcon className="h-8 w-8 text-brand-gold" />, title: "Schedule Appointments", description: "Find available slots and book appointments with government departments online.", iconBgColor: "bg-brand-gold/20" },
+    { 
+      icon: <DocumentIcon className="h-8 w-8 text-[var(--brand-orange)]" />, 
+      title: "Access Forms & Documents", 
+      description: "Instantly find and download official government forms for passports, licenses, and more.", 
+      iconBgColor: "bg-[var(--brand-orange)]/20" 
+    },
+    { 
+      icon: <InfoIcon className="h-8 w-8 text-[var(--brand-green)]" />, 
+      title: "Get Instant Information", 
+      description: "Ask any question about public services and get clear, step-by-step guidance.", 
+      iconBgColor: "bg-[var(--brand-green)]/20" 
+    },
+    { 
+      icon: <CalendarIcon className="h-8 w-8 text-[var(--brand-gold)]" />, 
+      title: "Schedule Appointments", 
+      description: "Find available slots and book appointments with government departments online.", 
+      iconBgColor: "bg-[var(--brand-gold)]/20" 
+    },
   ];
 
   const containerVariants = {
@@ -114,7 +138,7 @@ const Features = () => {
           {featuresList.map((feature, index) => (
             <motion.div 
               key={index} 
-              className="bg-card p-8 rounded-2xl border shadow-lg hover:shadow-xl hover:border-brand-gold hover:-translate-y-2 transition-all duration-300"
+              className="bg-card p-8 rounded-2xl border shadow-lg hover:shadow-xl hover:border-[var(--brand-gold)] hover:-translate-y-2 transition-all duration-300"
               variants={itemVariants}
             >
               <div className={`flex items-center justify-center h-16 w-16 rounded-full mb-6 ${feature.iconBgColor}`}>

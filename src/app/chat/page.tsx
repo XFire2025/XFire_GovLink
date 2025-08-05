@@ -13,7 +13,7 @@ const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 const GovLinkBotIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="text-brand-gold">
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="text-[var(--brand-gold)]">
     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm-4.3-7.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm8.6 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
   </svg>
 );
@@ -32,7 +32,7 @@ const UserMessage = ({ text }: { text: string }) => (
     initial="hidden"
     animate="visible"
   >
-    <div className="bg-brand-maroon text-white p-3 md:p-4 rounded-xl rounded-br-none max-w-sm md:max-w-xl lg:max-2xl shadow-md">
+    <div className="bg-[var(--brand-maroon)] text-white p-3 md:p-4 rounded-xl rounded-br-none max-w-sm md:max-w-xl lg:max-2xl shadow-md">
       <p className="text-sm md:text-base">{text}</p>
     </div>
   </motion.div>
@@ -55,27 +55,57 @@ const BotMessage = ({ text }: { text: string }) => (
   </motion.div>
 );
 
-const ChatInput = () => (
-  <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl">
-    <div className="container mx-auto px-4 py-4 border-t border-border">
-      <div className="relative">
-        <textarea
-          className="w-full bg-input text-foreground placeholder-muted-foreground p-4 pr-16 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all duration-300 shadow-inner"
-          placeholder="Ask a follow-up question..."
-          rows={1}
-          onInput={(e) => {
-            const target = e.target as HTMLTextAreaElement;
-            target.style.height = 'auto';
-            target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
-          }}
-        />
-        <button className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-brand-gold hover:bg-yellow-400 rounded-lg transition-colors duration-200 group">
-          <ArrowRightIcon className="h-6 w-6 text-brand-maroon transition-transform group-hover:translate-x-1" />
-        </button>
+const ChatInput = () => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const question = formData.get('question') as string;
+    
+    if (question.trim()) {
+      // Here you would typically send the question to your chat API
+      console.log('Sending question:', question);
+      
+      // Clear the textarea
+      const textarea = e.currentTarget.querySelector('textarea');
+      if (textarea) {
+        textarea.value = '';
+        textarea.style.height = 'auto';
+      }
+    }
+  };
+
+  return (
+    <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl">
+      <div className="container mx-auto px-4 py-4 border-t border-border">
+        <form onSubmit={handleSubmit} className="relative">
+          <textarea
+            name="question"
+            className="w-full bg-input text-foreground placeholder-muted-foreground p-4 pr-16 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--brand-gold)] transition-all duration-300 shadow-inner"
+            placeholder="Ask a follow-up question..."
+            rows={1}
+            onInput={(e) => {
+              const target = e.target as HTMLTextAreaElement;
+              target.style.height = 'auto';
+              target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                const form = e.currentTarget.closest('form');
+                if (form) {
+                  form.requestSubmit();
+                }
+              }
+            }}
+          />
+          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-[var(--brand-gold)] hover:bg-yellow-400 rounded-lg transition-colors duration-200 group">
+            <ArrowRightIcon className="h-6 w-6 text-[var(--brand-maroon)] transition-transform group-hover:translate-x-1" />
+          </button>
+        </form>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 function ChatContent() {
   const searchParams = useSearchParams();
