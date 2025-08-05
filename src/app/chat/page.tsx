@@ -2,11 +2,11 @@
 import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { ThemeToggle } from '@/components/ThemeToggle'; // Import ThemeToggle
 
-// --- COLOR PALETTE (From GovLink Landing Page) ---
+// --- COLOR PALETTE (For brand accents, these can stay hardcoded) ---
 // Maroon: #8D153A
 // Gold:   #FFC72C
-// BG Dark: #111827
 
 // --- SVG ICON COMPONENTS ---
 const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -23,17 +23,20 @@ const GovLinkBotIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 
-// --- UI COMPONENTS ---
+// --- UI COMPONENTS (Now Theme-Aware) ---
 
 const Header = () => (
-    <header className="sticky top-0 bg-[#111827]/80 backdrop-blur-lg z-50 border-b border-gray-700">
-      <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
+    <header className="sticky top-0 bg-background/80 backdrop-blur-lg z-50 border-b border-border">
+      <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
         <div className="text-2xl font-bold text-[#FFC72C]">
           GovLink
         </div>
-        <Link href="/" className="bg-transparent border border-[#FFC72C] text-[#FFC72C] px-4 py-2 rounded-md hover:bg-[#FFC72C] hover:text:black transition-colors font-semibold">
-          New Chat
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link href="/" className="bg-transparent border border-[#FFC72C] text-[#FFC72C] px-4 py-2 rounded-md hover:bg-[#FFC72C] hover:text-black transition-colors font-semibold">
+            New Chat
+          </Link>
+          <ThemeToggle />
+        </div>
       </nav>
     </header>
 );
@@ -48,21 +51,21 @@ const UserMessage = ({ text }: { text: string }) => (
 
 const BotMessage = ({ text }: { text: string }) => (
     <div className="flex justify-start my-2 gap-3">
-        <div className="flex-shrink-0 h-10 w-10 bg-gray-700 rounded-full flex items-center justify-center">
+        <div className="flex-shrink-0 h-10 w-10 bg-muted rounded-full flex items-center justify-center">
             <GovLinkBotIcon className="h-7 w-7"/>
         </div>
-        <div className="bg-gray-700 text-gray-200 p-4 rounded-lg rounded-bl-none max-w-xl shadow-md">
+        <div className="bg-muted text-muted-foreground p-4 rounded-lg rounded-bl-none max-w-xl shadow-md">
             <p>{text}</p>
         </div>
     </div>
 );
 
 const ChatInput = () => (
-    <div className="bg-gray-800 p-4 border-t border-gray-700">
+    <div className="bg-background p-4 border-t border-border">
         <div className="container mx-auto">
             <div className="relative">
                 <textarea
-                    className="w-full bg-gray-700 text-white placeholder-gray-400 p-4 pr-16 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#FFC72C] transition-all duration-300 shadow-lg"
+                    className="w-full bg-input text-foreground placeholder-muted-foreground p-4 pr-16 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#FFC72C] transition-all duration-300 shadow-lg"
                     placeholder="Ask a follow-up question..."
                     rows={1}
                     onInput={(e) => {
@@ -80,24 +83,23 @@ const ChatInput = () => (
 );
 
 // --- MAIN PAGE COMPONENT ---
-// Split into a wrapper + inner client piece using useSearchParams under Suspense
 export default function GovLinkChatPage() {
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white">
-      <Header />
+      <div className="flex flex-col h-screen bg-background text-foreground">
+        <Header />
 
-      {/* Chat history area */}
-      <main className="flex-1 overflow-y-auto p-6">
-        <div className="container mx-auto">
-          <Suspense fallback={<div className="text-gray-400">Loading chat…</div>}>
-            <ChatContent />
-          </Suspense>
-        </div>
-      </main>
+        {/* Chat history area */}
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="container mx-auto">
+            <Suspense fallback={<div className="text-muted-foreground">Loading chat…</div>}>
+              <ChatContent />
+            </Suspense>
+          </div>
+        </main>
 
-      {/* Fixed input area at the bottom */}
-      <ChatInput />
-    </div>
+        {/* Fixed input area at the bottom */}
+        <ChatInput />
+      </div>
   );
 }
 
