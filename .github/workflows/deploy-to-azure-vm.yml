@@ -1,0 +1,167 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    types: [ closed ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run lint
+      run: npm run lint
+
+    - name: Build application
+      run: npm run build
+
+    - name: Create deployment package
+      run: |
+        # Create a deployment directory
+        mkdir -p deploy
+        
+        # Copy built application
+        cp -r .next deploy/
+        cp -r public deploy/
+        cp package.json deploy/
+        cp package-lock.json deploy/
+        
+        # Copy deployment scripts
+        cp deploy/start-app.sh deploy/ || echo "start-app.sh not found, will create on server"
+        
+        # Create archive
+        tar -czf govlink-app.tar.gz -C deploy .
+
+    - name: Upload deployment package
+      uses: actions/upload-artifact@v4
+      with:
+        name: govlink-deployment
+        path: govlink-app.tar.gz
+
+    - name: Deploy to Azure VM
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: appleboy/ssh-action@v1.2.0
+      with:
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          # Set variables
+          APP_DIR="/home/${{ secrets.AZURE_VM_USERNAME }}/govlink"
+          BACKUP_DIR="/home/${{ secrets.AZURE_VM_USERNAME }}/govlink-backup-$(date +%Y%m%d_%H%M%S)"
+          
+          # Create backup of current deployment
+          if [ -d "$APP_DIR" ]; then
+            echo "Creating backup..."
+            cp -r "$APP_DIR" "$BACKUP_DIR"
+          fi
+          
+          # Create application directory
+          mkdir -p "$APP_DIR"
+          cd "$APP_DIR"
+          
+          # Download the deployment package
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3.raw" \
+               -L "https://api.github.com/repos/${{ github.repository }}/actions/artifacts/$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/actions/artifacts | jq -r '.artifacts[] | select(.name=="govlink-deployment") | .id' | head -1)/zip" \
+               -o deployment.zip
+          
+          # Alternative: Use SCP to copy the file
+          # This step will be handled by the upload step below
+
+    - name: Copy deployment package to VM
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: appleboy/scp-action@v0.1.8
+      with:
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        source: "govlink-app.tar.gz"
+        target: "/home/${{ secrets.AZURE_VM_USERNAME }}/"
+
+    - name: Install and start application
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: appleboy/ssh-action@v1.2.0
+      with:
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          # Set variables
+          APP_DIR="/home/${{ secrets.AZURE_VM_USERNAME }}/govlink"
+          
+          # Create backup of current deployment
+          if [ -d "$APP_DIR" ]; then
+            echo "Creating backup..."
+            cp -r "$APP_DIR" "/home/${{ secrets.AZURE_VM_USERNAME }}/govlink-backup-$(date +%Y%m%d_%H%M%S)"
+          fi
+          
+          # Create application directory
+          mkdir -p "$APP_DIR"
+          cd "$APP_DIR"
+          
+          # Extract the deployment package
+          tar -xzf "/home/${{ secrets.AZURE_VM_USERNAME }}/govlink-app.tar.gz"
+          
+          # Install dependencies (production only)
+          npm ci --production
+          
+          # Stop existing application (if running)
+          sudo systemctl stop govlink || echo "Service not running"
+          
+          # Start the application
+          sudo systemctl start govlink
+          sudo systemctl enable govlink
+          
+          # Check if application is running
+          sleep 5
+          if sudo systemctl is-active --quiet govlink; then
+            echo "✅ Application deployed and started successfully"
+            curl -f http://localhost:3000 || echo "⚠️  Application might be starting up"
+          else
+            echo "❌ Application failed to start"
+            sudo systemctl status govlink
+            exit 1
+          fi
+          
+          # Clean up
+          rm -f "/home/${{ secrets.AZURE_VM_USERNAME }}/govlink-app.tar.gz"
+
+    - name: Health Check
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: appleboy/ssh-action@v1.2.0
+      with:
+        host: ${{ secrets.AZURE_VM_HOST }}
+        username: ${{ secrets.AZURE_VM_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          # Wait a bit for the application to fully start
+          sleep 10
+          
+          # Health check
+          if curl -f http://localhost:3000; then
+            echo "✅ Health check passed - Application is responding"
+          else
+            echo "❌ Health check failed - Application is not responding"
+            sudo systemctl status govlink
+            exit 1
+          fi
