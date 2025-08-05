@@ -1,17 +1,12 @@
+// app/page.tsx
 "use client";
 import React from 'react';
-import { ThemeToggle } from '@/components/ThemeToggle'; // Import ThemeToggle
+import { motion } from 'framer-motion';
+import { Header } from '@/components/Header'; // Use the shared header
 
-// --- COLOR PALETTE (Inspired by the Sri Lankan Flag) ---
-// These are brand colors and can remain hardcoded.
-// Maroon:  #8D153A
-// Gold:    #FFC72C
-// Orange:  #FF5722
-// Green:   #008060
-
-// --- SVG ICON COMPONENTS (Unchanged) ---
+// --- ICONS (Unchanged) ---
 const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
@@ -26,48 +21,38 @@ const InfoIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
 );
 
-// --- PAGE SECTION COMPONENTS (Now using theme variables implicitly) ---
 
-const Header = () => (
-  <header className="sticky top-0 bg-background/60 backdrop-blur-lg border-b border-border z-50">
-    <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-      <div className="text-2xl font-bold text-[#FFC72C]">
-        GovLink
-      </div>
-      <div className="hidden md:flex items-center space-x-8">
-        <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Services</a>
-        <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">About Us</a>
-        <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Contact</a>
-      </div>
-      <div className="hidden md:flex items-center gap-4">
-          <button className="bg-transparent border border-[#FFC72C] text-[#FFC72C] px-4 py-2 rounded-md hover:bg-[#FFC72C] hover:text-black transition-colors font-semibold">
-            Sign In
-          </button>
-          <ThemeToggle />
-      </div>
-      <div className="md:hidden">
-        {/* Mobile menu button can be implemented here */}
-      </div>
-    </nav>
-  </header>
-);
+// --- PAGE SECTION COMPONENTS ---
 
 const Hero = () => (
-  <section className="bg-[#8D153A] text-foreground relative">
-    <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background to-transparent"></div>
-    <div className="container mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center relative z-10">
-      <h1 className="text-4xl md:text-6xl font-extrabold leading-tight">
-        Simplifying Government for <span className="text-[#FFC72C]">Every Sri Lankan</span>
+  <section className="relative bg-brand-maroon text-primary-foreground">
+    <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background to-transparent" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      className="container mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center relative z-10"
+    >
+      <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-white">
+        Simplifying Government for <span className="text-brand-gold">Every Sri Lankan</span>
       </h1>
-      <p className="mt-4 max-w-2xl text-lg md:text-xl text-muted-foreground">
+      <motion.p 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.8 }}
+        className="mt-4 max-w-2xl text-lg md:text-xl text-gray-300">
         Ask questions, find services, and access information instantly. Your direct link to public services is here.
-      </p>
+      </motion.p>
       
-      <div className="mt-10 w-full max-w-2xl">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        className="mt-10 w-full max-w-2xl">
         <form action="/chat" method="GET" className="relative">
           <textarea
             name="q"
-            className="w-full bg-white/5 placeholder-muted-foreground p-4 pr-16 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[#FFC72C] transition-all duration-300 shadow-lg text-lg backdrop-blur-sm border border-border"
+            className="w-full bg-white/10 dark:bg-black/20 placeholder-gray-400 dark:placeholder-gray-500 text-white p-4 pr-20 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all duration-300 shadow-lg text-lg backdrop-blur-sm border border-white/20"
             placeholder="e.g., How do I renew my passport?"
             rows={1}
             onInput={(e) => {
@@ -76,52 +61,81 @@ const Hero = () => (
               target.style.height = `${target.scrollHeight}px`;
             }}
           />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-[#FFC72C] hover:bg-yellow-400 rounded-lg transition-colors duration-200">
-            <ArrowRightIcon className="h-6 w-6 text-[#8D153A]" />
+          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-brand-gold hover:bg-yellow-400 rounded-lg transition-colors duration-200 group">
+            <ArrowRightIcon className="h-6 w-6 text-brand-maroon transition-transform group-hover:translate-x-1" />
           </button>
         </form>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   </section>
 );
 
 const Features = () => {
   const featuresList = [
-    { icon: <DocumentIcon className="h-8 w-8 text-[#FF5722]" />, title: "Access Forms & Documents", description: "Instantly find and download official government forms for passports, licenses, and more.", iconBgColor: "bg-[#FF5722]/20" },
-    { icon: <InfoIcon className="h-8 w-8 text-[#008060]" />, title: "Get Instant Information", description: "Ask any question about public services and get clear, step-by-step guidance.", iconBgColor: "bg-[#008060]/20" },
-    { icon: <CalendarIcon className="h-8 w-8 text-[#FFC72C]" />, title: "Schedule Appointments", description: "Find available slots and book appointments with government departments online.", iconBgColor: "bg-[#FFC72C]/20" },
+    { icon: <DocumentIcon className="h-8 w-8 text-brand-orange" />, title: "Access Forms & Documents", description: "Instantly find and download official government forms for passports, licenses, and more.", iconBgColor: "bg-brand-orange/20" },
+    { icon: <InfoIcon className="h-8 w-8 text-brand-green" />, title: "Get Instant Information", description: "Ask any question about public services and get clear, step-by-step guidance.", iconBgColor: "bg-brand-green/20" },
+    { icon: <CalendarIcon className="h-8 w-8 text-brand-gold" />, title: "Schedule Appointments", description: "Find available slots and book appointments with government departments online.", iconBgColor: "bg-brand-gold/20" },
   ];
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2, delayChildren: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5 } }
+  };
   
   return (
-    <section className="py-20 relative z-10">
+    <section className="py-20 lg:py-28 relative z-10">
       <div className="container mx-auto px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold">Everything You Need, All in One Place</h2>
-          <p className="mt-2 text-muted-foreground">GovLink is designed to make your life easier.</p>
-        </div>
+        <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6 }}
+        >
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">Everything You Need, All in One Place</h2>
+          <p className="mt-3 text-lg text-muted-foreground">GovLink is designed to make your life easier.</p>
+        </motion.div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
           {featuresList.map((feature, index) => (
-            <div key={index} className="bg-white/5 backdrop-blur-lg p-8 rounded-2xl border border-border shadow-xl hover:border-[#FFC72C] hover:-translate-y-2 transition-all duration-300">
+            <motion.div 
+              key={index} 
+              className="bg-card p-8 rounded-2xl border shadow-lg hover:shadow-xl hover:border-brand-gold hover:-translate-y-2 transition-all duration-300"
+              variants={itemVariants}
+            >
               <div className={`flex items-center justify-center h-16 w-16 rounded-full mb-6 ${feature.iconBgColor}`}>
                   {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+              <h3 className="text-xl font-semibold mb-2 text-card-foreground">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.description}</p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );
 };
 
 const Footer = () => (
-    <footer className="bg-background text-foreground relative z-10">
+    <footer className="bg-secondary/50 text-foreground relative z-10">
       <div className="container mx-auto px-6 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="text-2xl font-bold text-[#FFC72C]">GovLink</div>
-            <div className="flex mt-4 md:mt-0 space-x-6">
+        <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
+            <div className="text-2xl font-bold text-brand-gold mb-4 md:mb-0">GovLink</div>
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a>
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</a>
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Contact</a>
@@ -135,28 +149,24 @@ const Footer = () => (
 );
 
 const BackgroundAuras = () => (
-  <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-    <div className="absolute -top-40 -left-40 w-96 h-96 bg-[#8D153A]/30 rounded-full filter blur-3xl opacity-50 animate-pulse"></div>
-    <div className="absolute top-1/2 -right-40 w-96 h-96 bg-[#008060]/30 rounded-full filter blur-3xl opacity-50 animate-pulse animation-delay-2000"></div>
-    <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-[#FF5722]/30 rounded-full filter blur-3xl opacity-50 animate-pulse animation-delay-4000"></div>
+  <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
+    <div className="absolute -top-40 -left-40 w-96 h-96 bg-brand-maroon/20 dark:bg-brand-maroon/30 rounded-full filter blur-3xl opacity-50 animate-pulse"></div>
+    <div className="absolute top-1/2 -right-40 w-96 h-96 bg-brand-green/20 dark:bg-brand-green/30 rounded-full filter blur-3xl opacity-50 animate-pulse [animation-delay:2s]"></div>
+    <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-brand-orange/20 dark:bg-brand-orange/30 rounded-full filter blur-3xl opacity-50 animate-pulse [animation-delay:4s]"></div>
   </div>
 );
 
-// --- MAIN PAGE COMPONENT ---
 export default function Home() {
   return (
-    // By adding the "dark" class here, we force this page to use the dark theme variables
-    // from globals.css, preserving its intended aesthetic while still being theme-aware.
-    <div className="dark bg-background text-foreground min-h-screen relative">
+    // The "dark" class is now handled by next-themes on the <html> tag
+    <div className="bg-background text-foreground min-h-screen relative isolate">
       <BackgroundAuras />
-      <div className="relative z-10">
-        <Header />
-        <main>
-          <Hero />
-          <Features />
-        </main>
-        <Footer />
-      </div>
+      <Header />
+      <main>
+        <Hero />
+        <Features />
+      </main>
+      <Footer />
     </div>
   );
 }

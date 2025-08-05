@@ -1,49 +1,22 @@
+// components/ThemeToggle.tsx
 "use client";
 
 import * as React from "react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export function ThemeToggle() {
-  const { theme, setTheme, systemTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
-
-  // Determine effective theme (avoid hydration mismatch)
-  const effective = mounted ? (theme === "system" ? systemTheme : theme) : undefined;
-  const isDark = effective === "dark";
-
-  const toggle = () => setTheme(isDark ? "light" : "dark");
+  const { setTheme, theme } = useTheme();
 
   return (
     <button
-      type="button"
-      onClick={toggle}
-      aria-label="Toggle dark mode"
-      title="Toggle dark mode"
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 8,
-        padding: "6px 12px",
-        borderRadius: 999,
-        border: "1px solid var(--border)",
-        background: "var(--bg)",
-        color: "var(--fg)",
-      }}
+      className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-transparent text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground"
+      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      aria-label="Toggle theme"
     >
-      <span
-        aria-hidden
-        style={{
-          width: 18,
-          height: 18,
-          display: "inline-block",
-          borderRadius: "50%",
-          background: isDark ? "#fde68a" : "#111827",
-          boxShadow: isDark ? "0 0 10px rgba(253, 230, 138, 0.7)" : "none",
-          transition: "all 0.2s ease",
-        }}
-      />
-      <span style={{ fontSize: 12 }}>{isDark ? "Dark" : "Light"}</span>
+      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <span className="sr-only">Toggle theme</span>
     </button>
   );
 }
