@@ -1,7 +1,8 @@
 "use client";
-import React from 'react';
+import React, { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+
 // --- COLOR PALETTE (From GovLink Landing Page) ---
 // Maroon: #8D153A
 // Gold:   #FFC72C
@@ -79,8 +80,28 @@ const ChatInput = () => (
 );
 
 // --- MAIN PAGE COMPONENT ---
-// Convert to a Client Component and read query string via useSearchParams
+// Split into a wrapper + inner client piece using useSearchParams under Suspense
 export default function GovLinkChatPage() {
+  return (
+    <div className="flex flex-col h-screen bg-gray-900 text-white">
+      <Header />
+
+      {/* Chat history area */}
+      <main className="flex-1 overflow-y-auto p-6">
+        <div className="container mx-auto">
+          <Suspense fallback={<div className="text-gray-400">Loading chat…</div>}>
+            <ChatContent />
+          </Suspense>
+        </div>
+      </main>
+
+      {/* Fixed input area at the bottom */}
+      <ChatInput />
+    </div>
+  );
+}
+
+function ChatContent() {
   const searchParams = useSearchParams();
   const q = searchParams.get('q') ?? undefined;
   const userQuery = q || "You haven't asked a question yet.";
@@ -89,19 +110,9 @@ export default function GovLinkChatPage() {
   const botResponse = `Of course! To renew your Sri Lankan passport, you will need to submit the 'K' form, along with your current passport, National Identity Card, and two recent passport-sized photos. You can download the form from the Department of Immigration and Emigration website or collect one from our head office. Would you like a direct link to the form?`;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white">
-        <Header />
-        
-        {/* Chat history area */}
-        <main className="flex-1 overflow-y-auto p-6">
-            <div className="container mx-auto">
-                <UserMessage text={userQuery} />
-                <BotMessage text={botResponse} />
-            </div>
-        </main>
-        
-        {/* Fixed input area at the bottom */}
-        <ChatInput />
-    </div>
+    <>
+      <UserMessage text={userQuery} />
+      <BotMessage text={botResponse} />
+    </>
   );
 }
