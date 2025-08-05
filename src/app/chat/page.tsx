@@ -75,10 +75,17 @@ const ChatInput = () => {
   };
 
   return (
-    <div className="sticky bottom-0 bg-background/80 backdrop-blur-xl">
+    <motion.div 
+      layoutId="search-container"
+      className="sticky bottom-0 bg-background/80 backdrop-blur-xl"
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       <div className="container mx-auto px-4 py-4 border-t border-border">
         <form onSubmit={handleSubmit} className="relative">
-          <textarea
+          <motion.textarea
+            layoutId="search-input"
             name="question"
             className="w-full bg-input text-foreground placeholder-muted-foreground p-4 pr-16 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--brand-gold)] transition-all duration-300 shadow-inner"
             placeholder="Ask a follow-up question..."
@@ -98,12 +105,18 @@ const ChatInput = () => {
               }
             }}
           />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-[var(--brand-gold)] hover:bg-yellow-400 rounded-lg transition-colors duration-200 group">
+          <motion.button 
+            layoutId="submit-button"
+            type="submit" 
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-[var(--brand-gold)] hover:bg-yellow-400 rounded-lg transition-colors duration-200 group"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             <ArrowRightIcon className="h-6 w-6 text-[var(--brand-maroon)] transition-transform group-hover:translate-x-1" />
-          </button>
+          </motion.button>
         </form>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -114,25 +127,62 @@ function ChatContent() {
   const botResponse = `Of course! To renew your Sri Lankan passport, you will need to submit the 'K' form, along with your current passport, National Identity Card, and two recent passport-sized photos. You can download the form from the Department of Immigration and Emigration website or collect one from our head office. Would you like a direct link to the form?`;
 
   return (
-    <>
-      <UserMessage text={userQuery} />
-      <BotMessage text={botResponse} />
-    </>
+    <div className="space-y-4">
+      {/* Chat Header */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="text-center py-8 border-b border-border/50"
+      >
+        <motion.h1 
+          layoutId="main-title"
+          className="text-2xl md:text-3xl font-bold text-foreground mb-2"
+        >
+          Chat with <span className="text-[var(--brand-gold)]">GovLink Assistant</span>
+        </motion.h1>
+        <p className="text-muted-foreground">Get instant answers to your government service questions</p>
+      </motion.div>
+
+      {/* Chat Messages */}
+      <div className="space-y-4 pb-8">
+        <UserMessage text={userQuery} />
+        <BotMessage text={botResponse} />
+      </div>
+    </div>
   );
 }
 
 export default function GovLinkChatPage() {
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground">
+    <motion.div 
+      className="flex flex-col h-screen bg-background text-foreground"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <Header />
-      <main className="flex-1 overflow-y-auto">
+      <motion.main 
+        className="flex-1 overflow-y-auto"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
         <div className="container mx-auto p-4 md:p-6">
-          <Suspense fallback={<div className="text-center text-muted-foreground p-8">Loading chat…</div>}>
+          <Suspense fallback={
+            <motion.div 
+              className="text-center text-muted-foreground p-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              Loading chat…
+            </motion.div>
+          }>
             <ChatContent />
           </Suspense>
         </div>
-      </main>
+      </motion.main>
       <ChatInput />
-    </div>
+    </motion.div>
   );
 }

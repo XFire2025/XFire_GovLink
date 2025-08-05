@@ -1,7 +1,8 @@
 // app/page.tsx
 "use client";
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header'; // Use the shared header
 
 // --- ICONS (Unchanged) ---
@@ -24,60 +25,98 @@ const InfoIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 // --- PAGE SECTION COMPONENTS ---
 
-const Hero = () => (
-  <section className="relative bg-[var(--brand-maroon)] text-primary-foreground">
-    <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background to-transparent" />
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeInOut" }}
-      className="container mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center relative z-10"
-    >
-      <h1 className="text-4xl md:text-6xl font-extrabold leading-tight text-white">
-        Simplifying Government for <span className="text-[var(--brand-gold)]">Every Sri Lankan</span>
-      </h1>
-      <motion.p 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.8 }}
-        className="mt-4 max-w-2xl text-lg md:text-xl text-gray-300">
-        Ask questions, find services, and access information instantly. Your direct link to public services is here.
-      </motion.p>
+const Hero = () => {
+  const router = useRouter();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const question = formData.get('q') as string;
+    
+    if (question.trim()) {
+      setIsTransitioning(true);
       
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
-        className="mt-10 w-full max-w-2xl">
-        <form action="/chat" method="GET" className="relative">
-          <textarea
-            name="q"
-            className="w-full bg-white/10 dark:bg-black/20 placeholder-gray-400 dark:placeholder-gray-500 text-white p-4 pr-20 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--brand-gold)] transition-all duration-300 shadow-lg text-lg backdrop-blur-sm border border-white/20"
-            placeholder="e.g., How do I renew my passport?"
-            rows={1}
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = 'auto';
-              target.style.height = `${target.scrollHeight}px`;
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                const form = e.currentTarget.closest('form');
-                if (form) {
-                  form.requestSubmit();
+      // Wait for animation to start
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Navigate to chat page
+      router.push(`/chat?q=${encodeURIComponent(question)}`);
+    }
+  };
+
+  return (
+    <section className="relative bg-[var(--brand-maroon)] text-primary-foreground">
+      <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background to-transparent" />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.8, ease: "easeInOut" }}
+        className="container mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center relative z-10"
+      >
+        <motion.h1 
+          layoutId="main-title"
+          className="text-4xl md:text-6xl font-extrabold leading-tight text-white"
+        >
+          Simplifying Government for <span className="text-[var(--brand-gold)]">Every Sri Lankan</span>
+        </motion.h1>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+          className="mt-4 max-w-2xl text-lg md:text-xl text-gray-300">
+          Ask questions, find services, and access information instantly. Your direct link to public services is here.
+        </motion.p>
+        
+        <motion.div 
+          layoutId="search-container"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ 
+            opacity: 1, 
+            scale: isTransitioning ? 0.95 : 1,
+            y: isTransitioning ? -50 : 0
+          }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="mt-10 w-full max-w-2xl">
+          <form onSubmit={handleSubmit} className="relative">
+            <motion.textarea
+              layoutId="search-input"
+              name="q"
+              className="w-full bg-white/10 dark:bg-black/20 placeholder-gray-400 dark:placeholder-gray-500 text-white p-4 pr-20 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--brand-gold)] transition-all duration-300 shadow-lg text-lg backdrop-blur-sm border border-white/20"
+              placeholder="e.g., How do I renew my passport?"
+              rows={1}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = `${target.scrollHeight}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  const form = e.currentTarget.closest('form');
+                  if (form) {
+                    form.requestSubmit();
+                  }
                 }
-              }
-            }}
-          />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-[var(--brand-gold)] hover:bg-yellow-400 rounded-lg transition-colors duration-200 group">
-            <ArrowRightIcon className="h-6 w-6 text-[var(--brand-maroon)] transition-transform group-hover:translate-x-1" />
-          </button>
-        </form>
+              }}
+            />
+            <motion.button 
+              layoutId="submit-button"
+              type="submit" 
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-[var(--brand-gold)] hover:bg-yellow-400 rounded-lg transition-colors duration-200 group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ArrowRightIcon className="h-6 w-6 text-[var(--brand-maroon)] transition-transform group-hover:translate-x-1" />
+            </motion.button>
+          </form>
+        </motion.div>
       </motion.div>
-    </motion.div>
-  </section>
-);
+    </section>
+  );
+};
 
 const Features = () => {
   const featuresList = [
@@ -158,7 +197,7 @@ const Footer = () => (
     <footer className="bg-secondary/50 text-foreground relative z-10">
       <div className="container mx-auto px-6 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center text-center md:text-left">
-            <div className="text-2xl font-bold text-brand-gold mb-4 md:mb-0">GovLink</div>
+            <div className="text-2xl font-bold text-[var(--brand-gold)] mb-4 md:mb-0">GovLink</div>
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a>
                 <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</a>
@@ -174,9 +213,9 @@ const Footer = () => (
 
 const BackgroundAuras = () => (
   <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-    <div className="absolute -top-40 -left-40 w-96 h-96 bg-brand-maroon/20 dark:bg-brand-maroon/30 rounded-full filter blur-3xl opacity-50 animate-pulse"></div>
-    <div className="absolute top-1/2 -right-40 w-96 h-96 bg-brand-green/20 dark:bg-brand-green/30 rounded-full filter blur-3xl opacity-50 animate-pulse [animation-delay:2s]"></div>
-    <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-brand-orange/20 dark:bg-brand-orange/30 rounded-full filter blur-3xl opacity-50 animate-pulse [animation-delay:4s]"></div>
+    <div className="absolute -top-40 -left-40 w-96 h-96 bg-[var(--brand-maroon)]/20 dark:bg-[var(--brand-maroon)]/30 rounded-full filter blur-3xl opacity-50 animate-pulse"></div>
+    <div className="absolute top-1/2 -right-40 w-96 h-96 bg-[var(--brand-green)]/20 dark:bg-[var(--brand-green)]/30 rounded-full filter blur-3xl opacity-50 animate-pulse [animation-delay:2s]"></div>
+    <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-[var(--brand-orange)]/20 dark:bg-[var(--brand-orange)]/30 rounded-full filter blur-3xl opacity-50 animate-pulse [animation-delay:4s]"></div>
   </div>
 );
 
