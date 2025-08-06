@@ -383,6 +383,23 @@ const Hero = () => {
     return () => clearInterval(interval);
   }, [placeholderTexts.length]);
 
+  // Allow Shift+Enter to insert newline, Enter (without Shift) will submit the form
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && e.shiftKey) {
+      // Insert newline without submitting the form
+      e.stopPropagation();
+      // Let the default newline behavior happen
+      return;
+    }
+    if (e.key === 'Enter') {
+      // Prevent adding a newline so the form can submit cleanly
+      e.preventDefault();
+      // Find the closest form and submit it
+      const form = (e.currentTarget as HTMLTextAreaElement).closest('form') as HTMLFormElement | null;
+      if (form) form.requestSubmit();
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 py-20 sm:py-24 md:py-32 relative z-10">
@@ -416,6 +433,7 @@ const Hero = () => {
                   name="q"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
+                  onKeyDown={handleKeyDown}
                   className="w-full bg-transparent text-foreground placeholder-muted-foreground p-4 sm:p-5 md:p-6 pr-16 sm:pr-20 rounded-lg sm:rounded-xl resize-none focus:outline-none text-base sm:text-lg leading-relaxed border-none"
                   placeholder={placeholderTexts[currentPlaceholder]}
                   rows={1}
@@ -609,7 +627,7 @@ const About = () => (
             <button className="bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-glow animate-wave-float-center">
               Learn More
             </button>
-            <button className="border-2 border-[#008060] text-[#008060] hover:bg-[#008060] hover:text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 animate-wave-float-left">
+            <button className="border-2 border-[#008060] text-[#008060] hover:bg-[#008060] hover:text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 animate-wave-buoyancy-1">
               Our Mission
             </button>
           </div>
