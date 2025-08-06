@@ -121,7 +121,7 @@
 /* Custom animations and effects - Mobile Responsive */
 @layer utilities {
   .animate-float {
-    animation: float 6s ease-in-out infinite;
+    animation: none;
   }
   
   .animate-drift {
@@ -157,35 +157,35 @@
   
   /* Wave buoyancy animations - synchronized with flag wave motion */
   .animate-wave-buoyancy-1 {
-    animation: waveBuoyancy1 4s ease-in-out infinite;
+    animation: none;
   }
   
   .animate-wave-buoyancy-2 {
-    animation: waveBuoyancy2 4s ease-in-out infinite;
+    animation: none;
   }
   
   .animate-wave-buoyancy-3 {
-    animation: waveBuoyancy3 4s ease-in-out infinite;
+    animation: none;
   }
   
   .animate-wave-float-left {
-    animation: waveFloatLeft 5s ease-in-out infinite;
+    animation: none;
   }
   
   .animate-wave-float-right {
-    animation: waveFloatRight 5s ease-in-out infinite;
+    animation: none;
   }
   
   .animate-wave-float-center {
-    animation: waveFloatCenter 4.5s ease-in-out infinite;
+    animation: none;
   }
   
   .animate-title-wave {
-    animation: titleWave 6s ease-in-out infinite;
+    animation: none;
   }
   
   .animate-subtitle-wave {
-    animation: subtitleWave 6s ease-in-out infinite;
+    animation: none;
   }
   
   .gradient-mesh {

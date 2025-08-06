@@ -188,8 +188,8 @@ export default function GovLinkChatPage() {
     <div className="flex flex-col h-screen bg-background text-foreground relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 gradient-mesh opacity-30"></div>
-      <div className="absolute top-10 right-10 w-32 h-32 bg-[#FFC72C]/5 rounded-full blur-3xl animate-float"></div>
-      <div className="absolute bottom-20 left-10 w-40 h-40 bg-[#FF5722]/5 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
+      <div className="absolute top-10 right-10 w-32 h-32 bg-[#FFC72C]/5 rounded-full blur-3xl "></div>
+      <div className="absolute bottom-20 left-10 w-40 h-40 bg-[#FF5722]/5 rounded-full blur-3xl " style={{animationDelay: '2s'}}></div>
       
       <div className="relative z-10 flex flex-col h-full">
         <Header />
