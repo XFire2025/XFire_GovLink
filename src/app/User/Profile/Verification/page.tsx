@@ -3,7 +3,6 @@
 
 import React, { useRef, useState } from "react";
 import Image from "next/image";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { Header } from '@/components/Header';
 
 // --- GLOBAL PARTICLE BACKGROUND COMPONENT (Copied from profile/page.tsx for consistency) ---
@@ -48,24 +47,6 @@ const GlobalParticleBackground = () => {
 };
 
 // Icons
-const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100" fill="none">
-        <defs>
-            <linearGradient id="lotus-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FFC72C" stopOpacity="1" />
-                <stop offset="50%" stopColor="#FF5722" stopOpacity="1" />
-                <stop offset="100%" stopColor="#8D153A" stopOpacity="1" />
-            </linearGradient>
-            <linearGradient id="lotus-gradient-inner" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#FFC72C" stopOpacity="0.7" />
-                <stop offset="100%" stopColor="#FF5722" stopOpacity="0.7" />
-            </linearGradient>
-        </defs>
-        <path d="M50 10C45 15 35 25 30 35C25 45 30 55 40 60C45 62 55 62 60 60C70 55 75 45 70 35C65 25 55 15 50 10Z" fill="url(#lotus-gradient)"/>
-        <path d="M50 15C45 20 40 30 35 40C30 50 35 60 45 65C50 67 60 67 65 65C75 60 80 50 75 40C70 30 65 20 50 15Z" fill="url(#lotus-gradient-inner)"/>
-    </svg>
-);
-
 const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
 );

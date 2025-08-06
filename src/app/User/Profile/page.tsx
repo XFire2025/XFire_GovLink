@@ -1,7 +1,7 @@
 // app/profile/page.tsx
 "use client";
 
-import React, { useState, useMemo, useRef, ChangeEvent, FormEvent, useEffect } from 'react';
+import React, { useState, useMemo, useRef, ChangeEvent, FormEvent } from 'react';
 import Image from 'next/image';
 import { Header } from '@/components/Header';
 
@@ -47,15 +47,6 @@ const GlobalParticleBackground = () => {
 };
 
 // --- PREMIUM SVG ICON COMPONENTS ---
-const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-    <path d="M12 2C10.343 2 9 3.343 9 5c0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3zM4.22 4.22a1 1 0 0 0-1.415 1.415l1.415-1.415zm15.556 0l-1.415 1.415a1 1 0 0 0 1.415-1.415zM12 8c-2.209 0-4 1.791-4 4s1.791 4 4 4 4-1.791 4-4-1.791-4-4-4zm-8 8c0 1.657 1.343 3 3 3h12c1.657 0 3-1.343 3-3v-1.586l-2 2V18H6v-2.586l-2-2V16zm2-4h12v-2H4v2z" fill="currentColor"/>
-  </svg>
-);
-  
-  
-
-
 const UserIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 );
