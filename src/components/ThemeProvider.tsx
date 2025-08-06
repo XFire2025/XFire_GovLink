@@ -6,7 +6,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 export type ThemeProviderProps = {
   children: React.ReactNode;
   attribute?: "class" | "data-theme";
-  defaultTheme?: "system" | "light" | "dark";
+  defaultTheme?: "dark";
   enableSystem?: boolean;
   disableTransitionOnChange?: boolean;
 };
