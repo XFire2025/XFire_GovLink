@@ -1,3 +1,4 @@
+/* globals.css */
 @import "tailwindcss";
 
 @theme {
@@ -20,7 +21,8 @@
   --color-destructive-foreground: oklch(0.985 0 0);
   --color-border: oklch(0.85 0.03 85);
   --color-input: oklch(0.88 0.02 85);
-  --color-ring: oklch(0.28 0.18 15);  --radius: 1rem;  
+  --color-ring: oklch(0.28 0.18 15);
+  --radius: 1rem;  
   /* Legacy CSS variables for compatibility */
   --background: var(--color-background);
   --foreground: var(--color-foreground);
@@ -184,27 +186,6 @@
   
   .animate-subtitle-wave {
     animation: subtitleWave 6s ease-in-out infinite;
-  }  
-  .glass-morphism {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-  }
-  
-  /* Mobile-first responsive glass morphism */
-  @media (min-width: 640px) {
-    .glass-morphism {
-      backdrop-filter: blur(18px);
-      box-shadow: 0 7px 28px rgba(0, 0, 0, 0.09);
-    }
-  }
-  
-  @media (min-width: 768px) {
-    .glass-morphism {
-      backdrop-filter: blur(20px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
   }
   
   .gradient-mesh {
@@ -298,17 +279,32 @@
     transition: all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
   }
   
-  /* Glass morphism with enhanced theme transitions */
+  /* Glass morphism with enhanced theme transitions and mobile responsiveness */
   .glass-morphism {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
     transition: 
       background 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
       backdrop-filter 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
       border 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
       box-shadow 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  /* Mobile-first responsive glass morphism */
+  @media (min-width: 640px) {
+    .glass-morphism {
+      backdrop-filter: blur(18px);
+      box-shadow: 0 7px 28px rgba(0, 0, 0, 0.09);
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .glass-morphism {
+      backdrop-filter: blur(20px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
   }
 }
 
@@ -633,20 +629,6 @@
     .dark .glass-morphism {
       background: rgba(0, 0, 0, 0.15);
       border: 2px solid rgba(255, 255, 255, 0.3);
-    }
-  }
-  
-  /* Enhanced smooth scrolling for modern browsers */
-  @supports (scroll-behavior: smooth) {
-    html {
-      scroll-behavior: smooth;
-    }
-  }
-  
-  /* Custom smooth scroll for browsers without native support */
-  @supports not (scroll-behavior: smooth) {
-    html {
-      scroll-behavior: auto;
     }
   }
 }

@@ -1,0 +1,20 @@
+[Unit]
+Description=GovLink Next.js Application
+Documentation=https://nextjs.org/
+After=network.target
+
+[Service]
+Type=simple
+User=azureuser
+WorkingDirectory=/home/azureuser/govlink
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/node server.js
+Restart=on-failure
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=govlink
+
+[Install]
+WantedBy=multi-user.target

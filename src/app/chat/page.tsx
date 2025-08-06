@@ -1,3 +1,4 @@
+// app/chat/page.tsx
 "use client";
 import React, { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -216,7 +217,7 @@ export default function GovLinkChatPage() {
       </div>
     </div>
   );
-}
+};
 
 function ChatContent() {
   const searchParams = useSearchParams();
