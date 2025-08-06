@@ -54,7 +54,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: 'customer-agent',
-    label: 'Customer agent management',
+    label: 'Customer/Agent Management',
     icon: UserCog,
   },
   {
@@ -178,24 +178,24 @@ export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarPro
                 <button
                   onClick={() => handleItemClick(item.id, hasSubmenu)}
                   className={`
-                    relative w-full flex  px-3 py-2.5 rounded-xl transition-all duration-200
+                    relative w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200
                     hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20
                     ${isActive 
                       ? 'bg-primary/10 border border-primary/20 text-primary shadow-sm' 
                       : 'text-muted-foreground hover:text-foreground'
                     }
-                    ${isCollapsed ? 'justify-center' : 'justify-between'}
+                    ${isCollapsed ? 'justify-center' : 'justify-start'}
                   `}
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center flex-1">
                     <div className={`
                       p-1.5 rounded-lg transition-all duration-200
                       ${isActive ? 'bg-primary/20' : 'bg-transparent group-hover:bg-muted'}
                     `}>
-                      <IconComponent className={`w-4 h-4 ${isCollapsed ? '' : 'mr-3'}`} />
+                      <IconComponent className="w-4 h-4" />
                     </div>
                     {!isCollapsed && (
-                      <span className="text-sm font-medium">{item.label}</span>
+                      <span className="text-sm font-medium ml-3 whitespace-nowrap">{item.label}</span>
                     )}
                   </div>
                   
@@ -203,7 +203,7 @@ export default function AdminSidebar({ activeTab, onTabChange }: AdminSidebarPro
                   {hasSubmenu && !isCollapsed && (
                     <ChevronDown 
                       className={`
-                        w-4 h-4 transition-transform duration-200
+                        w-4 h-4 transition-transform duration-200 ml-auto
                         ${isExpanded ? 'rotate-180' : 'rotate-0'}
                       `}
                     />
