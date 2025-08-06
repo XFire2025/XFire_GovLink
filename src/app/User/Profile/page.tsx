@@ -48,24 +48,11 @@ const GlobalParticleBackground = () => {
 
 // --- PREMIUM SVG ICON COMPONENTS ---
 const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100" fill="none">
-    <path d="M50 10C45 15 35 25 30 35C25 45 30 55 40 60C45 62 55 62 60 60C70 55 75 45 70 35C65 25 55 15 50 10Z" fill="url(#lotus-gradient)"/>
-    <path d="M50 15C45 20 40 30 35 40C30 50 35 60 45 65C50 67 60 67 65 65C75 60 80 50 75 40C70 30 65 20 50 15Z" fill="url(#lotus-gradient-inner)"/>
-    <defs>
-      <linearGradient id="lotus-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor: '#FFC72C', stopOpacity: 1}} />
-        <stop offset="50%" style={{stopColor: '#FF5722', stopOpacity: 1}} />
-        <stop offset="100%" style={{stopColor: '#8D153A', stopOpacity: 1}} />
-      </linearGradient>
-      <linearGradient id="lotus-gradient-inner" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor: '#FFC72C', stopOpacity: 0.7}} />
-        <stop offset="100%" style={{stopColor: '#FF5722', stopOpacity: 0.7}} />
-      </linearGradient>
-    </defs>
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+    <path d="M12 2C10.343 2 9 3.343 9 5c0 1.657 1.343 3 3 3s3-1.343 3-3c0-1.657-1.343-3-3-3zM4.22 4.22a1 1 0 0 0-1.415 1.415l1.415-1.415zm15.556 0l-1.415 1.415a1 1 0 0 0 1.415-1.415zM12 8c-2.209 0-4 1.791-4 4s1.791 4 4 4 4-1.791 4-4-1.791-4-4-4zm-8 8c0 1.657 1.343 3 3 3h12c1.657 0 3-1.343 3-3v-1.586l-2 2V18H6v-2.586l-2-2V16zm2-4h12v-2H4v2z" fill="currentColor"/>
   </svg>
 );
   
-
   
 
 
@@ -85,6 +72,32 @@ const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
 );
 
+// --- DEFAULT AVATAR (INLINE SVG) ---
+const DefaultAvatar = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 144 144"
+    xmlns="http://www.w3.org/2000/svg"
+    role="img"
+    aria-label="Default profile avatar"
+    className={className}
+  >
+    <defs>
+      <linearGradient id="avatarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#FFC72C" />
+        <stop offset="60%" stopColor="#FF5722" />
+        <stop offset="100%" stopColor="#8D153A" />
+      </linearGradient>
+    </defs>
+    {/* Outer circle */}
+    <circle cx="72" cy="72" r="70" fill="url(#avatarGradient)" opacity="0.18" />
+    <circle cx="72" cy="72" r="62" fill="currentColor" className="text-card" opacity="0.75" />
+    {/* User silhouette */}
+    <g fill="none" stroke="url(#avatarGradient)" strokeWidth="6" strokeLinecap="round">
+      <circle cx="72" cy="56" r="20" fill="none" />
+      <path d="M32 112c6-18 24-30 40-30s34 12 40 30" />
+    </g>
+  </svg>
+);
 
 // --- FOOTER ---
 const Footer = () => (
@@ -149,7 +162,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('details');
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const previewUrl = useMemo(() => (avatarFile ? URL.createObjectURL(avatarFile) : "/profile-avatar-placeholder.png"), [avatarFile]);
+  // Use undefined to indicate "no avatar"; only build object URL when a file exists
+  const previewUrl = useMemo(() => (avatarFile ? URL.createObjectURL(avatarFile) : undefined), [avatarFile]);
 
   const onChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -226,13 +240,18 @@ export default function ProfilePage() {
                         <div className="lg:col-span-1 flex flex-col items-center">
                           <div className="relative group w-48 h-48 sm:w-56 sm:h-56 mb-6">
                             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#FFC72C]/20 via-[#FF5722]/20 to-[#8D153A]/20 blur-lg"></div>
-                            <Image 
-                              src={previewUrl} 
-                              alt="Profile Avatar"
-                              width={224}
-                              height={224}
-                              className="relative w-full h-full object-cover rounded-full border-4 border-card/80"
-                            />
+                            {/* Avatar: show uploaded image if present, otherwise SVG */}
+                            {previewUrl ? (
+                              <Image 
+                                src={previewUrl} 
+                                alt="Profile Avatar"
+                                width={224}
+                                height={224}
+                                className="relative w-full h-full object-cover rounded-full border-4 border-card/80"
+                              />
+                            ) : (
+                              <DefaultAvatar className="relative w-full h-full rounded-full border-4 border-card/80" />
+                            )}
                             <button
                               type="button"
                               onClick={() => fileRef.current?.click()}
