@@ -1,53 +1,154 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { ThemeToggle } from '@/components/ThemeToggle';
-
 // --- GLOBAL PARTICLE BACKGROUND COMPONENT ---
 const GlobalParticleBackground = () => {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {/* Top Section Particles */}
-      <div className="absolute top-20 left-10 w-32 h-32 bg-[#FFC72C]/10 rounded-full blur-xl animate-drift"></div>
-      <div className="absolute top-40 right-20 w-24 h-24 bg-[#FF5722]/10 rounded-full blur-xl animate-drift-reverse"></div>
-      <div className="absolute top-60 left-1/3 w-20 h-20 bg-[#008060]/15 rounded-full blur-lg animate-orbit"></div>
-      <div className="absolute top-10 right-10 w-18 h-18 bg-[#FFC72C]/20 rounded-full blur-sm animate-float" style={{animationDelay: '1.5s'}}></div>
+      {/* Light Mode Enhanced Flag Background - Mobile First Responsive */}
+      <div className="absolute inset-0 opacity-[0.25] sm:opacity-[0.30] md:opacity-[0.35] dark:opacity-0">
+        <Image 
+          src="/flag-of-sri-lanka-1.gif" 
+          alt="Sri Lankan Flag Background" 
+          fill
+          className="object-cover object-center animate-pulse-move scale-110 sm:scale-105 md:scale-100"
+          style={{
+            animationDelay: '0s',
+            filter: 'contrast(2.2) brightness(0.45) saturate(2.2) sepia(0.25) hue-rotate(8deg)',
+            mixBlendMode: 'multiply'
+          }}
+          unoptimized={true}
+          priority={false}
+        />
+      </div>
       
-      {/* Upper Middle Particles */}
-      <div className="absolute top-1/4 left-20 w-40 h-40 bg-[#8D153A]/8 rounded-full blur-2xl animate-pulse-move"></div>
-      <div className="absolute top-1/3 right-1/4 w-36 h-36 bg-[#FFC72C]/12 rounded-full blur-xl animate-spiral"></div>
-      <div className="absolute top-1/4 left-1/2 w-16 h-16 bg-[#FF5722]/15 rounded-full blur-sm animate-spiral" style={{animationDelay: '2s'}}></div>
+      {/* Dark Mode Flag Background - Mobile First Responsive */}
+      <div className="absolute inset-0 opacity-0 dark:opacity-[0.02] sm:dark:opacity-[0.025] md:dark:opacity-[0.03]">
+        <Image 
+          src="/flag-of-sri-lanka-1.gif" 
+          alt="Sri Lankan Flag Background" 
+          fill
+          className="object-cover object-center animate-pulse-move scale-110 sm:scale-105 md:scale-100"
+          style={{
+            animationDelay: '0s'
+          }}
+          unoptimized={true}
+          priority={false}
+        />
+      </div>
       
-      {/* Center Section Particles */}
-      <div className="absolute top-1/2 left-1/4 w-28 h-28 bg-[#008060]/12 rounded-full blur-lg animate-drift" style={{animationDelay: '5s'}}></div>
-      <div className="absolute top-1/2 right-1/3 w-32 h-32 bg-[#FF5722]/10 rounded-full blur-xl animate-drift-reverse" style={{animationDelay: '3s'}}></div>
-      <div className="absolute top-1/2 left-10 w-24 h-24 bg-[#8D153A]/12 rounded-full blur-md animate-orbit" style={{animationDelay: '6s'}}></div>
-      <div className="absolute top-1/2 right-10 w-20 h-20 bg-[#FFC72C]/15 rounded-full blur-lg animate-pulse-move" style={{animationDelay: '4s'}}></div>
+      {/* Light Mode Secondary Flag Layer - Responsive Scaling */}
+      <div className="absolute inset-0 opacity-[0.15] sm:opacity-[0.20] md:opacity-[0.25] dark:opacity-0 scale-125 sm:scale-130 md:scale-150">
+        <Image 
+          src="/flag-of-sri-lanka-1.gif" 
+          alt="Sri Lankan Flag Background Large" 
+          fill
+          className="object-cover object-center animate-pulse-move"
+          style={{
+            animationDelay: '5s',
+            filter: 'contrast(2.5) brightness(0.35) saturate(2.8) sepia(0.35) hue-rotate(12deg)',
+            mixBlendMode: 'overlay'
+          }}
+          unoptimized={true}
+          priority={false}
+        />
+      </div>
       
-      {/* Lower Middle Particles */}
-      <div className="absolute top-2/3 left-1/3 w-32 h-32 bg-[#008060]/10 rounded-full blur-xl animate-spiral" style={{animationDelay: '7s'}}></div>
-      <div className="absolute top-2/3 right-1/2 w-20 h-20 bg-[#8D153A]/12 rounded-full blur-lg animate-drift-reverse" style={{animationDelay: '4s'}}></div>
-      <div className="absolute top-2/3 left-1/2 w-28 h-28 bg-[#FF5722]/12 rounded-full blur-xl animate-drift" style={{animationDelay: '8s'}}></div>
+      {/* Dark Mode Secondary Flag Layer - Responsive Scaling */}
+      <div className="absolute inset-0 opacity-0 dark:opacity-[0.015] sm:dark:opacity-[0.018] md:dark:opacity-[0.02] scale-125 sm:scale-130 md:scale-150">
+        <Image 
+          src="/flag-of-sri-lanka-1.gif" 
+          alt="Sri Lankan Flag Background Large" 
+          fill
+          className="object-cover object-center animate-pulse-move"
+          style={{
+            animationDelay: '5s'
+          }}
+          unoptimized={true}
+          priority={false}
+        />
+      </div>
       
-      {/* Footer Section Particles */}
-      <div className="absolute top-3/4 left-1/4 w-40 h-40 bg-[#FFC72C]/8 rounded-full blur-2xl animate-pulse-move" style={{animationDelay: '9s'}}></div>
-      <div className="absolute top-3/4 right-1/4 w-28 h-28 bg-[#008060]/10 rounded-full blur-xl animate-orbit" style={{animationDelay: '1s'}}></div>
-      <div className="absolute bottom-32 left-1/3 w-32 h-32 bg-[#8D153A]/10 rounded-full blur-xl animate-drift" style={{animationDelay: '5s'}}></div>
+      {/* Light Mode Tertiary Flag Layer - Mobile Optimized */}
+      <div className="absolute inset-0 opacity-[0.20] sm:opacity-[0.25] md:opacity-[0.30] dark:opacity-0 scale-115 sm:scale-118 md:scale-110">
+        <Image 
+          src="/flag-of-sri-lanka-1.gif" 
+          alt="Sri Lankan Flag Background Scaled" 
+          fill
+          className="object-cover object-center animate-float"
+          style={{
+            animationDelay: '10s',
+            filter: 'contrast(2.8) brightness(0.3) saturate(3.2) sepia(0.45) hue-rotate(6deg)',
+            mixBlendMode: 'darken'
+          }}
+          unoptimized={true}
+          priority={false}
+        />
+      </div>
       
-      {/* Bottom Section Particles */}
-      <div className="absolute bottom-20 right-1/3 w-28 h-28 bg-[#FF5722]/12 rounded-full blur-xl animate-drift-reverse" style={{animationDelay: '2s'}}></div>
-      <div className="absolute bottom-40 left-1/2 w-24 h-24 bg-[#FFC72C]/15 rounded-full blur-lg animate-spiral" style={{animationDelay: '6s'}}></div>
-      <div className="absolute bottom-10 left-10 w-20 h-20 bg-[#008060]/15 rounded-full blur-md animate-float" style={{animationDelay: '3.5s'}}></div>
-      <div className="absolute bottom-60 right-20 w-24 h-24 bg-[#8D153A]/12 rounded-full blur-lg animate-orbit" style={{animationDelay: '7s'}}></div>
+      {/* Dark Mode Tertiary Flag Layer - Mobile Optimized */}
+      <div className="absolute inset-0 opacity-0 dark:opacity-[0.018] sm:dark:opacity-[0.022] md:dark:opacity-[0.025] scale-115 sm:scale-118 md:scale-110">
+        <Image 
+          src="/flag-of-sri-lanka-1.gif" 
+          alt="Sri Lankan Flag Background Scaled" 
+          fill
+          className="object-cover object-center animate-float"
+          style={{
+            animationDelay: '10s'
+          }}
+          unoptimized={true}
+          priority={false}
+        />
+      </div>
       
-      {/* Edge Particles for Full Coverage */}
-      <div className="absolute top-1/3 left-0 w-16 h-16 bg-[#FFC72C]/10 rounded-full blur-sm animate-drift" style={{animationDelay: '10s'}}></div>
-      <div className="absolute top-2/3 right-0 w-16 h-16 bg-[#FF5722]/12 rounded-full blur-md animate-drift-reverse" style={{animationDelay: '11s'}}></div>
-      <div className="absolute bottom-1/3 left-5 w-20 h-20 bg-[#008060]/10 rounded-full blur-lg animate-pulse-move" style={{animationDelay: '12s'}}></div>
-      <div className="absolute bottom-1/4 right-5 w-24 h-24 bg-[#8D153A]/8 rounded-full blur-xl animate-spiral" style={{animationDelay: '13s'}}></div>
+      {/* Enhanced Light Mode Color Overlay - Mobile Responsive */}
+      <div className="absolute inset-0 opacity-[0.08] sm:opacity-[0.12] md:opacity-[0.15] dark:opacity-0">
+        <div className="w-full h-full bg-gradient-to-br from-[#8D153A]/30 via-transparent to-[#FF5722]/30 animate-pulse-move"></div>
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#FFC72C]/25 via-transparent to-[#8D153A]/25 animate-float"></div>
+      </div>
+
+      {/* Mobile-First Responsive Particles */}
+      {/* Top Section Particles - Mobile Optimized */}
+      <div className="absolute top-16 sm:top-20 left-4 sm:left-6 md:left-10 w-16 sm:w-24 md:w-32 h-16 sm:h-24 md:h-32 bg-[#8D153A]/15 sm:bg-[#8D153A]/18 md:bg-[#8D153A]/20 dark:bg-[#FFC72C]/8 dark:sm:bg-[#FFC72C]/9 dark:md:bg-[#FFC72C]/10 rounded-full blur-lg sm:blur-xl animate-drift"></div>
+      <div className="absolute top-32 sm:top-40 right-8 sm:right-12 md:right-20 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#FF5722]/20 sm:bg-[#FF5722]/23 md:bg-[#FF5722]/25 dark:bg-[#FF5722]/8 dark:sm:bg-[#FF5722]/9 dark:md:bg-[#FF5722]/10 rounded-full blur-lg sm:blur-xl animate-drift-reverse"></div>
+      <div className="absolute top-48 sm:top-60 left-1/4 sm:left-1/3 w-10 sm:w-16 md:w-20 h-10 sm:h-16 md:h-20 bg-[#008060]/25 sm:bg-[#008060]/28 md:bg-[#008060]/30 dark:bg-[#008060]/12 dark:sm:bg-[#008060]/14 dark:md:bg-[#008060]/15 rounded-full blur-md sm:blur-lg animate-orbit"></div>
+      <div className="absolute top-4 sm:top-10 right-4 sm:right-6 md:right-10 w-8 sm:w-12 md:w-16 h-8 sm:h-12 md:h-16 bg-[#FFC72C]/30 sm:bg-[#FFC72C]/33 md:bg-[#FFC72C]/35 dark:bg-[#FFC72C]/15 dark:sm:bg-[#FFC72C]/18 dark:md:bg-[#FFC72C]/20 rounded-full blur-sm animate-float" style={{animationDelay: '1.5s'}}></div>
+      
+      {/* Upper Middle Particles - Mobile Responsive */}
+      <div className="absolute top-1/4 left-8 sm:left-12 md:left-20 w-20 sm:w-30 md:w-40 h-20 sm:h-30 md:h-40 bg-[#8D153A]/10 sm:bg-[#8D153A]/13 md:bg-[#8D153A]/15 dark:bg-[#8D153A]/5 dark:sm:bg-[#8D153A]/7 dark:md:bg-[#8D153A]/8 rounded-full blur-xl sm:blur-2xl animate-pulse-move"></div>
+      <div className="absolute top-1/3 right-1/4 w-18 sm:w-28 md:w-36 h-18 sm:h-28 md:h-36 bg-[#FFC72C]/20 sm:bg-[#FFC72C]/23 md:bg-[#FFC72C]/25 dark:bg-[#FFC72C]/10 dark:sm:bg-[#FFC72C]/11 dark:md:bg-[#FFC72C]/12 rounded-full blur-lg sm:blur-xl animate-spiral"></div>
+      <div className="absolute top-1/4 left-1/2 w-8 sm:w-12 md:w-16 h-8 sm:h-12 md:h-16 bg-[#FF5722]/25 sm:bg-[#FF5722]/28 md:bg-[#FF5722]/30 dark:bg-[#FF5722]/12 dark:sm:bg-[#FF5722]/14 dark:md:bg-[#FF5722]/15 rounded-full blur-sm animate-spiral" style={{animationDelay: '2s'}}></div>
+      
+      {/* Center Section Particles - Mobile Responsive */}
+      <div className="absolute top-1/2 left-1/6 sm:left-1/4 w-14 sm:w-21 md:w-28 h-14 sm:h-21 md:h-28 bg-[#008060]/20 sm:bg-[#008060]/23 md:bg-[#008060]/25 dark:bg-[#008060]/10 dark:sm:bg-[#008060]/11 dark:md:bg-[#008060]/12 rounded-full blur-md sm:blur-lg animate-drift" style={{animationDelay: '5s'}}></div>
+      <div className="absolute top-1/2 right-1/4 sm:right-1/3 w-16 sm:w-24 md:w-32 h-16 sm:h-24 md:h-32 bg-[#FF5722]/15 sm:bg-[#FF5722]/18 md:bg-[#FF5722]/20 dark:bg-[#FF5722]/8 dark:sm:bg-[#FF5722]/9 dark:md:bg-[#FF5722]/10 rounded-full blur-lg sm:blur-xl animate-drift-reverse" style={{animationDelay: '3s'}}></div>
+      <div className="absolute top-1/2 left-4 sm:left-6 md:left-10 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#8D153A]/20 sm:bg-[#8D153A]/23 md:bg-[#8D153A]/25 dark:bg-[#8D153A]/10 dark:sm:bg-[#8D153A]/11 dark:md:bg-[#8D153A]/12 rounded-full blur-md animate-orbit" style={{animationDelay: '6s'}}></div>
+      <div className="absolute top-1/2 right-4 sm:right-6 md:right-10 w-10 sm:w-15 md:w-20 h-10 sm:h-15 md:h-20 bg-[#FFC72C]/25 sm:bg-[#FFC72C]/28 md:bg-[#FFC72C]/30 dark:bg-[#FFC72C]/12 dark:sm:bg-[#FFC72C]/14 dark:md:bg-[#FFC72C]/15 rounded-full blur-md sm:blur-lg animate-pulse-move" style={{animationDelay: '4s'}}></div>      
+      {/* Lower Middle Particles - Mobile Optimized */}
+      <div className="absolute top-2/3 left-1/4 sm:left-1/3 w-16 sm:w-24 md:w-32 h-16 sm:h-24 md:h-32 bg-[#008060]/15 sm:bg-[#008060]/18 md:bg-[#008060]/20 dark:bg-[#008060]/8 dark:sm:bg-[#008060]/9 dark:md:bg-[#008060]/10 rounded-full blur-lg sm:blur-xl animate-spiral" style={{animationDelay: '7s'}}></div>
+      <div className="absolute top-2/3 right-1/3 sm:right-1/2 w-10 sm:w-15 md:w-20 h-10 sm:h-15 md:h-20 bg-[#8D153A]/20 sm:bg-[#8D153A]/23 md:bg-[#8D153A]/25 dark:bg-[#8D153A]/10 dark:sm:bg-[#8D153A]/11 dark:md:bg-[#8D153A]/12 rounded-full blur-md sm:blur-lg animate-drift-reverse" style={{animationDelay: '4s'}}></div>
+      <div className="absolute top-2/3 left-1/3 sm:left-1/2 w-14 sm:w-21 md:w-28 h-14 sm:h-21 md:h-28 bg-[#FF5722]/20 sm:bg-[#FF5722]/23 md:bg-[#FF5722]/25 dark:bg-[#FF5722]/10 dark:sm:bg-[#FF5722]/11 dark:md:bg-[#FF5722]/12 rounded-full blur-lg sm:blur-xl animate-drift" style={{animationDelay: '8s'}}></div>
+      
+      {/* Footer Section Particles - Mobile Responsive */}
+      <div className="absolute top-3/4 left-1/6 sm:left-1/4 w-20 sm:w-30 md:w-40 h-20 sm:h-30 md:h-40 bg-[#FFC72C]/10 sm:bg-[#FFC72C]/13 md:bg-[#FFC72C]/15 dark:bg-[#FFC72C]/5 dark:sm:bg-[#FFC72C]/7 dark:md:bg-[#FFC72C]/8 rounded-full blur-xl sm:blur-2xl animate-pulse-move" style={{animationDelay: '9s'}}></div>
+      <div className="absolute top-3/4 right-1/6 sm:right-1/4 w-14 sm:w-21 md:w-28 h-14 sm:h-21 md:h-28 bg-[#008060]/15 sm:bg-[#008060]/18 md:bg-[#008060]/20 dark:bg-[#008060]/8 dark:sm:bg-[#008060]/9 dark:md:bg-[#008060]/10 rounded-full blur-lg sm:blur-xl animate-orbit" style={{animationDelay: '1s'}}></div>
+      <div className="absolute bottom-24 sm:bottom-32 left-1/4 sm:left-1/3 w-16 sm:w-24 md:w-32 h-16 sm:h-24 md:h-32 bg-[#8D153A]/15 sm:bg-[#8D153A]/18 md:bg-[#8D153A]/20 dark:bg-[#8D153A]/8 dark:sm:bg-[#8D153A]/9 dark:md:bg-[#8D153A]/10 rounded-full blur-lg sm:blur-xl animate-drift" style={{animationDelay: '5s'}}></div>
+      
+      {/* Bottom Section Particles - Mobile First */}
+      <div className="absolute bottom-12 sm:bottom-20 right-1/4 sm:right-1/3 w-14 sm:w-21 md:w-28 h-14 sm:h-21 md:h-28 bg-[#FF5722]/20 sm:bg-[#FF5722]/23 md:bg-[#FF5722]/25 dark:bg-[#FF5722]/10 dark:sm:bg-[#FF5722]/11 dark:md:bg-[#FF5722]/12 rounded-full blur-lg sm:blur-xl animate-drift-reverse" style={{animationDelay: '2s'}}></div>
+      <div className="absolute bottom-32 sm:bottom-40 left-1/3 sm:left-1/2 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#FFC72C]/25 sm:bg-[#FFC72C]/28 md:bg-[#FFC72C]/30 dark:bg-[#FFC72C]/12 dark:sm:bg-[#FFC72C]/14 dark:md:bg-[#FFC72C]/15 rounded-full blur-md sm:blur-lg animate-spiral" style={{animationDelay: '6s'}}></div>
+      <div className="absolute bottom-4 sm:bottom-10 left-4 sm:left-6 md:left-10 w-10 sm:w-15 md:w-20 h-10 sm:h-15 md:h-20 bg-[#008060]/25 sm:bg-[#008060]/28 md:bg-[#008060]/30 dark:bg-[#008060]/12 dark:sm:bg-[#008060]/14 dark:md:bg-[#008060]/15 rounded-full blur-md animate-float" style={{animationDelay: '3.5s'}}></div>
+      <div className="absolute bottom-48 sm:bottom-60 right-8 sm:right-12 md:right-20 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#8D153A]/20 sm:bg-[#8D153A]/23 md:bg-[#8D153A]/25 dark:bg-[#8D153A]/10 dark:sm:bg-[#8D153A]/11 dark:md:bg-[#8D153A]/12 rounded-full blur-md sm:blur-lg animate-orbit" style={{animationDelay: '7s'}}></div>
+      
+      {/* Edge Particles for Full Coverage - Mobile Responsive */}
+      <div className="absolute top-1/3 left-0 w-8 sm:w-12 md:w-16 h-8 sm:h-12 md:h-16 bg-[#FFC72C]/15 sm:bg-[#FFC72C]/18 md:bg-[#FFC72C]/20 dark:bg-[#FFC72C]/8 dark:sm:bg-[#FFC72C]/9 dark:md:bg-[#FFC72C]/10 rounded-full blur-sm animate-drift" style={{animationDelay: '10s'}}></div>
+      <div className="absolute top-2/3 right-0 w-8 sm:w-12 md:w-16 h-8 sm:h-12 md:h-16 bg-[#FF5722]/20 sm:bg-[#FF5722]/23 md:bg-[#FF5722]/25 dark:bg-[#FF5722]/10 dark:sm:bg-[#FF5722]/11 dark:md:bg-[#FF5722]/12 rounded-full blur-md animate-drift-reverse" style={{animationDelay: '11s'}}></div>
+      <div className="absolute bottom-1/3 left-2 sm:left-3 md:left-5 w-10 sm:w-15 md:w-20 h-10 sm:h-15 md:h-20 bg-[#008060]/15 sm:bg-[#008060]/18 md:bg-[#008060]/20 dark:bg-[#008060]/8 dark:sm:bg-[#008060]/9 dark:md:bg-[#008060]/10 rounded-full blur-md sm:blur-lg animate-pulse-move" style={{animationDelay: '12s'}}></div>
+      <div className="absolute bottom-1/4 right-2 sm:right-3 md:right-5 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#8D153A]/10 sm:bg-[#8D153A]/13 md:bg-[#8D153A]/15 dark:bg-[#8D153A]/5 dark:sm:bg-[#8D153A]/7 dark:md:bg-[#8D153A]/8 rounded-full blur-lg sm:blur-xl animate-spiral" style={{animationDelay: '13s'}}></div>
     </div>
   );
 };
-
 // --- PREMIUM SVG ICON COMPONENTS ---
 const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -136,59 +237,121 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Smooth scroll function
+  const smoothScrollTo = (elementId: string) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      const headerHeight = 80; // Account for fixed header
+      const elementPosition = element.offsetTop - headerHeight;
+      
+      window.scrollTo({
+        top: elementPosition,
+        behavior: 'smooth'
+      });
+      
+      // Close mobile menu if open
+      setIsMenuOpen(false);
+    }
+  };
+
+  // Smooth scroll to top function
+  const smoothScrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    
+    // Close mobile menu if open
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${
       isScrolled 
         ? 'glass-morphism shadow-glow backdrop-blur-xl' 
         : 'bg-transparent'
     }`}>
-      <nav className="container mx-auto px-6 py-4">
+      <nav className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
         <div className="flex justify-between items-center">
-          {/* Logo with Animation */}
-          <div className="flex items-center space-x-3 animate-fade-in-up">
-            <LotusIcon className="animate-glow" />
-            <div>
-              <h1 className="text-2xl font-bold text-gradient">GovLink</h1>
-              <p className="text-xs text-muted-foreground font-medium">Sri Lanka</p>
+          {/* Logo with Animation - Mobile Optimized */}
+          <button 
+            onClick={smoothScrollToTop}
+            className="flex items-center space-x-2 sm:space-x-3 animate-fade-in-up hover:scale-105 transition-all duration-300 cursor-pointer bg-transparent border-none p-1 rounded-lg hover:bg-card/30 focus:outline-none"
+            aria-label="Scroll to top"
+          >
+            <LotusIcon className="animate-glow w-8 h-8 sm:w-10 sm:h-10" />
+            <div className="text-left">
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gradient">GovLink</h1>
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Sri Lanka</p>
             </div>
-          </div>
+          </button>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            <a href="#services" className="text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 font-medium">Services</a>
-            <a href="#about" className="text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 font-medium">About</a>
-            <a href="#contact" className="text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 font-medium">Contact</a>
+          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+            <button 
+              onClick={() => smoothScrollTo('services')} 
+              className="text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 font-medium text-sm xl:text-base cursor-pointer"
+            >
+              Services
+            </button>
+            <button 
+              onClick={() => smoothScrollTo('about')} 
+              className="text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 font-medium text-sm xl:text-base cursor-pointer"
+            >
+              About
+            </button>
+            <button 
+              onClick={() => smoothScrollTo('contact')} 
+              className="text-muted-foreground hover:text-foreground transition-all duration-300 hover:scale-105 font-medium text-sm xl:text-base cursor-pointer"
+            >
+              Contact
+            </button>
           </div>
 
-          {/* Action Buttons */}
-          <div className="hidden lg:flex items-center gap-4">
-            <button className="relative overflow-hidden bg-transparent border-2 border-[#FFC72C] text-[#FFC72C] px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:bg-[#FFC72C] hover:text-[#8D153A] hover:scale-105 hover:shadow-glow group">
+          {/* Action Buttons - Mobile Responsive */}
+          <div className="hidden lg:flex items-center gap-3 xl:gap-4">
+            <button className="relative overflow-hidden bg-transparent border-2 border-[#FFC72C] text-[#FFC72C] px-4 xl:px-6 py-2 xl:py-2.5 rounded-full font-semibold text-sm xl:text-base transition-all duration-300 hover:bg-[#FFC72C] hover:text-[#8D153A] hover:scale-105 hover:shadow-glow group">
               <span className="relative z-10">Sign In</span>
               <div className="absolute inset-0 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </button>
             <ThemeToggle />
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center gap-3">
+          {/* Mobile Menu Button - Mobile First */}
+          <div className="lg:hidden flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-foreground hover:text-[#FFC72C] transition-colors duration-300"
+              className="p-1.5 sm:p-2 text-foreground hover:text-[#FFC72C] transition-colors duration-300"
             >
-              {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
+              {isMenuOpen ? <CloseIcon className="w-5 h-5 sm:w-6 sm:h-6" /> : <MenuIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Enhanced Mobile Design */}
         {isMenuOpen && (
           <div className="lg:hidden absolute top-full left-0 w-full glass-morphism backdrop-blur-xl border-t border-border/50 animate-fade-in-up">
-            <div className="container mx-auto px-6 py-6 space-y-4">
-              <a href="#services" className="block text-muted-foreground hover:text-foreground transition-colors duration-300 py-2 font-medium">Services</a>
-              <a href="#about" className="block text-muted-foreground hover:text-foreground transition-colors duration-300 py-2 font-medium">About</a>
-              <a href="#contact" className="block text-muted-foreground hover:text-foreground transition-colors duration-300 py-2 font-medium">Contact</a>
-              <button className="w-full bg-transparent border-2 border-[#FFC72C] text-[#FFC72C] px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:bg-[#FFC72C] hover:text-[#8D153A] mt-4">
+            <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-3 sm:space-y-4">
+              <button 
+                onClick={() => smoothScrollTo('services')} 
+                className="block w-full text-left text-muted-foreground hover:text-foreground transition-colors duration-300 py-2 font-medium text-base sm:text-lg"
+              >
+                Services
+              </button>
+              <button 
+                onClick={() => smoothScrollTo('about')} 
+                className="block w-full text-left text-muted-foreground hover:text-foreground transition-colors duration-300 py-2 font-medium text-base sm:text-lg"
+              >
+                About
+              </button>
+              <button 
+                onClick={() => smoothScrollTo('contact')} 
+                className="block w-full text-left text-muted-foreground hover:text-foreground transition-colors duration-300 py-2 font-medium text-base sm:text-lg"
+              >
+                Contact
+              </button>
+              <button className="w-full bg-transparent border-2 border-[#FFC72C] text-[#FFC72C] px-4 sm:px-6 py-3 rounded-full font-semibold text-base sm:text-lg transition-all duration-300 hover:bg-[#FFC72C] hover:text-[#8D153A] mt-3 sm:mt-4">
                 Sign In
               </button>
             </div>
@@ -217,64 +380,66 @@ const Hero = () => {
       setCurrentPlaceholder((prev) => (prev + 1) % placeholderTexts.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [placeholderTexts.length]);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Dynamic Gradient Background */}
-      <div className="absolute inset-0 gradient-mesh"></div>
-
-      <div className="container mx-auto px-6 py-32 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 py-20 sm:py-24 md:py-32 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
-          {/* Main Heading */}
-          <div className="mb-8 animate-fade-in-up">
-            <h1 className="text-5xl md:text-7xl font-extrabold leading-tight mb-4">
-              Simplifying Government for{' '}
-              <span className="text-gradient animate-glow">
+          {/* Main Heading - Mobile First */}
+          <div className="mb-6 sm:mb-8 animate-fade-in-up">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight mb-3 sm:mb-4 animate-title-wave" style={{textShadow: '0 2px 8px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.1)'}}>
+              <span className="animate-wave-buoyancy-1">Simplifying</span>{' '}
+              <span className="animate-wave-buoyancy-2">Government</span>{' '}
+              <span className="animate-wave-buoyancy-3">for</span>{' '}
+              <span className="text-gradient animate-glow animate-wave-float-center">
                 Every Sri Lankan
               </span>
             </h1>
-            <div className="w-24 h-1 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] mx-auto rounded-full"></div>
+            <div className="w-16 sm:w-20 md:w-24 h-0.5 sm:h-1 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] mx-auto rounded-full animate-wave-buoyancy-1"></div>
           </div>
-
-          {/* Subtitle */}
-          <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-            Ask questions, find services, and access information instantly. Your direct link to public services is here.
+          
+          {/* Subtitle - Mobile Responsive */}
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground mb-8 sm:mb-10 md:mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animate-subtitle-wave px-2 sm:px-0" style={{animationDelay: '0.2s', textShadow: '0 1px 4px rgba(0,0,0,0.2)'}}>
+            <span className="animate-wave-float-left">Ask questions,</span>{' '}
+            <span className="animate-wave-float-center">find services,</span>{' '}
+            <span className="animate-wave-float-right">and access information instantly.</span>{' '}
+            <span className="animate-wave-buoyancy-2">Your direct link to public services is here.</span>
           </p>
-
-          {/* Enhanced Search Interface */}
-          <div className="max-w-3xl mx-auto animate-fade-in-up" style={{animationDelay: '0.4s'}}>
+          
+          {/* Enhanced Search Interface - Mobile First */}
+          <div className="max-w-3xl mx-auto animate-fade-in-up animate-wave-buoyancy-3 px-2 sm:px-0" style={{animationDelay: '0.4s'}}>
             <form action="/chat" method="GET" className="relative group">
-              <div className="relative glass-morphism rounded-2xl p-2 shadow-glow hover:shadow-2xl transition-all duration-500">
+              <div className="relative glass-morphism rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-glow hover:shadow-2xl transition-all duration-500 animate-wave-float-center">
                 <textarea
                   name="q"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
-                  className="w-full bg-transparent text-foreground placeholder-muted-foreground p-6 pr-20 rounded-xl resize-none focus:outline-none text-lg leading-relaxed border-none"
+                  className="w-full bg-transparent text-foreground placeholder-muted-foreground p-4 sm:p-5 md:p-6 pr-16 sm:pr-20 rounded-lg sm:rounded-xl resize-none focus:outline-none text-base sm:text-lg leading-relaxed border-none"
                   placeholder={placeholderTexts[currentPlaceholder]}
                   rows={1}
                   onInput={(e) => {
                     const target = e.target as HTMLTextAreaElement;
                     target.style.height = 'auto';
-                    target.style.height = `${Math.max(target.scrollHeight, 70)}px`;
+                    target.style.height = `${Math.max(target.scrollHeight, 60)}px`;
                   }}
                 />
                 <button 
                   type="submit" 
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-4 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 hover:scale-110 shadow-glow group"
+                  className="absolute right-2 sm:right-3 md:right-4 top-1/2 -translate-y-1/2 p-3 sm:p-3.5 md:p-4 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-110 shadow-glow group animate-wave-buoyancy-1"
                 >
-                  <ArrowRightIcon className="h-6 w-6 text-white group-hover:translate-x-1 transition-transform duration-300" />
+                  <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white group-hover:translate-x-1 transition-transform duration-300" />
                 </button>
               </div>
               
-              {/* Quick Suggestions */}
-              <div className="mt-6 flex flex-wrap gap-3 justify-center">
+              {/* Quick Suggestions - Mobile Responsive */}
+              <div className="mt-4 sm:mt-5 md:mt-6 flex flex-wrap gap-2 sm:gap-3 justify-center">
                 {["Passport Renewal", "Business Registration", "Marriage Certificate", "Driving License"].map((suggestion, index) => (
                   <button
                     key={index}
                     type="button"
                     onClick={() => setSearchText(suggestion)}
-                    className="px-4 py-2 bg-card/50 hover:bg-card border border-border hover:border-[#FFC72C] rounded-full text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-md"
+                    className={`px-3 sm:px-4 py-1.5 sm:py-2 bg-card/50 hover:bg-card border border-border hover:border-[#FFC72C] rounded-full text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-md animate-wave-buoyancy-${(index % 3) + 1}`}
                   >
                     {suggestion}
                   </button>
@@ -285,10 +450,10 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-muted-foreground rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-muted-foreground rounded-full mt-2 animate-pulse"></div>
+      {/* Scroll Indicator - Mobile Responsive */}
+      <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+        <div className="w-5 sm:w-6 h-8 sm:h-10 border-2 border-muted-foreground rounded-full flex justify-center">
+          <div className="w-0.5 sm:w-1 h-2 sm:h-3 bg-muted-foreground rounded-full mt-1.5 sm:mt-2 animate-pulse"></div>
         </div>
       </div>
     </section>
@@ -323,60 +488,58 @@ const Features = () => {
   
   return (
     <section id="services" className="py-32 relative">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-6 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-20 animate-fade-in-up">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FFC72C]/20 to-[#FF5722]/20 px-4 py-2 rounded-full border border-[#FFC72C]/30 mb-6">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FFC72C]/20 to-[#FF5722]/20 px-4 py-2 rounded-full border border-[#FFC72C]/30 mb-6 animate-wave-buoyancy-2">
             <span className="w-2 h-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full animate-pulse"></span>
             <span className="text-sm font-medium text-[#FFC72C]">Our Services</span>
           </div>
-          <h2 className="text-4xl md:text-6xl font-bold mb-6">
-            Everything You Need,{' '}
-            <span className="text-gradient">All in One Place</span>
+          <h2 className="text-4xl md:text-6xl font-bold mb-6 animate-title-wave">
+            <span className="animate-wave-float-left">Everything You Need,</span>{' '}
+            <span className="text-gradient animate-wave-float-right">All in One Place</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            GovLink is designed to make your interaction with government services seamless and efficient.
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-subtitle-wave">
+            <span className="animate-wave-buoyancy-1">GovLink is designed to make your interaction</span>{' '}
+            <span className="animate-wave-buoyancy-3">with government services seamless and efficient.</span>
           </p>
-        </div>
-        
+        </div>        
         {/* Feature Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           {featuresList.map((feature, index) => (
             <div 
               key={index} 
-              className="group relative glass-morphism p-8 rounded-3xl border border-border hover:border-[#FFC72C] hover-lift shadow-xl hover:shadow-glow transition-all duration-500 animate-fade-in-up"
+              className={`group relative glass-morphism p-8 rounded-3xl border border-border hover:border-[#FFC72C] hover-lift shadow-xl hover:shadow-glow transition-all duration-500 animate-fade-in-up animate-wave-buoyancy-${(index % 3) + 1}`}
               style={{animationDelay: `${index * 0.2}s`}}
-            >
-              {/* Icon Container */}
+            >              {/* Icon Container */}
               <div className={`relative flex items-center justify-center w-20 h-20 rounded-2xl mb-8 transition-all duration-300 group-hover:scale-110`}
                    style={{background: `linear-gradient(135deg, ${feature.color}20, ${feature.color}10)`}}>
                 <div className="text-4xl" style={{color: feature.color}}>
                   {feature.icon}
                 </div>
                 {/* Floating Badge */}
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110">
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 animate-wave-buoyancy-2">
                   <CheckIcon className="w-3 h-3 text-white" />
                 </div>
               </div>
 
               {/* Content */}
-              <h3 className="text-2xl font-bold mb-4 group-hover:text-[#FFC72C] transition-colors duration-300">
+              <h3 className="text-2xl font-bold mb-4 group-hover:text-[#FFC72C] transition-colors duration-300 animate-wave-buoyancy-3">
                 {feature.title}
               </h3>
-              <p className="text-muted-foreground mb-6 leading-relaxed">
+              <p className="text-muted-foreground mb-6 leading-relaxed animate-subtitle-wave">
                 {feature.description}
               </p>
 
               {/* Benefits */}
               <div className="space-y-2">
                 {feature.benefits.map((benefit, benefitIndex) => (
-                  <div key={benefitIndex} className="flex items-center gap-3 text-sm">
+                  <div key={benefitIndex} className={`flex items-center gap-3 text-sm animate-wave-buoyancy-${(benefitIndex % 3) + 1}`}>
                     <div className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-[#FFC72C] to-[#FF5722]"></div>
                     <span className="text-muted-foreground">{benefit}</span>
                   </div>
                 ))}
               </div>
-
               {/* Hover Effect Gradient */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#FFC72C]/5 via-transparent to-[#FF5722]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl pointer-events-none"></div>
             </div>
@@ -386,6 +549,191 @@ const Features = () => {
     </section>
   );
 };
+
+// --- ABOUT SECTION ---
+const About = () => (
+  <section id="about" className="py-20 sm:py-24 md:py-32 relative">
+    <div className="container mx-auto px-4 sm:px-6 relative z-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        {/* Left Content */}
+        <div className="animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#008060]/20 to-[#FFC72C]/20 px-4 py-2 rounded-full border border-[#008060]/30 mb-6 animate-wave-buoyancy-1">
+            <span className="w-2 h-2 bg-gradient-to-r from-[#008060] to-[#FFC72C] rounded-full animate-pulse"></span>
+            <span className="text-sm font-medium text-[#008060]">About GovLink</span>
+          </div>
+          
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 animate-title-wave">
+            <span className="animate-wave-float-left">Bridging the Gap</span>{' '}
+            <span className="text-gradient animate-wave-float-right">Between Citizens & Government</span>
+          </h2>
+          
+          <p className="text-lg sm:text-xl text-muted-foreground mb-8 leading-relaxed animate-subtitle-wave">
+            <span className="animate-wave-buoyancy-2">GovLink was born from a simple vision:</span>{' '}
+            <span className="animate-wave-buoyancy-3">making government services accessible, transparent, and efficient for every Sri Lankan citizen.</span>
+          </p>
+          
+          <div className="space-y-4 mb-8">
+            <div className="flex items-start gap-4 animate-wave-buoyancy-1">
+              <div className="w-6 h-6 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center mt-1 flex-shrink-0">
+                <CheckIcon className="w-3 h-3 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Simplified Access</h3>
+                <p className="text-muted-foreground">One platform for all government services, forms, and information.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4 animate-wave-buoyancy-2">
+              <div className="w-6 h-6 bg-gradient-to-r from-[#008060] to-[#FFC72C] rounded-full flex items-center justify-center mt-1 flex-shrink-0">
+                <CheckIcon className="w-3 h-3 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">24/7 Availability</h3>
+                <p className="text-muted-foreground">Access services anytime, anywhere, without queuing or waiting.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-4 animate-wave-buoyancy-3">
+              <div className="w-6 h-6 bg-gradient-to-r from-[#FF5722] to-[#8D153A] rounded-full flex items-center justify-center mt-1 flex-shrink-0">
+                <CheckIcon className="w-3 h-3 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Transparent Process</h3>
+                <p className="text-muted-foreground">Clear step-by-step guidance for every government procedure.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4">
+            <button className="bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-glow animate-wave-float-center">
+              Learn More
+            </button>
+            <button className="border-2 border-[#008060] text-[#008060] hover:bg-[#008060] hover:text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 animate-wave-float-left">
+              Our Mission
+            </button>
+          </div>
+        </div>
+        
+        {/* Right Content - Stats */}
+        <div className="grid grid-cols-2 gap-6 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
+          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-1">
+            <div className="text-3xl sm:text-4xl font-bold text-gradient mb-2">50K+</div>
+            <div className="text-muted-foreground">Citizens Served</div>
+          </div>
+          
+          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-2">
+            <div className="text-3xl sm:text-4xl font-bold text-gradient mb-2">200+</div>
+            <div className="text-muted-foreground">Government Forms</div>
+          </div>
+          
+          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-3">
+            <div className="text-3xl sm:text-4xl font-bold text-gradient mb-2">25</div>
+            <div className="text-muted-foreground">Departments</div>
+          </div>
+          
+          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-1">
+            <div className="text-3xl sm:text-4xl font-bold text-gradient mb-2">99.8%</div>
+            <div className="text-muted-foreground">Uptime</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+// --- CONTACT SECTION ---
+const Contact = () => (
+  <section id="contact" className="py-20 sm:py-24 md:py-32 relative">
+    <div className="container mx-auto px-4 sm:px-6 relative z-10">
+      <div className="max-w-4xl mx-auto">
+        {/* Section Header */}
+        <div className="text-center mb-16 animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#8D153A]/20 to-[#FF5722]/20 px-4 py-2 rounded-full border border-[#8D153A]/30 mb-6 animate-wave-buoyancy-2">
+            <span className="w-2 h-2 bg-gradient-to-r from-[#8D153A] to-[#FF5722] rounded-full animate-pulse"></span>
+            <span className="text-sm font-medium text-[#8D153A]">Get in Touch</span>
+          </div>
+          
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 animate-title-wave">
+            <span className="animate-wave-float-left">Need Help?</span>{' '}
+            <span className="text-gradient animate-wave-float-right">We&apos;re Here for You</span>
+          </h2>
+          
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto animate-subtitle-wave">
+            <span className="animate-wave-buoyancy-1">Have questions about government services?</span>{' '}
+            <span className="animate-wave-buoyancy-3">Our support team is ready to assist you.</span>
+          </p>
+        </div>
+        
+        {/* Contact Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {/* Phone */}
+          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-1 hover:scale-105 transition-transform duration-300">
+            <div className="w-16 h-16 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+            </div>
+            <h3 className="font-semibold mb-2">Call Us</h3>
+            <p className="text-muted-foreground mb-2">+94 11 234 5678</p>
+            <p className="text-sm text-muted-foreground">Mon - Fri, 8AM - 6PM</p>
+          </div>
+          
+          {/* Email */}
+          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-2 hover:scale-105 transition-transform duration-300">
+            <div className="w-16 h-16 bg-gradient-to-r from-[#008060] to-[#FFC72C] rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
+            <h3 className="font-semibold mb-2">Email Us</h3>
+            <p className="text-muted-foreground mb-2">support@govlink.lk</p>
+            <p className="text-sm text-muted-foreground">24/7 Support</p>
+          </div>
+          
+          {/* Location */}
+          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-3 hover:scale-105 transition-transform duration-300">
+            <div className="w-16 h-16 bg-gradient-to-r from-[#FF5722] to-[#8D153A] rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+            </div>
+            <h3 className="font-semibold mb-2">Visit Us</h3>
+            <p className="text-muted-foreground mb-2">Colombo, Sri Lanka</p>
+            <p className="text-sm text-muted-foreground">Government Services Hub</p>
+          </div>
+        </div>
+        
+        {/* FAQ Section */}
+        <div className="glass-morphism rounded-2xl p-8 animate-wave-float-center">
+          <h3 className="text-2xl font-bold mb-6 text-center">Frequently Asked Questions</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="animate-wave-buoyancy-1">
+              <h4 className="font-semibold mb-2">How do I access government forms?</h4>
+              <p className="text-muted-foreground text-sm">Simply search for the form you need or browse our services section. All forms are available for instant download.</p>
+            </div>
+            
+            <div className="animate-wave-buoyancy-2">
+              <h4 className="font-semibold mb-2">Is GovLink an official platform?</h4>
+              <p className="text-muted-foreground text-sm">Yes, GovLink is officially endorsed by the Government of Sri Lanka for digital service delivery.</p>
+            </div>
+            
+            <div className="animate-wave-buoyancy-3">
+              <h4 className="font-semibold mb-2">Can I track my application status?</h4>
+              <p className="text-muted-foreground text-sm">Absolutely! Use your application reference number to track the progress of your submissions.</p>
+            </div>
+            
+            <div className="animate-wave-buoyancy-1">
+              <h4 className="font-semibold mb-2">What if I need technical support?</h4>
+              <p className="text-muted-foreground text-sm">Our technical support team is available 24/7 via phone, email, or live chat to assist you.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
 
 // --- PREMIUM FOOTER ---
 const Footer = () => (
@@ -463,16 +811,21 @@ const Footer = () => (
 // --- MAIN PAGE COMPONENT ---
 export default function Home() {
   return (
-    <div className="bg-background text-foreground min-h-screen relative">
+    <div className="bg-background text-foreground min-h-screen relative theme-transition-slow">
       {/* Global Particle Background */}
       <GlobalParticleBackground />
       
+      {/* Unified Gradient Mesh Overlay for Entire Page */}
+      <div className="fixed inset-0 gradient-mesh opacity-30 pointer-events-none z-[5]"></div>
+      
       {/* Content with higher z-index */}
-      <div className="relative z-10">
+      <div className="relative z-10 theme-transition-fast">
         <Header />
-        <main>
+        <main className="theme-transition-fast">
           <Hero />
           <Features />
+          <About />
+          <Contact />
         </main>
         <Footer />
       </div>
