@@ -427,8 +427,7 @@ const Hero = () => {
  
  {/* Enhanced Search Interface - Mobile First */}
  <div className="max-w-3xl mx-auto animate-fade-in-up px-2 sm:px-0" style={{animationDelay: '0.4s'}}>
- <form action="/chat" method="GET" className="relative group">
- <div className="relative glass-morphism rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-glow hover:shadow-2xl transition-all duration-500 ">
+  <form action="/User/Chat/Bot" method="GET" className="relative group"> <div className="relative glass-morphism rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-glow hover:shadow-2xl transition-all duration-500 ">
  <textarea
  name="q"
  value={searchText}
@@ -454,15 +453,21 @@ const Hero = () => {
  {/* Quick Suggestions - Mobile Responsive */}
  <div className="mt-4 sm:mt-5 md:mt-6 flex flex-wrap gap-2 sm:gap-3 justify-center">
  {["Passport Renewal", "Business Registration", "Marriage Certificate", "Driving License"].map((suggestion, index) => (
- <button
- key={index}
- type="button"
- onClick={() => setSearchText(suggestion)}
- className="px-3 sm:px-4 py-1.5 sm:py-2 bg-card/50 hover:bg-card border border-border hover:border-[#FFC72C] rounded-full text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-md"
- >
- {suggestion}
- </button>
- ))}
+  <button
+  key={index}
+  type="button"
+  onClick={() => {
+    setSearchText(suggestion);
+    // Auto-submit the form when a suggestion is clicked
+    setTimeout(() => {
+      const form = document.querySelector('form') as HTMLFormElement;
+      if (form) form.submit();
+    }, 100);
+  }}
+  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-card/50 hover:bg-card border border-border hover:border-[#FFC72C] rounded-full text-xs sm:text-sm font-medium transition-all duration-300 hover:scale-105 hover:shadow-md"
+  >
+  {suggestion}
+  </button> ))}
  </div>
  </form>
  </div>
