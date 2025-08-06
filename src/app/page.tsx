@@ -757,14 +757,20 @@ const Footer = () => (
             and complete procedures with ease through our modern digital platform.
           </p>
           <div className="flex gap-4">
-            <button className="w-10 h-10 rounded-full bg-card border border-border hover:border-[#FFC72C] flex items-center justify-center transition-colors duration-300">
-              <span className="text-sm">FB</span>
+            <button className="w-10 h-10 rounded-full bg-card border border-border hover:border-[#FFC72C] flex items-center justify-center transition-colors duration-300" aria-label="Follow on Facebook">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-muted-foreground">
+                <path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06C2 17.08 5.66 21.21 10.44 22v-7.03H7.9v-2.91h2.54V9.41c0-2.5 1.49-3.88 3.77-3.88 1.09 0 2.23.2 2.23.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.87h2.77l-.44 2.91h-2.33V22C18.34 21.21 22 17.08 22 12.06z"/>
+              </svg>
             </button>
-            <button className="w-10 h-10 rounded-full bg-card border border-border hover:border-[#FFC72C] flex items-center justify-center transition-colors duration-300">
-              <span className="text-sm">TW</span>
+            <button className="w-10 h-10 rounded-full bg-card border border-border hover:border-[#FFC72C] flex items-center justify-center transition-colors duration-300" aria-label="Follow on X">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-muted-foreground">
+                <path d="M18.244 2H21l-6.5 7.43L22 22h-6.828l-4.78-6.24L4.8 22H2l7.02-8.02L2 2h6.914l4.33 5.77L18.244 2Zm-1.196 18h1.884L7.07 4H5.092l11.956 16Z"/>
+              </svg>
             </button>
-            <button className="w-10 h-10 rounded-full bg-card border border-border hover:border-[#FFC72C] flex items-center justify-center transition-colors duration-300">
-              <span className="text-sm">LI</span>
+            <button className="w-10 h-10 rounded-full bg-card border border-border hover:border-[#FFC72C] flex items-center justify-center transition-colors duration-300" aria-label="Connect on LinkedIn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-muted-foreground">
+                <path d="M20.447 20.452H17.2v-5.569c0-1.328-.027-3.036-1.85-3.036-1.853 0-2.136 1.445-2.136 2.94v5.665H9.07V9h3.116v1.561h.045c.435-.824 1.498-1.692 3.083-1.692 3.298 0 3.906 2.171 3.906 4.995v6.588zM5.337 7.433a1.81 1.81 0 1 1 0-3.62 1.81 1.81 0 0 1 0 3.62zM6.96 20.452H3.71V9h3.25v11.452z"/>
+              </svg>
             </button>
           </div>
         </div>
