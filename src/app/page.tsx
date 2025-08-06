@@ -689,7 +689,7 @@ const Contact = () => (
  </div>
  
  {/* Contact Grid */}
- <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
  {/* Phone */}
  <div className="text-center p-6 glass-morphism rounded-2xl hover:scale-105 transition-transform duration-300">
  <div className="w-16 h-16 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center mx-auto mb-4">
@@ -714,6 +714,20 @@ const Contact = () => (
  <p className="text-muted-foreground mb-2">support@govlink.lk</p>
  <p className="text-sm text-muted-foreground">24/7 Support</p>
  </div>
+
+ {/* Human Support Chat */}
+ <a href="/User/Chat/Wait" className="text-center p-6 glass-morphism rounded-2xl hover:scale-105 transition-transform duration-300 block group cursor-pointer">
+ <div className="w-16 h-16 bg-gradient-to-r from-[#8D153A] to-[#FF5722] rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+ <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+ <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+ <path d="M14 9a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"/>
+ <path d="M9 12h6"/>
+ </svg>
+ </div>
+ <h3 className="font-semibold mb-2">Live Chat</h3>
+ <p className="text-muted-foreground mb-2">Human Support Agents</p>
+ <p className="text-sm text-muted-foreground">Real-time Assistance</p>
+ </a>
  
  {/* Location */}
  <div className="text-center p-6 glass-morphism rounded-2xl hover:scale-105 transition-transform duration-300">
