@@ -1,188 +1,265 @@
 // app/chat/page.tsx
 "use client";
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Header } from '@/components/Header';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
-// --- ICONS ---
+// --- PREMIUM SVG ICON COMPONENTS ---
 const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
-const GovLinkBotIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="text-[var(--brand-gold)]">
-    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm-4.3-7.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm8.6 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z" />
+
+const SendIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="22" y1="2" x2="11" y2="13"/>
+    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
   </svg>
 );
 
-// --- UI COMPONENTS (Animated) ---
+const SparklesIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .962 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.582a.5.5 0 0 1 0 .962L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.962 0L9.937 15.5Z"/>
+  </svg>
+);
 
-const messageVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } }
-};
+// Sri Lankan Lotus Icon (Custom)
+const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100" fill="none">
+    <path d="M50 10C45 15 35 25 30 35C25 45 30 55 40 60C45 62 55 62 60 60C70 55 75 45 70 35C65 25 55 15 50 10Z" fill="url(#lotus-gradient)"/>
+    <path d="M50 15C45 20 40 30 35 40C30 50 35 60 45 65C50 67 60 67 65 65C75 60 80 50 75 40C70 30 65 20 50 15Z" fill="url(#lotus-gradient-inner)"/>
+    <defs>
+      <linearGradient id="lotus-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style={{stopColor: '#FFC72C', stopOpacity: 1}} />
+        <stop offset="50%" style={{stopColor: '#FF5722', stopOpacity: 1}} />
+        <stop offset="100%" style={{stopColor: '#8D153A', stopOpacity: 1}} />
+      </linearGradient>
+      <linearGradient id="lotus-gradient-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style={{stopColor: '#FFC72C', stopOpacity: 0.7}} />
+        <stop offset="100%" style={{stopColor: '#FF5722', stopOpacity: 0.7}} />
+      </linearGradient>
+    </defs>
+  </svg>
+);
 
+const GovLinkBotIcon = () => (
+  <div className="relative">
+    <LotusIcon className="w-10 h-10" />
+    <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center animate-pulse">
+      <SparklesIcon className="w-2 h-2 text-white" />
+    </div>
+  </div>
+);
+
+// --- PREMIUM HEADER COMPONENT ---
+const Header = () => (
+  <header className="glass-morphism backdrop-blur-xl border-b border-border/50 sticky top-0 z-50">
+    <nav className="container mx-auto px-6 py-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-3">
+          <LotusIcon className="animate-glow" />
+          <div>
+            <h1 className="text-2xl font-bold text-gradient">GovLink</h1>
+            <p className="text-xs text-muted-foreground font-medium">Chat Assistant</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <Link 
+            href="/" 
+            className="relative overflow-hidden bg-transparent border-2 border-[#FFC72C] text-[#FFC72C] px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:bg-[#FFC72C] hover:text-[#8D153A] hover:scale-105 hover:shadow-glow group"
+          >
+            <span className="relative z-10">New Chat</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          </Link>
+          <ThemeToggle />
+        </div>
+      </div>
+    </nav>
+  </header>
+);
+
+// --- PREMIUM MESSAGE COMPONENTS ---
 const UserMessage = ({ text }: { text: string }) => (
-  <motion.div
-    className="flex justify-end my-2"
-    variants={messageVariants}
-    initial="hidden"
-    animate="visible"
-  >
-    <div className="bg-[var(--brand-maroon)] text-white p-3 md:p-4 rounded-xl rounded-br-none max-w-sm md:max-w-xl lg:max-2xl shadow-md">
-      <p className="text-sm md:text-base">{text}</p>
+  <div className="flex justify-end my-6 animate-fade-in-up">
+    <div className="max-w-2xl">
+      <div className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white p-6 rounded-3xl rounded-br-lg shadow-glow">
+        <p className="leading-relaxed">{text}</p>
+      </div>
+      <div className="text-xs text-muted-foreground mt-2 text-right">Just now</div>
     </div>
-  </motion.div>
+  </div>
 );
 
-const BotMessage = ({ text }: { text: string }) => (
-  <motion.div
-    className="flex justify-start my-2 gap-3"
-    variants={messageVariants}
-    initial="hidden"
-    animate="visible"
-    transition={{ delay: 0.3 }}
-  >
-    <div className="flex-shrink-0 h-10 w-10 bg-muted rounded-full flex items-center justify-center border">
-      <GovLinkBotIcon className="h-7 w-7" />
-    </div>
-    <div className="bg-muted text-muted-foreground p-3 md:p-4 rounded-xl rounded-bl-none max-w-sm md:max-w-xl lg:max-w-2xl shadow-md">
-       <p className="text-sm md:text-base">{text}</p>
-    </div>
-  </motion.div>
-);
+const BotMessage = ({ text, isTyping = false }: { text: string; isTyping?: boolean }) => {
+  const [displayText, setDisplayText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-const ChatInput = () => {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const question = formData.get('question') as string;
-    
-    if (question.trim()) {
-      // Here you would typically send the question to your chat API
-      console.log('Sending question:', question);
-      
-      // Clear the textarea
-      const textarea = e.currentTarget.querySelector('textarea');
-      if (textarea) {
-        textarea.value = '';
-        textarea.style.height = 'auto';
-      }
+  useEffect(() => {
+    if (isTyping && currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, 30);
+      return () => clearTimeout(timeout);
+    } else if (!isTyping) {
+      setDisplayText(text);
     }
-  };
+  }, [currentIndex, text, isTyping]);
 
   return (
-    <motion.div 
-      layoutId="search-container"
-      className="sticky bottom-0 bg-background/80 backdrop-blur-xl"
-      initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-    >
-      <div className="container mx-auto px-4 py-4 border-t border-border">
-        <form onSubmit={handleSubmit} className="relative">
-          <motion.textarea
-            layoutId="search-input"
-            name="question"
-            className="w-full bg-input text-foreground placeholder-muted-foreground p-4 pr-16 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-[var(--brand-gold)] transition-all duration-300 shadow-inner"
-            placeholder="Ask a follow-up question..."
-            rows={1}
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = 'auto';
-              target.style.height = `${Math.min(target.scrollHeight, 128)}px`;
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                const form = e.currentTarget.closest('form');
-                if (form) {
-                  form.requestSubmit();
-                }
-              }
-            }}
-          />
-          <motion.button 
-            layoutId="submit-button"
-            type="submit" 
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-[var(--brand-gold)] hover:bg-yellow-400 rounded-lg transition-colors duration-200 group"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <ArrowRightIcon className="h-6 w-6 text-[var(--brand-maroon)] transition-transform group-hover:translate-x-1" />
-          </motion.button>
-        </form>
+    <div className="flex justify-start my-6 animate-fade-in-up">
+      <div className="flex gap-4 max-w-4xl">
+        <div className="flex-shrink-0">
+          <GovLinkBotIcon />
+        </div>
+        <div className="flex-1">
+          <div className="glass-morphism backdrop-blur-xl p-6 rounded-3xl rounded-bl-lg shadow-xl border border-border/50">
+            <div className="leading-relaxed text-foreground whitespace-pre-line">
+              {displayText}
+              {isTyping && currentIndex < text.length && (
+                <span className="inline-block w-2 h-5 bg-[#FFC72C] ml-1 animate-pulse"></span>
+              )}
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground mt-2">GovLink Assistant • Just now</div>
+        </div>
       </div>
-    </motion.div>
+    </div>
+  );
+};
+
+// --- PREMIUM CHAT INPUT ---
+const ChatInput = () => {
+  const [message, setMessage] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+
+  return (
+    <div className="glass-morphism backdrop-blur-xl border-t border-border/50 p-6">
+      <div className="container mx-auto">
+        <div className={`relative transition-all duration-300 ${isFocused ? 'scale-105' : ''}`}>
+          <div className="relative glass-morphism rounded-2xl p-2 shadow-glow hover:shadow-2xl transition-all duration-500">
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              className="w-full bg-transparent text-foreground placeholder-muted-foreground p-4 pr-16 rounded-xl resize-none focus:outline-none leading-relaxed border-none"
+              placeholder="Ask a follow-up question..."
+              rows={1}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = `${Math.max(target.scrollHeight, 60)}px`;
+              }}
+            />
+            <button 
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 hover:scale-110 shadow-glow group disabled:opacity-50"
+              disabled={!message.trim()}
+            >
+              <SendIcon className="h-5 w-5 text-white group-hover:translate-x-0.5 transition-transform duration-300" />
+            </button>
+          </div>
+          
+          {/* Suggestions */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {["More details", "Related services", "How to apply", "Contact info"].map((suggestion, index) => (
+              <button
+                key={index}
+                onClick={() => setMessage(suggestion)}
+                className="px-3 py-1.5 bg-card/50 hover:bg-card border border-border hover:border-[#FFC72C] rounded-full text-xs font-medium transition-all duration-300 hover:scale-105"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN CHAT PAGE COMPONENT ---
+export default function GovLinkChatPage() {
+  return (
+    <div className="flex flex-col h-screen bg-background text-foreground relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 gradient-mesh opacity-30"></div>
+      <div className="absolute top-10 right-10 w-32 h-32 bg-[#FFC72C]/5 rounded-full blur-3xl animate-float"></div>
+      <div className="absolute bottom-20 left-10 w-40 h-40 bg-[#FF5722]/5 rounded-full blur-3xl animate-float" style={{animationDelay: '2s'}}></div>
+      
+      <div className="relative z-10 flex flex-col h-full">
+        <Header />
+
+        {/* Chat History Area */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto px-6 py-8">
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-20">
+                <div className="glass-morphism p-6 rounded-2xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 border-2 border-[#FFC72C] border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-muted-foreground">Loading conversation...</span>
+                  </div>
+                </div>
+              </div>
+            }>
+              <ChatContent />
+            </Suspense>
+          </div>
+        </main>
+
+        {/* Fixed Input Area */}
+        <ChatInput />
+      </div>
+    </div>
   );
 };
 
 function ChatContent() {
   const searchParams = useSearchParams();
-  const q = searchParams.get('q');
-  const userQuery = q || "You haven't asked a question yet. Try asking one from the home page!";
-  const botResponse = `Of course! To renew your Sri Lankan passport, you will need to submit the 'K' form, along with your current passport, National Identity Card, and two recent passport-sized photos. You can download the form from the Department of Immigration and Emigration website or collect one from our head office. Would you like a direct link to the form?`;
+  const q = searchParams.get('q') ?? undefined;
+  const userQuery = q || "How do I renew my passport?";
+
+  // Enhanced bot response with more detailed information
+  const botResponse = `I'd be happy to help you with passport renewal! Here's what you need to know:
+
+**Required Documents:**
+• Current passport (if available)
+• National Identity Card (original and photocopy)
+• Two recent passport-sized photographs
+• Completed Application Form 'K'
+
+**Process:**
+1. Download Form 'K' from the Department of Immigration website
+2. Fill out the form completely
+3. Visit your nearest Regional Passport Office
+4. Submit documents and pay the renewal fee
+5. Collect your new passport (usually takes 7-10 working days)
+
+**Fees:**
+• Standard processing: Rs. 3,500
+• Express service: Rs. 7,000
+
+Would you like me to provide the direct link to download Form 'K' or help you find your nearest passport office?`;
 
   return (
-    <div className="space-y-4">
-      {/* Chat Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="text-center py-8 border-b border-border/50"
-      >
-        <motion.h1 
-          layoutId="main-title"
-          className="text-2xl md:text-3xl font-bold text-foreground mb-2"
-        >
-          Chat with <span className="text-[var(--brand-gold)]">GovLink Assistant</span>
-        </motion.h1>
-        <p className="text-muted-foreground">Get instant answers to your government service questions</p>
-      </motion.div>
-
-      {/* Chat Messages */}
-      <div className="space-y-4 pb-8">
-        <UserMessage text={userQuery} />
-        <BotMessage text={botResponse} />
-      </div>
-    </div>
-  );
-}
-
-export default function GovLinkChatPage() {
-  return (
-    <motion.div 
-      className="flex flex-col h-screen bg-background text-foreground"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <Header />
-      <motion.main 
-        className="flex-1 overflow-y-auto"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-      >
-        <div className="container mx-auto p-4 md:p-6">
-          <Suspense fallback={
-            <motion.div 
-              className="text-center text-muted-foreground p-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              Loading chat…
-            </motion.div>
-          }>
-            <ChatContent />
-          </Suspense>
+    <div className="max-w-4xl mx-auto space-y-2">
+      {/* Welcome Message */}
+      <div className="text-center py-8 mb-8">
+        <div className="inline-flex items-center gap-3 glass-morphism px-6 py-3 rounded-full">
+          <LotusIcon className="w-8 h-8 animate-glow" />
+          <span className="text-sm font-medium text-muted-foreground">
+            Chat started with GovLink Assistant
+          </span>
         </div>
-      </motion.main>
-      <ChatInput />
-    </motion.div>
+      </div>
+
+      <UserMessage text={userQuery} />
+      <BotMessage text={botResponse} isTyping={true} />
+    </div>
   );
 }
