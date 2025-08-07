@@ -87,41 +87,75 @@ const Header = () => (
 );
 
 // --- PREMIUM MESSAGE COMPONENTS ---
-const UserMessage = ({ text }: { text: string }) => (
+const TimeAgo = ({ timestamp }: { timestamp: Date }) => {
+  const [timeAgo, setTimeAgo] = useState('');
+
+  useEffect(() => {
+    const updateTimeAgo = () => {
+      const now = new Date();
+      const diff = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+
+      if (diff < 60) {
+        setTimeAgo('Just now');
+      } else if (diff < 3600) {
+        const minutes = Math.floor(diff / 60);
+        setTimeAgo(`${minutes}m ago`);
+      } else if (diff < 86400) {
+        const hours = Math.floor(diff / 3600);
+        setTimeAgo(`${hours}h ago`);
+      } else {
+        const days = Math.floor(diff / 86400);
+        setTimeAgo(`${days}d ago`);
+      }
+    };
+
+    updateTimeAgo();
+    const interval = setInterval(updateTimeAgo, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [timestamp]);
+
+  return <span className="text-xs text-muted-foreground">{timeAgo}</span>;
+};
+
+const UserMessage = ({ text, timestamp = new Date() }: { text: string; timestamp?: Date }) => (
   <div className="flex justify-end my-6 animate-fade-in-up">
     <div className="max-w-2xl">
       <div className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white p-6 rounded-3xl rounded-br-lg shadow-glow">
         <p className="leading-relaxed">{text}</p>
       </div>
-      <div className="text-xs text-muted-foreground mt-2 text-right">Just now</div>
+      <div className="text-right mt-2">
+        <TimeAgo timestamp={timestamp} />
+      </div>
     </div>
   </div>
 );
 
-const BotMessage = ({ text, isTyping = false }: { text: string; isTyping?: boolean }) => {
-  const [displayText, setDisplayText] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [typingComplete, setTypingComplete] = useState(false);
+// --- TYPING INDICATOR ---
+const TypingIndicator = () => (
+  <div className="flex justify-start my-6 animate-fade-in-up">
+    <div className="flex gap-4 max-w-4xl">
+      <div className="flex-shrink-0">
+        <GovLinkBotIcon />
+      </div>
+      <div className="flex-1">
+        <div className="glass-morphism backdrop-blur-xl p-6 rounded-3xl rounded-bl-lg shadow-xl border border-border/50">
+          <div className="flex items-center space-x-1 text-muted-foreground">
+            <span className="animate-pulse">•</span>
+            <span className="animate-pulse" style={{animationDelay: '0.2s'}}>•</span>
+            <span className="animate-pulse" style={{animationDelay: '0.4s'}}>•</span>
+            <span className="ml-2 text-sm">Analyzing your question...</span>
+          </div>
+        </div>
+        <div className="text-xs text-muted-foreground mt-2">
+          GovLink Assistant is preparing your response
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
-  useEffect(() => {
-    if (isTyping && currentIndex < text.length) {
-      const timeout = setTimeout(() => {
-        setDisplayText(prev => prev + text[currentIndex]);
-        setCurrentIndex(prev => prev + 1);
-      }, 15); // Faster typing speed
-      return () => clearTimeout(timeout);
-    } else if (!isTyping) {
-      setDisplayText(text);
-      setTypingComplete(true);
-    } else if (isTyping && currentIndex >= text.length) {
-      // Small delay before showing markdown
-      const timeout = setTimeout(() => {
-        setTypingComplete(true);
-      }, 500);
-      return () => clearTimeout(timeout);
-    }
-  }, [currentIndex, text, isTyping]);
-
+const BotMessage = ({ text, timestamp = new Date() }: { text: string; timestamp?: Date }) => {
   return (
     <div className="flex justify-start my-6 animate-fade-in-up">
       <div className="flex gap-4 max-w-4xl">
@@ -131,100 +165,93 @@ const BotMessage = ({ text, isTyping = false }: { text: string; isTyping?: boole
         <div className="flex-1">
           <div className="glass-morphism backdrop-blur-xl p-6 rounded-3xl rounded-bl-lg shadow-xl border border-border/50">
             <div className="prose prose-lg prose-invert max-w-none leading-relaxed text-foreground markdown-content">
-              {(isTyping && !typingComplete) ? (
-                <div className="whitespace-pre-wrap font-mono text-sm opacity-90">
-                  {displayText}
-                  {currentIndex < text.length && (
-                    <span className="inline-block w-2 h-5 bg-[#FFC72C] ml-1 animate-pulse"></span>
-                  )}
-                </div>
-              ) : (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeHighlight, rehypeRaw]}
-                  skipHtml={false}
-                  components={{
-                    // Custom components for better rendering
-                    h1: ({ children }) => <h1 className="text-2xl font-bold text-[#FFC72C] border-b-2 border-[#FFC72C] pb-2 mb-4 mt-6 first:mt-0">{children}</h1>,
-                    h2: ({ children }) => <h2 className="text-xl font-semibold text-[#FFC72C] mb-3 mt-6">{children}</h2>,
-                    h3: ({ children }) => <h3 className="text-lg font-semibold text-[#FF5722] mb-2 mt-4">{children}</h3>,
-                    h4: ({ children }) => <h4 className="text-base font-semibold text-[#FF5722] mb-2 mt-3">{children}</h4>,
-                    p: ({ children }) => <p className="mb-4 leading-relaxed text-foreground">{children}</p>,
-                    ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
-                    ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
-                    li: ({ children }) => <li className="text-foreground leading-relaxed">{children}</li>,
-                    strong: ({ children }) => <strong className="font-semibold text-[#FFC72C]">{children}</strong>,
-                    em: ({ children }) => <em className="italic opacity-90">{children}</em>,
-                    blockquote: ({ children }) => (
-                      <blockquote className="border-l-4 border-[#FFC72C] bg-[#FFC72C]/5 pl-4 py-3 my-4 italic rounded-r-lg">
-                        {children}
-                      </blockquote>
-                    ),
-                    code: ({ children, className, ...props }: any) => {
-                      const isInline = !className;
-                      if (isInline) {
-                        return (
-                          <code className="bg-black/30 text-[#FFC72C] px-2 py-1 rounded text-sm font-mono border border-white/10">
-                            {children}
-                          </code>
-                        );
-                      }
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight, rehypeRaw]}
+                skipHtml={false}
+                components={{
+                  // Custom components for better rendering
+                  h1: ({ children }) => <h1 className="text-2xl font-bold text-[#FFC72C] border-b-2 border-[#FFC72C] pb-2 mb-4 mt-6 first:mt-0">{children}</h1>,
+                  h2: ({ children }) => <h2 className="text-xl font-semibold text-[#FFC72C] mb-3 mt-6">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-lg font-semibold text-[#FF5722] mb-2 mt-4">{children}</h3>,
+                  h4: ({ children }) => <h4 className="text-base font-semibold text-[#FF5722] mb-2 mt-3">{children}</h4>,
+                  p: ({ children }) => <p className="mb-4 leading-relaxed text-foreground">{children}</p>,
+                  ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
+                  ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
+                  li: ({ children }) => <li className="text-foreground leading-relaxed">{children}</li>,
+                  strong: ({ children }) => <strong className="font-semibold text-[#FFC72C]">{children}</strong>,
+                  em: ({ children }) => <em className="italic opacity-90">{children}</em>,
+                  blockquote: ({ children }) => (
+                    <blockquote className="border-l-4 border-[#FFC72C] bg-[#FFC72C]/5 pl-4 py-3 my-4 italic rounded-r-lg">
+                      {children}
+                    </blockquote>
+                  ),
+                  code: ({ children, className, ...props }: React.ComponentProps<'code'>) => {
+                    const isInline = !className;
+                    if (isInline) {
                       return (
-                        <code className={className} {...props}>
+                        <code className="bg-black/30 text-[#FFC72C] px-2 py-1 rounded text-sm font-mono border border-white/10">
                           {children}
                         </code>
                       );
-                    },
-                    pre: ({ children }) => (
-                      <pre className="bg-black/40 border border-white/10 rounded-lg p-4 overflow-x-auto my-4 text-sm">
+                    }
+                    return (
+                      <code className={className} {...props}>
                         {children}
-                      </pre>
-                    ),
-                    table: ({ children }) => (
-                      <div className="overflow-x-auto my-4">
-                        <table className="w-full border-collapse border border-white/20 rounded-lg overflow-hidden">
-                          {children}
-                        </table>
-                      </div>
-                    ),
-                    thead: ({ children }) => (
-                      <thead className="bg-[#FFC72C]/10">
+                      </code>
+                    );
+                  },
+                  pre: ({ children }) => (
+                    <pre className="bg-black/40 border border-white/10 rounded-lg p-4 overflow-x-auto my-4 text-sm">
+                      {children}
+                    </pre>
+                  ),
+                  table: ({ children }) => (
+                    <div className="overflow-x-auto my-4">
+                      <table className="w-full border-collapse border border-white/20 rounded-lg overflow-hidden">
                         {children}
-                      </thead>
-                    ),
-                    th: ({ children }) => (
-                      <th className="border border-white/20 px-4 py-3 text-left font-semibold text-[#FFC72C]">
-                        {children}
-                      </th>
-                    ),
-                    td: ({ children }) => (
-                      <td className="border border-white/20 px-4 py-3 text-foreground">
-                        {children}
-                      </td>
-                    ),
-                    tr: ({ children, ...props }) => (
-                      <tr className="even:bg-white/5 hover:bg-white/10 transition-colors" {...props}>
-                        {children}
-                      </tr>
-                    ),
-                    a: ({ children, href }) => (
-                      <a 
-                        href={href} 
-                        className="text-[#FFC72C] underline hover:text-[#FF5722] transition-colors duration-200"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {children}
-                      </a>
-                    ),
-                  }}
-                >
-                  {text}
-                </ReactMarkdown>
-              )}
+                      </table>
+                    </div>
+                  ),
+                  thead: ({ children }) => (
+                    <thead className="bg-[#FFC72C]/10">
+                      {children}
+                    </thead>
+                  ),
+                  th: ({ children }) => (
+                    <th className="border border-white/20 px-4 py-3 text-left font-semibold text-[#FFC72C]">
+                      {children}
+                    </th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="border border-white/20 px-4 py-3 text-foreground">
+                      {children}
+                    </td>
+                  ),
+                  tr: ({ children, ...props }) => (
+                    <tr className="even:bg-white/5 hover:bg-white/10 transition-colors" {...props}>
+                      {children}
+                    </tr>
+                  ),
+                  a: ({ children, href }) => (
+                    <a 
+                      href={href} 
+                      className="text-[#FFC72C] underline hover:text-[#FF5722] transition-colors duration-200"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {children}
+                    </a>
+                  ),
+                }}
+              >
+                {text}
+              </ReactMarkdown>
             </div>
           </div>
-          <div className="text-xs text-muted-foreground mt-2">GovLink Assistant • Just now</div>
+          <div className="text-xs text-muted-foreground mt-2">
+            GovLink Assistant • <TimeAgo timestamp={timestamp} />
+          </div>
         </div>
       </div>
     </div>
@@ -299,11 +326,15 @@ const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string) => void
 
 // --- MAIN CHAT PAGE COMPONENT ---
 export default function GovLinkChatPage() {
-  const [messages, setMessages] = useState<{type: 'user' | 'bot', text: string, isTyping?: boolean}[]>([]);
+  const [messages, setMessages] = useState<{type: 'user' | 'bot', text: string, timestamp: Date}[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
 
   const handleSendMessage = (message: string) => {
     // Add user message
-    setMessages(prev => [...prev, { type: 'user', text: message }]);
+    setMessages(prev => [...prev, { type: 'user', text: message, timestamp: new Date() }]);
+    
+    // Show typing indicator immediately
+    setIsTyping(true);
     
     // Generate bot response
     const generateBotResponse = (query: string) => {
@@ -374,11 +405,14 @@ function govLinkHelper() {
 **Available 24/7** to assist with your government service needs!`;
     };
 
-    // Add bot response with delay
+    // Simulate response generation time (2-4 seconds)
+    const responseTime = Math.random() * 2000 + 2000;
+    
     setTimeout(() => {
+      setIsTyping(false);
       const botResponse = generateBotResponse(message);
-      setMessages(prev => [...prev, { type: 'bot', text: botResponse, isTyping: true }]);
-    }, 1000);
+      setMessages(prev => [...prev, { type: 'bot', text: botResponse, timestamp: new Date() }]);
+    }, responseTime);
   };
 
   return (
@@ -404,7 +438,7 @@ function govLinkHelper() {
                 </div>
               </div>
             }>
-              <ChatContent messages={messages} />
+              <ChatContent messages={messages} isTyping={isTyping} />
             </Suspense>
           </div>
         </main>
@@ -416,7 +450,7 @@ function govLinkHelper() {
   );
 };
 
-function ChatContent({ messages }: { messages?: {type: 'user' | 'bot', text: string, isTyping?: boolean}[] }) {
+function ChatContent({ messages, isTyping }: { messages?: {type: 'user' | 'bot', text: string, timestamp: Date}[]; isTyping?: boolean }) {
   const searchParams = useSearchParams();
   const q = searchParams.get('q') ?? undefined;
   const userQuery = q || "How do I renew my passport?";
@@ -553,12 +587,15 @@ function govLinkHelper() {
         {messages.map((message, index) => (
           <div key={index}>
             {message.type === 'user' ? (
-              <UserMessage text={message.text} />
+              <UserMessage text={message.text} timestamp={message.timestamp} />
             ) : (
-              <BotMessage text={message.text} isTyping={message.isTyping || false} />
+              <BotMessage text={message.text} timestamp={message.timestamp} />
             )}
           </div>
         ))}
+        
+        {/* Show typing indicator if bot is typing */}
+        {isTyping && <TypingIndicator />}
       </div>
     );
   }
@@ -578,8 +615,8 @@ function govLinkHelper() {
         </div>
       </div>
 
-      <UserMessage text={userQuery} />
-      <BotMessage text={botResponse} isTyping={true} />
+      <UserMessage text={userQuery} timestamp={new Date()} />
+      <BotMessage text={botResponse} timestamp={new Date()} />
     </div>
   );
 }

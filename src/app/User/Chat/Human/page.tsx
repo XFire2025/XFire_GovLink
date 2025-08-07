@@ -1,7 +1,7 @@
 "use client";
 import React, { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 // --- PREMIUM SVG ICON COMPONENTS ---
@@ -62,24 +62,6 @@ const CheckCheck = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-// Sri Lankan Lotus Icon (Custom)
-const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100" fill="none">
-    <path d="M50 10C45 15 35 25 30 35C25 45 30 55 40 60C45 62 55 62 60 60C70 55 75 45 70 35C65 25 55 15 50 10Z" fill="url(#lotus-gradient)"/>
-    <path d="M50 15C45 20 40 30 35 40C30 50 35 60 45 65C50 67 60 67 65 65C75 60 80 50 75 40C70 30 65 20 50 15Z" fill="url(#lotus-gradient-inner)"/>
-    <defs>
-      <linearGradient id="lotus-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor: '#FFC72C', stopOpacity: 1}} />
-        <stop offset="50%" style={{stopColor: '#FF5722', stopOpacity: 1}} />
-        <stop offset="100%" style={{stopColor: '#8D153A', stopOpacity: 1}} />
-      </linearGradient>
-      <linearGradient id="lotus-gradient-inner" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor: '#FFC72C', stopOpacity: 0.7}} />
-        <stop offset="100%" style={{stopColor: '#FF5722', stopOpacity: 0.7}} />
-      </linearGradient>
-    </defs>
-  </svg>
-);
 
 // Support Agent Interface
 interface SupportAgent {
@@ -191,6 +173,37 @@ const ChatHeader = ({ agent }: { agent: SupportAgent }) => (
 );
 
 // --- MESSAGE COMPONENTS ---
+const TimeAgo = ({ timestamp }: { timestamp: Date }) => {
+  const [timeAgo, setTimeAgo] = useState('');
+
+  useEffect(() => {
+    const updateTimeAgo = () => {
+      const now = new Date();
+      const diff = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
+
+      if (diff < 60) {
+        setTimeAgo('Just now');
+      } else if (diff < 3600) {
+        const minutes = Math.floor(diff / 60);
+        setTimeAgo(`${minutes}m ago`);
+      } else if (diff < 86400) {
+        const hours = Math.floor(diff / 3600);
+        setTimeAgo(`${hours}h ago`);
+      } else {
+        const days = Math.floor(diff / 86400);
+        setTimeAgo(`${days}d ago`);
+      }
+    };
+
+    updateTimeAgo();
+    const interval = setInterval(updateTimeAgo, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [timestamp]);
+
+  return <span className="text-xs text-muted-foreground">{timeAgo}</span>;
+};
+
 const UserMessage = ({ message }: { message: ChatMessage }) => (
   <div className="flex justify-end my-4 animate-fade-in-up">
     <div className="max-w-2xl">
@@ -208,9 +221,7 @@ const UserMessage = ({ message }: { message: ChatMessage }) => (
         )}
       </div>
       <div className="flex items-center justify-end gap-2 mt-1">
-        <span className="text-xs text-muted-foreground">
-          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </span>
+        <TimeAgo timestamp={message.timestamp} />
         <div className="flex items-center">
           {message.status === 'sent' && <CheckIcon className="text-muted-foreground" />}
           {message.status === 'delivered' && <CheckCheck className="text-muted-foreground" />}
@@ -248,7 +259,7 @@ const AgentMessage = ({ message, agent }: { message: ChatMessage; agent: Support
           )}
         </div>
         <div className="text-xs text-muted-foreground mt-1">
-          {agent.name} • {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {agent.name} • <TimeAgo timestamp={message.timestamp} />
         </div>
       </div>
     </div>
@@ -257,7 +268,7 @@ const AgentMessage = ({ message, agent }: { message: ChatMessage; agent: Support
 
 // --- TYPING INDICATOR ---
 const TypingIndicator = ({ agent }: { agent: SupportAgent }) => (
-  <div className="flex justify-start my-4">
+  <div className="flex justify-start my-4 animate-fade-in-up">
     <div className="flex gap-3 max-w-4xl">
       <div className="flex-shrink-0">
         <img 
@@ -267,15 +278,16 @@ const TypingIndicator = ({ agent }: { agent: SupportAgent }) => (
         />
       </div>
       <div className="flex-1">
-        <div className="glass-morphism backdrop-blur-xl p-4 rounded-2xl rounded-bl-lg shadow-xl border border-border/50 w-20">
-          <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-[#FFC72C] rounded-full animate-bounce" style={{animationDelay: '0s'}}></div>
-            <div className="w-2 h-2 bg-[#FFC72C] rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-            <div className="w-2 h-2 bg-[#FFC72C] rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+        <div className="glass-morphism backdrop-blur-xl p-4 rounded-2xl rounded-bl-lg shadow-xl border border-border/50">
+          <div className="flex items-center space-x-1 text-muted-foreground">
+            <span className="animate-pulse">•</span>
+            <span className="animate-pulse" style={{animationDelay: '0.2s'}}>•</span>
+            <span className="animate-pulse" style={{animationDelay: '0.4s'}}>•</span>
+            <span className="ml-2 text-sm">Generating response...</span>
           </div>
         </div>
         <div className="text-xs text-muted-foreground mt-1">
-          {agent.name} is typing...
+          {agent.name} is preparing your response
         </div>
       </div>
     </div>
@@ -302,8 +314,16 @@ const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string, type?: 
   };
 
   const handleFileUpload = () => {
-    // Simulate file upload
-    onSendMessage('document.pdf', 'file');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        onSendMessage(file.name, 'file');
+      }
+    };
+    input.click();
   };
 
   return (
@@ -311,38 +331,37 @@ const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string, type?: 
       <div className="container mx-auto">
         <div className={`relative transition-all duration-300 ${isFocused ? 'scale-105' : ''}`}>
           <div className="relative glass-morphism rounded-2xl p-2 shadow-glow hover:shadow-2xl transition-all duration-500">
-            <div className="flex items-end gap-2">
-              <button 
-                onClick={handleFileUpload}
-                className="p-3 text-muted-foreground hover:text-[#FFC72C] transition-colors duration-300"
-              >
-                <PaperclipIcon />
-              </button>
-              
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                onKeyPress={handleKeyPress}
-                className="flex-1 bg-transparent text-foreground placeholder-muted-foreground p-4 rounded-xl resize-none focus:outline-none leading-relaxed border-none"
-                placeholder="Type your message..."
-                rows={1}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = 'auto';
-                  target.style.height = `${Math.max(target.scrollHeight, 60)}px`;
-                }}
-              />
-              
-              <button 
-                onClick={handleSend}
-                className="p-3 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 hover:scale-110 shadow-glow group disabled:opacity-50"
-                disabled={!message.trim()}
-              >
-                <SendIcon className="h-5 w-5 text-white group-hover:translate-x-0.5 transition-transform duration-300" />
-              </button>
-            </div>
+            <button 
+              onClick={handleFileUpload}
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-[#FFC72C] transition-colors duration-300 z-10"
+              title="Attach file"
+            >
+              <PaperclipIcon />
+            </button>
+            
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onKeyPress={handleKeyPress}
+              className="w-full bg-transparent text-foreground placeholder-muted-foreground p-4 pl-12 pr-16 rounded-xl resize-none focus:outline-none leading-relaxed border-none"
+              placeholder="Type your message..."
+              rows={1}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = `${Math.max(target.scrollHeight, 60)}px`;
+              }}
+            />
+            
+            <button 
+              onClick={handleSend}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 hover:scale-110 shadow-glow group disabled:opacity-50"
+              disabled={!message.trim()}
+            >
+              <SendIcon className="h-5 w-5 text-white group-hover:translate-x-0.5 transition-transform duration-300" />
+            </button>
           </div>
           
           {/* Quick Actions */}
@@ -398,8 +417,12 @@ function HumanChatContent({ agentId }: { agentId: string }) {
 
     setMessages(prev => [...prev, newMessage]);
 
-    // Simulate agent typing and response
+    // Show typing indicator immediately and start generating response
     setIsTyping(true);
+    
+    // Simulate response generation time (1.5-3 seconds)
+    const responseTime = Math.random() * 1500 + 1500; // 1.5-3 seconds
+    
     setTimeout(() => {
       setIsTyping(false);
       
@@ -413,21 +436,22 @@ function HumanChatContent({ agentId }: { agentId: string }) {
         type: 'text'
       };
       
+      // Add the complete response all at once
       setMessages(prev => [...prev, agentResponse]);
-    }, 2000);
+    }, responseTime);
 
-    // Update message status
+    // Update user message status progression
     setTimeout(() => {
       setMessages(prev => prev.map(msg => 
         msg.id === newMessage.id ? { ...msg, status: 'delivered' } : msg
       ));
-    }, 1000);
+    }, 800);
 
     setTimeout(() => {
       setMessages(prev => prev.map(msg => 
         msg.id === newMessage.id ? { ...msg, status: 'read' } : msg
       ));
-    }, 2000);
+    }, 1200);
   };
 
   const getAgentResponse = (userMessage: string, type: string) => {
@@ -517,7 +541,6 @@ export default function HumanChatPage() {
 
 function HumanChatWrapper() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const agentId = searchParams.get('agent') || 'agent-1';
 
   useEffect(() => {
