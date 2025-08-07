@@ -58,6 +58,124 @@ const ClipboardIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} 
 const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
 const AlertTriangleIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
 const InfoIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>;
+const ClockIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>;
+const ChevronDownIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
+
+// Custom Dropdown Component
+const CustomDropdown = ({ 
+    id, 
+    name, 
+    value, 
+    onChange, 
+    disabled, 
+    placeholder, 
+    options 
+}: {
+    id: string;
+    name: string;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    disabled?: boolean;
+    placeholder: string;
+    options: { value: string; label: string }[];
+}) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedLabel, setSelectedLabel] = useState(placeholder);
+    
+    React.useEffect(() => {
+        const selected = options.find(opt => opt.value === value);
+        setSelectedLabel(selected ? selected.label : placeholder);
+    }, [value, options, placeholder]);
+
+    const handleSelect = (optionValue: string) => {
+        const syntheticEvent = {
+            target: { name, value: optionValue }
+        } as React.ChangeEvent<HTMLSelectElement>;
+        onChange(syntheticEvent);
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative">
+            {/* Hidden select for form compatibility */}
+            <select
+                id={id}
+                name={name}
+                value={value}
+                onChange={onChange}
+                disabled={disabled}
+                className="sr-only"
+                tabIndex={-1}
+            >
+                <option value="" disabled>{placeholder}</option>
+                {options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+
+            {/* Custom dropdown button */}
+            <button
+                type="button"
+                onClick={() => !disabled && setIsOpen(!isOpen)}
+                disabled={disabled}
+                className={`
+                    w-full text-left px-4 py-3 rounded-xl border transition-all duration-300 flex items-center justify-between
+                    ${disabled 
+                        ? 'opacity-60 cursor-not-allowed bg-card/20 border-border/30' 
+                        : 'bg-card/40 border-border/50 hover:border-[#FFC72C]/50 hover:bg-card/60 focus:border-[#FFC72C] focus:ring-2 focus:ring-[#FFC72C]/30'
+                    }
+                    backdrop-blur-sm shadow-lg
+                `}
+            >
+                <span className={`${value ? 'text-foreground' : 'text-muted-foreground'} font-medium`}>
+                    {selectedLabel}
+                </span>
+                <ChevronDownIcon 
+                    className={`w-5 h-5 text-[#FFC72C] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+                />
+            </button>
+
+            {/* Dropdown menu */}
+            {isOpen && (
+                <>
+                    {/* Backdrop */}
+                    <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setIsOpen(false)}
+                    />
+                    
+                    {/* Options */}
+                    <div className="absolute top-full left-0 right-0 mt-2 z-20">
+                        <div className="bg-card/95 border border-border/70 rounded-xl shadow-2xl backdrop-blur-sm overflow-hidden">
+                            <div className="max-h-60 overflow-y-auto">
+                                {options.map((option, index) => (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => handleSelect(option.value)}
+                                        className={`
+                                            w-full text-left px-4 py-3 transition-all duration-150 border-b border-border/40 last:border-b-0
+                                            ${value === option.value 
+                                                ? 'bg-[#FFC72C]/30 text-[#FFC72C] font-semibold' 
+                                                : 'text-foreground hover:bg-card/80 hover:text-[#FFC72C]'
+                                            }
+                                            ${index === 0 ? 'rounded-t-xl' : ''}
+                                            ${index === options.length - 1 ? 'rounded-b-xl' : ''}
+                                        `}
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
 
 // Form Step component for visual structure
 const Step = ({ icon: Icon, title, description, children }: { icon: React.ElementType; title: string; description: string; children: React.ReactNode }) => (
@@ -89,6 +207,80 @@ const ErrorAlert = ({ message }: { message: string }) => (
     </div>
 );
 
+// Time Slot Card Component
+const TimeSlotCard = ({ 
+    slot, 
+    isAvailable, 
+    isSelected, 
+    onSelect 
+}: { 
+    slot: string; 
+    isAvailable: boolean; 
+    isSelected: boolean; 
+    onSelect: () => void; 
+}) => {
+    const formatTime = (timeStr: string) => {
+        const [hours, minutes] = timeStr.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+        return `${displayHour}:${minutes} ${ampm}`;
+    };
+
+    const getSlotStatus = () => {
+        if (!isAvailable) return { text: 'Unavailable', color: 'text-red-400' };
+        if (isSelected) return { text: 'Selected', color: 'text-emerald-400' };
+        return { text: 'Available', color: 'text-[#FFC72C]' };
+    };
+
+    const status = getSlotStatus();
+
+    return (
+        <div
+            onClick={isAvailable ? onSelect : undefined}
+            className={`
+                relative p-4 rounded-2xl border transition-all duration-300 cursor-pointer group
+                ${!isAvailable 
+                    ? 'bg-card/20 border-red-500/30 opacity-60 cursor-not-allowed' 
+                    : isSelected 
+                        ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border-emerald-500/50 shadow-lg shadow-emerald-500/20' 
+                        : 'bg-card/40 border-border/50 hover:border-[#FFC72C]/50 hover:bg-card/60 hover:shadow-lg hover:shadow-[#FFC72C]/10'
+                }
+            `}
+        >
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-full ${isSelected ? 'bg-emerald-500/20' : 'bg-[#FFC72C]/20'}`}>
+                        <ClockIcon className={`w-4 h-4 ${isSelected ? 'text-emerald-400' : 'text-[#FFC72C]'}`} />
+                    </div>
+                    <div>
+                        <div className="font-semibold text-foreground text-lg">
+                            {formatTime(slot)}
+                        </div>
+                        <div className={`text-xs font-medium ${status.color}`}>
+                            {status.text}
+                        </div>
+                    </div>
+                </div>
+                
+                {isSelected && (
+                    <div className="p-1 rounded-full bg-emerald-500/20">
+                        <CheckCircleIcon className="w-5 h-5 text-emerald-400" />
+                    </div>
+                )}
+            </div>
+            
+            {!isAvailable && (
+                <div className="absolute inset-0 flex items-center justify-center bg-card/30 backdrop-blur-sm rounded-2xl">
+                    <span className="text-xs font-medium text-red-400 bg-red-500/20 px-2 py-1 rounded-full">
+                        Booked
+                    </span>
+                </div>
+            )}
+        </div>
+    );
+};
+
 
 // --- MOCK DATA & GENERATORS (Unchanged logic) ---
 const DESIGNATIONS = [{ value: "officer", label: "Officer" }, { value: "senior-officer", label: "Senior Officer" }, { value: "manager", label: "Manager" }];
@@ -109,7 +301,18 @@ function generateDays(days = 7) {
 }
 function generateSlots() {
 	const slots: string[] = [];
-	for (let h = 9; h <= 16; h++) for (const m of [0, 30]) slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+	for (let h = 9; h <= 16; h++) {
+		for (const m of [0, 30]) {
+			const timeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+			
+			// Skip lunch break: 12:30 PM to 2:00 PM (12:30 - 14:00)
+			if ((h === 12 && m === 30) || h === 13 || (h === 14 && m === 0)) {
+				continue;
+			}
+			
+			slots.push(timeSlot);
+		}
+	}
 	return slots;
 }
 function mockAvailability(dayKey: string, agent: string) {
@@ -183,17 +386,26 @@ export default function NewBookingPage() {
                                 <Step icon={UserCheckIcon} title="Step 1: Agent" description="Select the type of official you need to meet.">
                                     <div>
                                         <label htmlFor="designation" className="form-label">Agent Designation</label>
-                                        <select id="designation" name="designation" value={form.designation} onChange={handleChange} className="form-input">
-                                            <option value="" disabled>Select a designation...</option>
-                                            {DESIGNATIONS.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
-                                        </select>
+                                        <CustomDropdown
+                                            id="designation"
+                                            name="designation"
+                                            value={form.designation}
+                                            onChange={handleChange}
+                                            placeholder="Select a designation..."
+                                            options={DESIGNATIONS}
+                                        />
                                     </div>
                                     <div>
                                         <label htmlFor="agent" className="form-label">Agent Name</label>
-                                        <select id="agent" name="agent" value={form.agent} onChange={handleChange} disabled={!form.designation} className="form-input">
-                                            <option value="" disabled>{form.designation ? "Select an agent..." : "Select a designation first"}</option>
-                                            {agents.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
-                                        </select>
+                                        <CustomDropdown
+                                            id="agent"
+                                            name="agent"
+                                            value={form.agent}
+                                            onChange={handleChange}
+                                            disabled={!form.designation}
+                                            placeholder={form.designation ? "Select an agent..." : "Select a designation first"}
+                                            options={agents}
+                                        />
                                     </div>
                                 </Step>
 
@@ -207,12 +419,22 @@ export default function NewBookingPage() {
                                             <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
                                                 {days.map((d) => {
                                                     const isActive = form.day === d.key;
+                                                    const dayOfWeek = d.date.getDay(); // 0 = Sunday, 6 = Saturday
+                                                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                                                    
                                                     return (
                                                         <button
                                                             type="button"
                                                             key={d.key}
-                                                            onClick={() => selectDay(d.key)}
-                                                            className={`rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-200 text-center ${isActive ? 'bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white shadow-lg' : 'bg-card/50 hover:bg-card/80 text-muted-foreground'}`}
+                                                            onClick={() => !isWeekend && selectDay(d.key)}
+                                                            disabled={isWeekend}
+                                                            className={`rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-200 text-center ${
+                                                                isWeekend 
+                                                                    ? 'bg-card/20 text-muted-foreground/50 cursor-not-allowed opacity-60' 
+                                                                    : isActive 
+                                                                        ? 'bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white shadow-lg' 
+                                                                        : 'bg-card/50 hover:bg-card/80 text-muted-foreground'
+                                                            }`}
                                                         >
                                                             {d.label}
                                                         </button>
@@ -226,17 +448,47 @@ export default function NewBookingPage() {
                                         <label className="form-label">Available Slots</label>
                                         <div className="glass-morphism-inner p-4 rounded-xl">
                                             {!form.day || !form.agent ? (
-                                                <div className="flex items-center justify-center text-center gap-3 py-8">
-                                                    <InfoIcon className="w-6 h-6 text-muted-foreground/70" />
-                                                    <p className="text-muted-foreground">Select an agent and a day to see available times.</p>
+                                                <div className="flex items-center justify-center text-center gap-3 py-12">
+                                                    <InfoIcon className="w-8 h-8 text-muted-foreground/70" />
+                                                    <div>
+                                                        <p className="text-muted-foreground font-medium mb-1">Select an agent and a day first</p>
+                                                        <p className="text-sm text-muted-foreground/70">Available time slots will appear here</p>
+                                                    </div>
                                                 </div>
                                             ) : (
-                                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                                                    {slots.map((s) => {
-                                                        const isAvailable = availableSlots.has(s);
-                                                        const isActive = form.slot === s;
-                                                        return <button key={s} type="button" disabled={!isAvailable} onClick={() => selectSlot(s)} className={`rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:ring-[#FFC72C] ${!isAvailable ? 'bg-card/30 text-muted-foreground/50 line-through cursor-not-allowed' : isActive ? 'bg-gradient-to-r from-[#008060] to-[#007055] text-white shadow-md' : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300'}`}>{s}</button>;
-                                                    })}
+                                                <div className="space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <h4 className="font-semibold text-foreground">
+                                                            Available Times for {days.find(d => d.key === form.day)?.label}
+                                                        </h4>
+                                                        <div className="text-sm text-muted-foreground">
+                                                            {Array.from(availableSlots).length} slots available
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                        {slots.map((s) => {
+                                                            const isAvailable = availableSlots.has(s);
+                                                            const isSelected = form.slot === s;
+                                                            return (
+                                                                <TimeSlotCard
+                                                                    key={s}
+                                                                    slot={s}
+                                                                    isAvailable={isAvailable}
+                                                                    isSelected={isSelected}
+                                                                    onSelect={() => selectSlot(s)}
+                                                                />
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    
+                                                    {Array.from(availableSlots).length === 0 && (
+                                                        <div className="text-center py-8">
+                                                            <AlertTriangleIcon className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
+                                                            <p className="text-muted-foreground font-medium mb-1">No slots available</p>
+                                                            <p className="text-sm text-muted-foreground/70">Please try a different day or agent</p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
