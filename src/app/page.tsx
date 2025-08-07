@@ -1,157 +1,58 @@
 // app/page.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LotusIcon } from '@/components/Icons/LotusIcon';
+import ThreeBackground from '@/components/ThreeBackground'; // Path to our enhanced Three.js component
+
 // --- GLOBAL PARTICLE BACKGROUND COMPONENT ---
+// This component now solely relies on the enhanced ThreeBackground
 const GlobalParticleBackground = () => {
+  // Detect dark mode from document element to pass hint to Three
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const update = () => setIsDark(document.documentElement.classList.contains('dark'));
+    update();
+    const obs = new MutationObserver(update);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => obs.disconnect();
+  }, []);
+
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {/* Light Mode Enhanced Flag Background - Mobile First Responsive */}
-      <div className="absolute inset-0 opacity-[0.25] sm:opacity-[0.30] md:opacity-[0.35] dark:opacity-0">
-        <Image 
-          src="/flag-of-sri-lanka-1.gif" 
-          alt="Sri Lankan Flag Background" 
-          fill
-          className="object-cover object-center animate-pulse-move scale-110 sm:scale-105 md:scale-100"
-          style={{
-            animationDelay: '0s',
-            filter: 'contrast(2.2) brightness(0.45) saturate(2.2) sepia(0.25) hue-rotate(8deg)',
-            mixBlendMode: 'multiply'
-          }}
-          unoptimized={true}
-          priority={false}
-        />
-      </div>
-      
-      {/* Dark Mode Flag Background - Mobile First Responsive */}
-      <div className="absolute inset-0 opacity-0 dark:opacity-[0.02] sm:dark:opacity-[0.025] md:dark:opacity-[0.03]">
-        <Image 
-          src="/flag-of-sri-lanka-1.gif" 
-          alt="Sri Lankan Flag Background" 
-          fill
-          className="object-cover object-center animate-pulse-move scale-110 sm:scale-105 md:scale-100"
-          style={{
-            animationDelay: '0s'
-          }}
-          unoptimized={true}
-          priority={false}
-        />
-      </div>
-      
-      {/* Light Mode Secondary Flag Layer - Responsive Scaling */}
-      <div className="absolute inset-0 opacity-[0.15] sm:opacity-[0.20] md:opacity-[0.25] dark:opacity-0 scale-125 sm:scale-130 md:scale-150">
-        <Image 
-          src="/flag-of-sri-lanka-1.gif" 
-          alt="Sri Lankan Flag Background Large" 
-          fill
-          className="object-cover object-center animate-pulse-move"
-          style={{
-            animationDelay: '5s',
-            filter: 'contrast(2.5) brightness(0.35) saturate(2.8) sepia(0.35) hue-rotate(12deg)',
-            mixBlendMode: 'overlay'
-          }}
-          unoptimized={true}
-          priority={false}
-        />
-      </div>
-      
-      {/* Dark Mode Secondary Flag Layer - Responsive Scaling */}
-      <div className="absolute inset-0 opacity-0 dark:opacity-[0.015] sm:dark:opacity-[0.018] md:dark:opacity-[0.02] scale-125 sm:scale-130 md:scale-150">
-        <Image 
-          src="/flag-of-sri-lanka-1.gif" 
-          alt="Sri Lankan Flag Background Large" 
-          fill
-          className="object-cover object-center animate-pulse-move"
-          style={{
-            animationDelay: '5s'
-          }}
-          unoptimized={true}
-          priority={false}
-        />
-      </div>
-      
-      {/* Light Mode Tertiary Flag Layer - Mobile Optimized */}
-      <div className="absolute inset-0 opacity-[0.20] sm:opacity-[0.25] md:opacity-[0.30] dark:opacity-0 scale-115 sm:scale-118 md:scale-110">
-        <Image 
-          src="/flag-of-sri-lanka-1.gif" 
-          alt="Sri Lankan Flag Background Scaled" 
-          fill
-          className="object-cover object-center animate-float"
-          style={{
-            animationDelay: '10s',
-            filter: 'contrast(2.8) brightness(0.3) saturate(3.2) sepia(0.45) hue-rotate(6deg)',
-            mixBlendMode: 'darken'
-          }}
-          unoptimized={true}
-          priority={false}
-        />
-      </div>
-      
-      {/* Dark Mode Tertiary Flag Layer - Mobile Optimized */}
-      <div className="absolute inset-0 opacity-0 dark:opacity-[0.018] sm:dark:opacity-[0.022] md:dark:opacity-[0.025] scale-115 sm:scale-118 md:scale-110">
-        <Image 
-          src="/flag-of-sri-lanka-1.gif" 
-          alt="Sri Lankan Flag Background Scaled" 
-          fill
-          className="object-cover object-center animate-float"
-          style={{
-            animationDelay: '10s'
-          }}
-          unoptimized={true}
-          priority={false}
-        />
-      </div>
-      
-      {/* Enhanced Light Mode Color Overlay - Mobile Responsive */}
-      <div className="absolute inset-0 opacity-[0.08] sm:opacity-[0.12] md:opacity-[0.15] dark:opacity-0">
-        <div className="w-full h-full bg-gradient-to-br from-[#8D153A]/30 via-transparent to-[#FF5722]/30 animate-pulse-move"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#FFC72C]/25 via-transparent to-[#8D153A]/25 animate-float"></div>
-      </div>
+      {/* Three.js premium background */}
+      <ThreeBackground className="absolute inset-0" dark={isDark} />
 
-      {/* Mobile-First Responsive Particles */}
-      {/* Top Section Particles - Mobile Optimized */}
-      <div className="absolute top-16 sm:top-20 left-4 sm:left-6 md:left-10 w-16 sm:w-24 md:w-32 h-16 sm:h-24 md:h-32 bg-[#8D153A]/15 sm:bg-[#8D153A]/18 md:bg-[#8D153A]/20 dark:bg-[#FFC72C]/8 dark:sm:bg-[#FFC72C]/9 dark:md:bg-[#FFC72C]/10 rounded-full blur-lg sm:blur-xl animate-drift"></div>
-      <div className="absolute top-32 sm:top-40 right-8 sm:right-12 md:right-20 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#FF5722]/20 sm:bg-[#FF5722]/23 md:bg-[#FF5722]/25 dark:bg-[#FF5722]/8 dark:sm:bg-[#FF5722]/9 dark:md:bg-[#FF5722]/10 rounded-full blur-lg sm:blur-xl animate-drift-reverse"></div>
-      <div className="absolute top-48 sm:top-60 left-1/4 sm:left-1/3 w-10 sm:w-16 md:w-20 h-10 sm:h-16 md:h-20 bg-[#008060]/25 sm:bg-[#008060]/28 md:bg-[#008060]/30 dark:bg-[#008060]/12 dark:sm:bg-[#008060]/14 dark:md:bg-[#008060]/15 rounded-full blur-md sm:blur-lg animate-orbit"></div>
-      <div className="absolute top-4 sm:top-10 right-4 sm:right-6 md:right-10 w-8 sm:w-12 md:w-16 h-8 sm:h-12 md:h-16 bg-[#FFC72C]/30 sm:bg-[#FFC72C]/33 md:bg-[#FFC72C]/35 dark:bg-[#FFC72C]/15 dark:sm:bg-[#FFC72C]/18 dark:md:bg-[#FFC72C]/20 rounded-full blur-sm animate-float" style={{animationDelay: '1.5s'}}></div>
-      
-      {/* Upper Middle Particles - Mobile Responsive */}
-      <div className="absolute top-1/4 left-8 sm:left-12 md:left-20 w-20 sm:w-30 md:w-40 h-20 sm:h-30 md:h-40 bg-[#8D153A]/10 sm:bg-[#8D153A]/13 md:bg-[#8D153A]/15 dark:bg-[#8D153A]/5 dark:sm:bg-[#8D153A]/7 dark:md:bg-[#8D153A]/8 rounded-full blur-xl sm:blur-2xl animate-pulse-move"></div>
-      <div className="absolute top-1/3 right-1/4 w-18 sm:w-28 md:w-36 h-18 sm:h-28 md:h-36 bg-[#FFC72C]/20 sm:bg-[#FFC72C]/23 md:bg-[#FFC72C]/25 dark:bg-[#FFC72C]/10 dark:sm:bg-[#FFC72C]/11 dark:md:bg-[#FFC72C]/12 rounded-full blur-lg sm:blur-xl animate-spiral"></div>
-      <div className="absolute top-1/4 left-1/2 w-8 sm:w-12 md:w-16 h-8 sm:h-12 md:h-16 bg-[#FF5722]/25 sm:bg-[#FF5722]/28 md:bg-[#FF5722]/30 dark:bg-[#FF5722]/12 dark:sm:bg-[#FF5722]/14 dark:md:bg-[#FF5722]/15 rounded-full blur-sm animate-spiral" style={{animationDelay: '2s'}}></div>
-      
-      {/* Center Section Particles - Mobile Responsive */}
-      <div className="absolute top-1/2 left-1/6 sm:left-1/4 w-14 sm:w-21 md:w-28 h-14 sm:h-21 md:h-28 bg-[#008060]/20 sm:bg-[#008060]/23 md:bg-[#008060]/25 dark:bg-[#008060]/10 dark:sm:bg-[#008060]/11 dark:md:bg-[#008060]/12 rounded-full blur-md sm:blur-lg animate-drift" style={{animationDelay: '5s'}}></div>
-      <div className="absolute top-1/2 right-1/4 sm:right-1/3 w-16 sm:w-24 md:w-32 h-16 sm:h-24 md:h-32 bg-[#FF5722]/15 sm:bg-[#FF5722]/18 md:bg-[#FF5722]/20 dark:bg-[#FF5722]/8 dark:sm:bg-[#FF5722]/9 dark:md:bg-[#FF5722]/10 rounded-full blur-lg sm:blur-xl animate-drift-reverse" style={{animationDelay: '3s'}}></div>
-      <div className="absolute top-1/2 left-4 sm:left-6 md:left-10 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#8D153A]/20 sm:bg-[#8D153A]/23 md:bg-[#8D153A]/25 dark:bg-[#8D153A]/10 dark:sm:bg-[#8D153A]/11 dark:md:bg-[#8D153A]/12 rounded-full blur-md animate-orbit" style={{animationDelay: '6s'}}></div>
-      <div className="absolute top-1/2 right-4 sm:right-6 md:right-10 w-10 sm:w-15 md:w-20 h-10 sm:h-15 md:h-20 bg-[#FFC72C]/25 sm:bg-[#FFC72C]/28 md:bg-[#FFC72C]/30 dark:bg-[#FFC72C]/12 dark:sm:bg-[#FFC72C]/14 dark:md:bg-[#FFC72C]/15 rounded-full blur-md sm:blur-lg animate-pulse-move" style={{animationDelay: '4s'}}></div>      
-      {/* Lower Middle Particles - Mobile Optimized */}
-      <div className="absolute top-2/3 left-1/4 sm:left-1/3 w-16 sm:w-24 md:w-32 h-16 sm:h-24 md:h-32 bg-[#008060]/15 sm:bg-[#008060]/18 md:bg-[#008060]/20 dark:bg-[#008060]/8 dark:sm:bg-[#008060]/9 dark:md:bg-[#008060]/10 rounded-full blur-lg sm:blur-xl animate-spiral" style={{animationDelay: '7s'}}></div>
-      <div className="absolute top-2/3 right-1/3 sm:right-1/2 w-10 sm:w-15 md:w-20 h-10 sm:h-15 md:h-20 bg-[#8D153A]/20 sm:bg-[#8D153A]/23 md:bg-[#8D153A]/25 dark:bg-[#8D153A]/10 dark:sm:bg-[#8D153A]/11 dark:md:bg-[#8D153A]/12 rounded-full blur-md sm:blur-lg animate-drift-reverse" style={{animationDelay: '4s'}}></div>
-      <div className="absolute top-2/3 left-1/3 sm:left-1/2 w-14 sm:w-21 md:w-28 h-14 sm:h-21 md:h-28 bg-[#FF5722]/20 sm:bg-[#FF5722]/23 md:bg-[#FF5722]/25 dark:bg-[#FF5722]/10 dark:sm:bg-[#FF5722]/11 dark:md:bg-[#FF5722]/12 rounded-full blur-lg sm:blur-xl animate-drift" style={{animationDelay: '8s'}}></div>
-      
-      {/* Footer Section Particles - Mobile Responsive */}
-      <div className="absolute top-3/4 left-1/6 sm:left-1/4 w-20 sm:w-30 md:w-40 h-20 sm:h-30 md:h-40 bg-[#FFC72C]/10 sm:bg-[#FFC72C]/13 md:bg-[#FFC72C]/15 dark:bg-[#FFC72C]/5 dark:sm:bg-[#FFC72C]/7 dark:md:bg-[#FFC72C]/8 rounded-full blur-xl sm:blur-2xl animate-pulse-move" style={{animationDelay: '9s'}}></div>
-      <div className="absolute top-3/4 right-1/6 sm:right-1/4 w-14 sm:w-21 md:w-28 h-14 sm:h-21 md:h-28 bg-[#008060]/15 sm:bg-[#008060]/18 md:bg-[#008060]/20 dark:bg-[#008060]/8 dark:sm:bg-[#008060]/9 dark:md:bg-[#008060]/10 rounded-full blur-lg sm:blur-xl animate-orbit" style={{animationDelay: '1s'}}></div>
-      <div className="absolute bottom-24 sm:bottom-32 left-1/4 sm:left-1/3 w-16 sm:w-24 md:w-32 h-16 sm:h-24 md:h-32 bg-[#8D153A]/15 sm:bg-[#8D153A]/18 md:bg-[#8D153A]/20 dark:bg-[#8D153A]/8 dark:sm:bg-[#8D153A]/9 dark:md:bg-[#8D153A]/10 rounded-full blur-lg sm:blur-xl animate-drift" style={{animationDelay: '5s'}}></div>
-      
-      {/* Bottom Section Particles - Mobile First */}
-      <div className="absolute bottom-12 sm:bottom-20 right-1/4 sm:right-1/3 w-14 sm:w-21 md:w-28 h-14 sm:h-21 md:h-28 bg-[#FF5722]/20 sm:bg-[#FF5722]/23 md:bg-[#FF5722]/25 dark:bg-[#FF5722]/10 dark:sm:bg-[#FF5722]/11 dark:md:bg-[#FF5722]/12 rounded-full blur-lg sm:blur-xl animate-drift-reverse" style={{animationDelay: '2s'}}></div>
-      <div className="absolute bottom-32 sm:bottom-40 left-1/3 sm:left-1/2 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#FFC72C]/25 sm:bg-[#FFC72C]/28 md:bg-[#FFC72C]/30 dark:bg-[#FFC72C]/12 dark:sm:bg-[#FFC72C]/14 dark:md:bg-[#FFC72C]/15 rounded-full blur-md sm:blur-lg animate-spiral" style={{animationDelay: '6s'}}></div>
-      <div className="absolute bottom-4 sm:bottom-10 left-4 sm:left-6 md:left-10 w-10 sm:w-15 md:w-20 h-10 sm:h-15 md:h-20 bg-[#008060]/25 sm:bg-[#008060]/28 md:bg-[#008060]/30 dark:bg-[#008060]/12 dark:sm:bg-[#008060]/14 dark:md:bg-[#008060]/15 rounded-full blur-md animate-float" style={{animationDelay: '3.5s'}}></div>
-      <div className="absolute bottom-48 sm:bottom-60 right-8 sm:right-12 md:right-20 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#8D153A]/20 sm:bg-[#8D153A]/23 md:bg-[#8D153A]/25 dark:bg-[#8D153A]/10 dark:sm:bg-[#8D153A]/11 dark:md:bg-[#8D153A]/12 rounded-full blur-md sm:blur-lg animate-orbit" style={{animationDelay: '7s'}}></div>
-      
-      {/* Edge Particles for Full Coverage - Mobile Responsive */}
-      <div className="absolute top-1/3 left-0 w-8 sm:w-12 md:w-16 h-8 sm:h-12 md:h-16 bg-[#FFC72C]/15 sm:bg-[#FFC72C]/18 md:bg-[#FFC72C]/20 dark:bg-[#FFC72C]/8 dark:sm:bg-[#FFC72C]/9 dark:md:bg-[#FFC72C]/10 rounded-full blur-sm animate-drift" style={{animationDelay: '10s'}}></div>
-      <div className="absolute top-2/3 right-0 w-8 sm:w-12 md:w-16 h-8 sm:h-12 md:h-16 bg-[#FF5722]/20 sm:bg-[#FF5722]/23 md:bg-[#FF5722]/25 dark:bg-[#FF5722]/10 dark:sm:bg-[#FF5722]/11 dark:md:bg-[#FF5722]/12 rounded-full blur-md animate-drift-reverse" style={{animationDelay: '11s'}}></div>
-      <div className="absolute bottom-1/3 left-2 sm:left-3 md:left-5 w-10 sm:w-15 md:w-20 h-10 sm:h-15 md:h-20 bg-[#008060]/15 sm:bg-[#008060]/18 md:bg-[#008060]/20 dark:bg-[#008060]/8 dark:sm:bg-[#008060]/9 dark:md:bg-[#008060]/10 rounded-full blur-md sm:blur-lg animate-pulse-move" style={{animationDelay: '12s'}}></div>
-      <div className="absolute bottom-1/4 right-2 sm:right-3 md:right-5 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#8D153A]/10 sm:bg-[#8D153A]/13 md:bg-[#8D153A]/15 dark:bg-[#8D153A]/5 dark:sm:bg-[#8D153A]/7 dark:md:bg-[#8D153A]/8 rounded-full blur-lg sm:blur-xl animate-spiral" style={{animationDelay: '13s'}}></div>
+      {/* Minimal gradient fallback (visible briefly before WebGL mounts or if WebGL fails) */}
+      {/* Tweaked colors to align better with the new Three.js theme */}
+      <div
+        className="absolute inset-0 opacity-40 dark:opacity-25"
+        style={{
+          background:
+            'radial-gradient(1000px 700px at 80% 85%, rgba(255,199,44,0.18), transparent 60%),\n             radial-gradient(900px 700px at 15% 20%, rgba(0,128,96,0.12), transparent 65%),\n             conic-gradient(from 210deg at 50% 50%, rgba(141,21,58,0.2), rgba(255,87,34,0.1), rgba(255,199,44,0.1), rgba(0,128,96,0.08), rgba(141,21,58,0.2))',
+        }}
+      />
+
+      {/* Micro-noise layer to prevent banding */}
+      <div
+        className="absolute inset-0 opacity-[0.02] dark:opacity-[0.015]"
+        style={{
+          backgroundImage:
+            "url('data:image/svg+xml;utf8,\
+            <svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'140\\' height=\\'140\\'>\
+              <filter id=\\'n\\'>\
+                <feTurbulence type=\\'fractalNoise\\' baseFrequency=\\'0.9\\' numOctaves=\\'2\\' stitchTiles=\\'stitch\\'/>\\n                <feColorMatrix type=\\'saturate\\' values=\\'0\\'/>\
+              </filter>\
+              <rect width=\\'100%\\' height=\\'100%\\' filter=\\'url(#n)\\' opacity=\\'0.4\\'/>\
+            </svg>')",
+          backgroundSize: '140px 140px',
+        }}
+      />
     </div>
   );
 };
 // --- PREMIUM SVG ICON COMPONENTS ---
+// (Keep these as they are, they are well-designed)
 const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -251,7 +152,7 @@ const Header = () => {
   return (
     <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${
       isScrolled 
-        ? 'glass-morphism shadow-glow backdrop-blur-xl' 
+        ? 'glass-morphism shadow-glow backdrop-blur-xl' // These classes need definition
         : 'bg-transparent'
     }`}>
       <nav className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
@@ -262,9 +163,9 @@ const Header = () => {
             className="flex items-center space-x-2 sm:space-x-3 animate-fade-in-up hover:scale-105 transition-all duration-300 cursor-pointer bg-transparent border-none p-1 rounded-lg hover:bg-card/30 focus:outline-none"
             aria-label="Scroll to top"
           >
-            <LotusIcon className="animate-glow w-8 h-8 sm:w-10 sm:h-10" />
+            <LotusIcon className="animate-glow w-8 h-8 sm:w-10 sm:h-10" /> {/* animate-glow needs definition */}
             <div className="text-left">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gradient">GovLink</h1>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gradient">GovLink</h1> {/* text-gradient needs definition */}
               <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Sri Lanka</p>
             </div>
           </button>
@@ -314,7 +215,7 @@ const Header = () => {
 
         {/* Mobile Menu - Enhanced Mobile Design */}
         {isMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 w-full glass-morphism backdrop-blur-xl border-t border-border/50 animate-fade-in-up">
+          <div className="lg:hidden absolute top-full left-0 w-full glass-morphism backdrop-blur-xl border-t border-border/50 animate-fade-in-up"> {/* glass-morphism needs definition */}
             <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-3 sm:space-y-4">
               <button 
                 onClick={() => smoothScrollTo('services')} 
@@ -392,7 +293,7 @@ const Hero = () => {
               <span className="animate-wave-buoyancy-1">Simplifying</span>{' '}
               <span className="animate-wave-buoyancy-2">Government</span>{' '}
               <span className="animate-wave-buoyancy-3">for</span>{' '}
-              <span className="text-gradient animate-glow animate-wave-float-center">
+              <span className="text-gradient animate-glow animate-wave-float-center"> {/* text-gradient, animate-glow needs definition */}
                 Every Sri Lankan
               </span>
             </h1>
@@ -410,7 +311,7 @@ const Hero = () => {
           {/* Enhanced Search Interface - Mobile First */}
           <div className="max-w-3xl mx-auto animate-fade-in-up animate-wave-buoyancy-3 px-2 sm:px-0" style={{animationDelay: '0.4s'}}>
             <form action="/chat" method="GET" className="relative group">
-              <div className="relative glass-morphism rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-glow hover:shadow-2xl transition-all duration-500 animate-wave-float-center">
+              <div className="relative glass-morphism rounded-xl sm:rounded-2xl p-1.5 sm:p-2 shadow-glow hover:shadow-2xl transition-all duration-500 animate-wave-float-center"> {/* glass-morphism, shadow-glow needs definition */}
                 <textarea
                   name="q"
                   value={searchText}
@@ -427,7 +328,7 @@ const Hero = () => {
                 />
                 <button 
                   type="submit" 
-                  className="absolute right-2 sm:right-3 md:right-4 top-1/2 -translate-y-1/2 p-3 sm:p-3.5 md:p-4 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-110 shadow-glow group animate-wave-buoyancy-1"
+                  className="absolute right-2 sm:right-3 md:right-4 top-1/2 -translate-y-1/2 p-3 sm:p-3.5 md:p-4 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-lg sm:rounded-xl transition-all duration-300 hover:scale-110 shadow-glow group animate-wave-buoyancy-1" // shadow-glow needs definition
                 >
                   <ArrowRightIcon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white group-hover:translate-x-1 transition-transform duration-300" />
                 </button>
@@ -496,11 +397,11 @@ const Features = () => {
             <span className="w-2 h-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full animate-pulse"></span>
             <span className="text-sm font-medium text-[#FFC72C]">Our Services</span>
           </div>
-          <h2 className="text-4xl md:text-6xl font-bold mb-6 animate-title-wave">
+          <h2 className="text-4xl md:text-6xl font-bold mb-6 animate-title-wave"> {/* animate-title-wave needs definition */}
             <span className="animate-wave-float-left">Everything You Need,</span>{' '}
-            <span className="text-gradient animate-wave-float-right">All in One Place</span>
+            <span className="text-gradient animate-wave-float-right">All in One Place</span> {/* text-gradient needs definition */}
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-subtitle-wave">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-subtitle-wave"> {/* animate-subtitle-wave needs definition */}
             <span className="animate-wave-buoyancy-1">GovLink is designed to make your interaction</span>{' '}
             <span className="animate-wave-buoyancy-3">with government services seamless and efficient.</span>
           </p>
@@ -510,7 +411,7 @@ const Features = () => {
           {featuresList.map((feature, index) => (
             <div 
               key={index} 
-              className={`group relative glass-morphism p-8 rounded-3xl border border-border hover:border-[#FFC72C] hover-lift shadow-xl hover:shadow-glow transition-all duration-500 animate-fade-in-up animate-wave-buoyancy-${(index % 3) + 1}`}
+              className={`group relative glass-morphism p-8 rounded-3xl border border-border hover:border-[#FFC72C] hover-lift shadow-xl hover:shadow-glow transition-all duration-500 animate-fade-in-up animate-wave-buoyancy-${(index % 3) + 1}`} // glass-morphism, shadow-glow, hover-lift needs definition
               style={{animationDelay: `${index * 0.2}s`}}
             >              {/* Icon Container */}
               <div className={`relative flex items-center justify-center w-20 h-20 rounded-2xl mb-8 transition-all duration-300 group-hover:scale-110`}
@@ -606,7 +507,7 @@ const About = () => (
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-glow animate-wave-float-center">
+            <button className="bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 shadow-glow animate-wave-float-center"> {/* shadow-glow needs definition */}
               Learn More
             </button>
             <button className="border-2 border-[#008060] text-[#008060] hover:bg-[#008060] hover:text-white px-6 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 animate-wave-buoyancy-1">
@@ -617,8 +518,8 @@ const About = () => (
         
         {/* Right Content - Stats */}
         <div className="grid grid-cols-2 gap-6 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-1">
-            <div className="text-3xl sm:text-4xl font-bold text-gradient mb-2">50K+</div>
+          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-1"> {/* glass-morphism needs definition */}
+            <div className="text-3xl sm:text-4xl font-bold text-gradient mb-2">50K+</div> {/* text-gradient needs definition */}
             <div className="text-muted-foreground">Citizens Served</div>
           </div>
           
@@ -668,7 +569,7 @@ const Contact = () => (
         {/* Contact Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
           {/* Phone */}
-          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-1 hover:scale-105 transition-transform duration-300">
+          <div className="text-center p-6 glass-morphism rounded-2xl animate-wave-buoyancy-1 hover:scale-105 transition-transform duration-300"> {/* glass-morphism needs definition */}
             <div className="w-16 h-16 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center mx-auto mb-4">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
@@ -707,7 +608,7 @@ const Contact = () => (
         </div>
         
         {/* FAQ Section */}
-        <div className="glass-morphism rounded-2xl p-8 animate-wave-float-center">
+        <div className="glass-morphism rounded-2xl p-8 animate-wave-float-center"> {/* glass-morphism needs definition */}
           <h3 className="text-2xl font-bold mb-6 text-center">Frequently Asked Questions</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="animate-wave-buoyancy-1">
@@ -823,7 +724,8 @@ export default function Home() {
       <GlobalParticleBackground />
       
       {/* Unified Gradient Mesh Overlay for Entire Page */}
-      <div className="fixed inset-0 gradient-mesh opacity-30 pointer-events-none z-[5]"></div>
+      {/* Adjusted colors and opacity to blend better with the new Three.js background */}
+      <div className="fixed inset-0 gradient-mesh opacity-20 dark:opacity-15 pointer-events-none z-[5]"></div>
       
       {/* Content with higher z-index */}
       <div className="relative z-10 theme-transition-fast">
