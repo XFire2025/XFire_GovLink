@@ -69,7 +69,6 @@ interface SupportAgent {
   avatar: string;
   responseTime: string;
   languages: string[];
-  rating: number;
   currentQueue: number;
 }
 
@@ -152,16 +151,6 @@ const AgentCard = ({ agent, onConnect }: { agent: SupportAgent; onConnect: (agen
             <StatusIndicator status={agent.status} />
           </div>
         </div>
-        <div className="text-right">
-          <div className="flex items-center gap-1 mb-1">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className={`w-3 h-3 ${i < agent.rating ? 'text-[#FFC72C]' : 'text-gray-300'}`}>
-                ⭐
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">{agent.rating}/5</p>
-        </div>
       </div>
       
       <div className="space-y-3 mb-4">
@@ -231,7 +220,6 @@ const supportAgents: SupportAgent[] = [
     avatar: '/api/placeholder/64/64',
     responseTime: '< 2 min',
     languages: ['English', 'Sinhala', 'Tamil'],
-    rating: 5,
     currentQueue: 0
   },
   {
@@ -243,7 +231,6 @@ const supportAgents: SupportAgent[] = [
     avatar: '/api/placeholder/64/64',
     responseTime: '< 5 min',
     languages: ['English', 'Sinhala'],
-    rating: 4,
     currentQueue: 3
   },
   {
@@ -255,7 +242,6 @@ const supportAgents: SupportAgent[] = [
     avatar: '/api/placeholder/64/64',
     responseTime: '< 3 min',
     languages: ['English', 'Sinhala', 'Tamil'],
-    rating: 5,
     currentQueue: 0
   },
   {
@@ -267,7 +253,6 @@ const supportAgents: SupportAgent[] = [
     avatar: '/api/placeholder/64/64',
     responseTime: '< 10 min',
     languages: ['English', 'Sinhala'],
-    rating: 4,
     currentQueue: 0
   },
   {
@@ -279,7 +264,6 @@ const supportAgents: SupportAgent[] = [
     avatar: '/api/placeholder/64/64',
     responseTime: '< 1 min',
     languages: ['English', 'Sinhala', 'Tamil'],
-    rating: 4,
     currentQueue: 0
   },
   {
@@ -291,7 +275,6 @@ const supportAgents: SupportAgent[] = [
     avatar: '/api/placeholder/64/64',
     responseTime: 'N/A',
     languages: ['English', 'Sinhala'],
-    rating: 5,
     currentQueue: 0
   }
 ];
