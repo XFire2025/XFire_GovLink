@@ -1,6 +1,7 @@
 "use client";
 import React, { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -128,9 +129,11 @@ const ChatHeader = ({ agent }: { agent: SupportAgent }) => (
           
           <div className="flex items-center gap-3">
             <div className="relative">
-              <img 
+              <Image
                 src={agent.avatar} 
                 alt={agent.name}
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full object-cover border-2 border-[#FFC72C]/20"
               />
               <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background ${
@@ -236,9 +239,11 @@ const AgentMessage = ({ message, agent }: { message: ChatMessage; agent: Support
   <div className="flex justify-start my-4 animate-fade-in-up">
     <div className="flex gap-3 max-w-4xl">
       <div className="flex-shrink-0">
-        <img 
+        <Image
           src={agent.avatar} 
           alt={agent.name}
+          width={40}
+          height={40}
           className="w-10 h-10 rounded-full object-cover border-2 border-[#FFC72C]/20"
         />
       </div>
@@ -271,9 +276,11 @@ const TypingIndicator = ({ agent }: { agent: SupportAgent }) => (
   <div className="flex justify-start my-4 animate-fade-in-up">
     <div className="flex gap-3 max-w-4xl">
       <div className="flex-shrink-0">
-        <img 
+        <Image
           src={agent.avatar} 
           alt={agent.name}
+          width={40}
+          height={40}
           className="w-10 h-10 rounded-full object-cover border-2 border-[#FFC72C]/20"
         />
       </div>

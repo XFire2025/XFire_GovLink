@@ -1,6 +1,7 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -29,12 +30,6 @@ const ClockIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"/>
     <polyline points="12,6 12,12 16,14"/>
-  </svg>
-);
-
-const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20,6 9,17 4,12"/>
   </svg>
 );
 
@@ -134,9 +129,11 @@ const AgentCard = ({ agent, onConnect }: { agent: SupportAgent; onConnect: (agen
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <img 
+            <Image
               src={agent.avatar} 
               alt={agent.name}
+              width={64}
+              height={64}
               className="w-16 h-16 rounded-full object-cover border-2 border-[#FFC72C]/20"
             />
             <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-background ${
@@ -349,10 +346,10 @@ export default function SupportAgentWaitPage() {
             <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
               {/* Status Filters */}
               <div className="flex gap-2 flex-wrap">
-                {['all', 'available', 'busy', 'away', 'offline'].map((status) => (
+                {(['all', 'available', 'busy', 'away', 'offline'] as const).map((status) => (
                   <button
                     key={status}
-                    onClick={() => setSelectedFilter(status as any)}
+                    onClick={() => setSelectedFilter(status)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
                       selectedFilter === status
                         ? 'bg-[#FFC72C] text-[#8D153A] shadow-glow'
