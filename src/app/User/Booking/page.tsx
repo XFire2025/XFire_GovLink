@@ -78,7 +78,7 @@ export default function BookingListPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Your Bookings</h1>
         <Link
           href="/User/Booking/New"
-          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
         >
           New Booking
         </Link>
@@ -89,83 +89,146 @@ export default function BookingListPage() {
           No bookings yet. Create one to get started.
         </div>
       ) : (
-        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {sorted.map((b, idx) => {
-            const isFirst = idx === 0 && b.status === "upcoming";
-            const cancelled = b.status === "cancelled";
-
-            return (
-              <li
-                key={b.id}
-                className={classNames(
-                  "relative rounded-xl border p-4 shadow-sm transition",
-                  "bg-white ring-1 ring-neutral-200",
-                  isFirst && "shadow-[0_0_0_3px_rgba(239,68,68,0.35)] ring-red-200",
-                  cancelled && "opacity-70"
-                )}
-              >
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-sm text-neutral-500">{b.designation}</div>
-                    <div className="text-base font-semibold">{b.agent}</div>
-                  </div>
-                  <span
+        <>
+          {/* Upcoming */}
+          <div className="mb-3 text-sm font-semibold text-neutral-700">Upcoming</div>
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {sorted
+              .filter((b) => b.status === "upcoming")
+              .map((b, idx) => {
+                const isFirst = idx === 0; // first upcoming gets animated red glow
+                return (
+                  <li
+                    key={b.id}
                     className={classNames(
-                      "rounded-full px-2.5 py-1 text-xs font-medium",
-                      b.status === "upcoming" && "bg-emerald-100 text-emerald-800",
-                      b.status === "completed" && "bg-neutral-200 text-neutral-700",
-                      b.status === "cancelled" && "bg-red-100 text-red-700"
+                      "group relative rounded-xl border p-4 shadow-sm transition",
+                      "bg-white ring-1 ring-neutral-200 hover:shadow-md",
+                      isFirst && "ring-red-200"
                     )}
                   >
-                    {b.status}
-                  </span>
-                </div>
+                    {/* Animated glow ring for first card */}
+                    {isFirst && (
+                      <>
+                        <div className="pointer-events-none absolute -inset-0.5 rounded-xl ring-2 ring-red-300/60" aria-hidden />
+                        <div
+                          aria-hidden
+                          className="pointer-events-none absolute -inset-1 rounded-2xl animate-[glow_2.4s_linear_infinite] bg-[conic-gradient(from_var(--angle),transparent_0%,rgba(239,68,68,0.45)_12%,transparent_22%,transparent_100%)] [--angle:0deg]"
+                          style={{ maskImage: "radial-gradient(closest-side, transparent 92%, black 96%)" }}
+                        />
+                      </>
+                    )}
 
-                <div className="mb-2 text-sm text-neutral-700">
-                  <span className="font-medium">Date:</span> {b.date}
-                  <span className="mx-2">•</span>
-                  <span className="font-medium">Time:</span> {b.time}
-                </div>
-                {b.location && (
-                  <div className="mb-4 text-sm text-neutral-600">
-                    <span className="font-medium">Location:</span> {b.location}
-                  </div>
-                )}
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-sm text-neutral-500">{b.designation}</div>
+                        <div className="text-base font-semibold tracking-tight">{b.agent}</div>
+                      </div>
+                      <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-800">
+                        upcoming
+                      </span>
+                    </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-neutral-500">ID: {b.id}</div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      className="rounded-md border px-3 py-1.5 text-sm hover:bg-neutral-50"
-                    >
-                      View
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => cancelBooking(b.id)}
-                      disabled={cancelled || cancellingId === b.id}
+                    <div className="mb-2 text-sm text-neutral-700">
+                      <span className="font-medium">Date:</span> {b.date}
+                      <span className="mx-2">•</span>
+                      <span className="font-medium">Time:</span> {b.time}
+                    </div>
+                    {b.location && (
+                      <div className="mb-4 text-sm text-neutral-600">
+                        <span className="font-medium">Location:</span> {b.location}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs text-neutral-500">ID: {b.id}</div>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          className="rounded-md border px-3 py-1.5 text-sm shadow-sm hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-300"
+                        >
+                          View
+                        </button>
+                        {/* Less attractive cancel */}
+                        <button
+                          type="button"
+                          onClick={() => cancelBooking(b.id)}
+                          disabled={cancellingId === b.id}
+                          className={classNames(
+                            "rounded-md border border-red-200 bg-white px-3 py-1.5 text-sm text-red-700 shadow-sm",
+                            cancellingId === b.id ? "opacity-60" : "hover:bg-red-50",
+                            "focus:outline-none focus:ring-2 focus:ring-red-200"
+                          )}
+                        >
+                          {cancellingId === b.id ? "Cancelling..." : "Cancel"}
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+          </ul>
+
+          {/* History */}
+          <div className="mt-10 mb-3 text-sm font-semibold text-neutral-700">History</div>
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {sorted
+              .filter((b) => b.status !== "upcoming")
+              .map((b) => (
+                <li
+                  key={b.id}
+                  className="rounded-xl border bg-white p-4 shadow-sm ring-1 ring-neutral-200 transition hover:shadow-md"
+                >
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm text-neutral-500">{b.designation}</div>
+                      <div className="text-base font-semibold tracking-tight">{b.agent}</div>
+                    </div>
+                    <span
                       className={classNames(
-                        "rounded-md px-3 py-1.5 text-sm text-white",
-                        cancelled
-                          ? "bg-neutral-400 cursor-not-allowed"
-                          : "bg-red-600 hover:bg-red-700",
-                        cancellingId === b.id && "opacity-70"
+                        "rounded-full px-2.5 py-1 text-xs font-medium",
+                        b.status === "completed" && "bg-neutral-200 text-neutral-700",
+                        b.status === "cancelled" && "bg-red-100 text-red-700"
                       )}
                     >
-                      {cancelled ? "Cancelled" : cancellingId === b.id ? "Cancelling..." : "Cancel"}
-                    </button>
+                      {b.status}
+                    </span>
                   </div>
-                </div>
 
-                {isFirst && (
-                  <div className="pointer-events-none absolute -inset-0.5 rounded-xl ring-2 ring-red-300/60" aria-hidden />
-                )}
-              </li>
-            );
-          })}
-        </ul>
+                  <div className="mb-2 text-sm text-neutral-700">
+                    <span className="font-medium">Date:</span> {b.date}
+                    <span className="mx-2">•</span>
+                    <span className="font-medium">Time:</span> {b.time}
+                  </div>
+                  {b.location && (
+                    <div className="mb-4 text-sm text-neutral-600">
+                      <span className="font-medium">Location:</span> {b.location}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-neutral-500">ID: {b.id}</div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className="rounded-md border px-3 py-1.5 text-sm shadow-sm hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-neutral-300"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              ))}
+          </ul>
+        </>
       )}
+
+      {/* Keyframes for the animated glow */}
+      <style jsx>{`
+        @keyframes glow {
+          0% { --angle: 0deg; }
+          100% { --angle: 360deg; }
+        }
+      `}</style>
     </main>
   );
 }
