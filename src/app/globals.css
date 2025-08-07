@@ -646,24 +646,36 @@
       border: 2px solid rgba(255, 255, 255, 0.3);
     }
   }
-}
-
-/* Force hide cursor on small screens - highest specificity */
-@media (max-width: 1023px) {
-  * {
-    cursor: none !important;
+  
+  /* Custom scrollbar styles for admin sidebar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
   }
   
-  *:hover {
-    cursor: none !important;
+  .scrollbar-thumb-muted {
+    scrollbar-color: var(--muted) transparent;
   }
   
-  *:focus {
-    cursor: none !important;
+  .scrollbar-track-transparent {
+    scrollbar-track-color: transparent;
   }
   
-  *:active {
-    cursor: none !important;
+  /* Webkit scrollbar styles */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--muted);
+    border-radius: 2px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
   }
 }
 
