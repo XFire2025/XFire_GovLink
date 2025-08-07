@@ -4,6 +4,7 @@
 import React, { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Header } from '@/components/Header'; // Assuming Header is in a shared components directory
 
 // --- SHARED COMPONENTS (Copied for consistency) ---
@@ -257,9 +258,12 @@ const TimeSlotCard = ({
                         <div className="font-semibold text-foreground text-lg">
                             {formatTime(slot)}
                         </div>
-                        <div className={`text-xs font-medium ${status.color}`}>
-                            {status.text}
-                        </div>
+                        {/* Only show status text for available/selected slots, not unavailable ones */}
+                        {isAvailable && (
+                            <div className={`text-xs font-medium ${status.color}`}>
+                                {status.text}
+                            </div>
+                        )}
                     </div>
                 </div>
                 
@@ -273,7 +277,7 @@ const TimeSlotCard = ({
             {!isAvailable && (
                 <div className="absolute inset-0 flex items-center justify-center bg-card/30 backdrop-blur-sm rounded-2xl">
                     <span className="text-xs font-medium text-red-400 bg-red-500/20 px-2 py-1 rounded-full">
-                        Booked
+                        Unavailable
                     </span>
                 </div>
             )}
@@ -328,6 +332,7 @@ function mockAvailability(dayKey: string, agent: string) {
 
 // --- MAIN PAGE COMPONENT ---
 export default function NewBookingPage() {
+	const router = useRouter();
 	const [form, setForm] = useState({ designation: "", agent: "", day: "", slot: "", notes: "" });
 	const [submitting, setSubmitting] = useState(false);
 	const [success, setSuccess] = useState<string | null>(null);
@@ -364,9 +369,19 @@ export default function NewBookingPage() {
 
 		setSubmitting(true);
 		await new Promise((res) => setTimeout(res, 1200));
-		setSuccess("Your booking request has been confirmed! A confirmation has been sent to your registered email.");
-		setForm({ designation: "", agent: "", day: "", slot: "", notes: "" });
-		setSubmitting(false);
+		
+		// Store booking data for the submission page (in real app, this would be handled differently)
+		const bookingData = {
+			designation: form.designation,
+			agent: form.agent,
+			day: form.day,
+			slot: form.slot,
+			notes: form.notes
+		};
+		localStorage.setItem('latestBooking', JSON.stringify(bookingData));
+		
+		// Redirect to submission page
+		router.push('/user/booking/submission');
 	}
 
 	return (
