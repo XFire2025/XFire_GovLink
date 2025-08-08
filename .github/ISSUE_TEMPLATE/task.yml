@@ -1,0 +1,41 @@
+name: Task / Chore
+description: Track a small task, refactor, or maintenance work.
+title: "[Task]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for maintenance, refactors, or follow-ups that are not user-facing features.
+  - type: input
+    id: title
+    attributes:
+      label: Task summary
+      placeholder: e.g., Refactor Header component structure
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What needs to be done and why.
+  - type: textarea
+    id: checklist
+    attributes:
+      label: Checklist
+      description: List steps to complete the task.
+      placeholder: |
+        - [ ] Update components
+        - [ ] Run npm run lint
+        - [ ] Update docs
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks/Dependencies
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of done
+      placeholder: |
+        - [ ] Lint and build pass
+        - [ ] No functional changes/regressions
+        - [ ] Tests/docs updated (if applicable)

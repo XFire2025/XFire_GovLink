@@ -1,0 +1,73 @@
+name: Feature request
+description: Propose a new feature or improvement.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion! Please share the problem and the desired outcome.
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One-sentence description of the feature.
+      placeholder: e.g., Add dark mode toggle to admin dashboard
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem are we solving? Who is affected?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the solution, including UX/API/behavior.
+      placeholder: Include mockups or pseudo-API if helpful
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any alternative solutions you've considered.
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Define success with clear, testable criteria.
+      placeholder: |
+        - Given X, when Y, then Z
+        - Lint and build pass
+        - Docs updated
+  - type: checkboxes
+    id: non_goals
+    attributes:
+      label: Out of scope (optional)
+      options:
+        - label: This does not include mobile support
+        - label: This does not change backend APIs
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      options:
+        - high (significant user value)
+        - medium (nice to have)
+        - low (minor improvement)
+  - type: textarea
+    id: design
+    attributes:
+      label: Designs/References
+      description: Link designs, prior art, or related issues/PRs.
+  - type: checkboxes
+    id: contributor
+    attributes:
+      label: Contribution
+      options:
+        - label: I’m willing to submit a PR for this feature
