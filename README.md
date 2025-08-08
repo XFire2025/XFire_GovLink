@@ -37,7 +37,9 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 
 Deployments are powered by Netlify, which provides a global Content Delivery Network (CDN) and automatic scaling for your Next.js applications.
-Main Branch: [main]
+
+Main Branch:
 [![Netlify Status](https://api.netlify.com/api/v1/badges/c64faf7b-b410-4c26-82fa-ac50e5b38da1/deploy-status)](https://app.netlify.com/projects/govlink25/deploys)
-Dev Branch: [dev]
+
+Dev Branch:
 [![Netlify Status](https://api.netlify.com/api/v1/badges/399ab7d0-ba49-474d-b44b-a5637bfb2d1b/deploy-status)](https://app.netlify.com/projects/govlinkdev/deploys)
