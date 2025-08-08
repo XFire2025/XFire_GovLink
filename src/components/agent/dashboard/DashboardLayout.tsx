@@ -53,7 +53,7 @@ const translations: Record<Language, Translation> = {
 const languageOptions = [
   { code: 'en', label: 'English', nativeLabel: 'English' },
   { code: 'si', label: 'Sinhala', nativeLabel: 'සිංහල' },
-  { code: 'ta', label: 'Tamil', nativeLabel: 'தமිழ්' }
+  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ்' }
 ];
 
 // EXACT SAME Lotus Icon as Landing Page with Sri Lankan Flag Colors
@@ -171,15 +171,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <nav className="container mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
           <div className="flex items-center space-x-3 group">
             <div className="w-9 h-9 bg-gradient-to-br from-[#FFC72C]/10 to-[#FF5722]/10 rounded-xl p-0.5 flex items-center justify-center border border-[#FFC72C]/20 relative overflow-visible backdrop-blur-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
-              <svg className="w-6 h-6 text-[#FFC72C] transition-transform duration-300 group-hover:rotate-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 21h18"/>
-                <path d="M5 21V7l8-4v18"/>
-                <path d="M19 21V11l-6-4"/>
-                <path d="M9 9v.01"/>
-                <path d="M9 12v.01"/>
-                <path d="M9 15v.01"/>
-                <path d="M9 18v.01"/>
-              </svg>
+              <LotusIcon className="w-11 h-11 absolute transition-transform duration-300 group-hover:rotate-12" />
             </div>
             <div className="flex flex-col">
               <span className="text-xl md:text-2xl font-bold text-gradient leading-none">GovLink</span>
