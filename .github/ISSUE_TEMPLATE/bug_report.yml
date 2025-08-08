@@ -1,0 +1,109 @@
+name: Bug report
+description: Report a reproducible problem or regression.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please provide as much info as possible.
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: One-sentence summary of the issue.
+      placeholder: e.g., 500 error when loading /admin/dashboard
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened vs. what you expected to happen.
+      placeholder: Actual vs expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Exact steps to reproduce the issue.
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. See error ...
+      render: bash
+    validations:
+      required: true
+  - type: input
+    id: affected_routes
+    attributes:
+      label: Affected routes/pages
+      placeholder: e.g., /admin/login, /User/Profile
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: Browsers
+      multiple: true
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Other
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: e.g., Ubuntu 22.04
+  - type: input
+    id: node
+    attributes:
+      label: Node.js version
+      placeholder: e.g., 20.x LTS
+  - type: input
+    id: app_version
+    attributes:
+      label: App version/commit
+      placeholder: git rev-parse --short HEAD
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and stack traces
+      description: Paste relevant console/server logs. Remove secrets.
+      render: shell
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or recordings
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - critical (prod down/security)
+        - high (major functionality broken)
+        - medium (workaround exists)
+        - low (minor/cosmetic)
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: Affects production
+        - label: Regression from previous version
+        - label: Security-related
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Pre-flight checks
+      options:
+        - label: I searched existing issues
+          required: true
+        - label: I can reproduce this with a clean install (npm ci)
+        - label: I sanitized logs and did not include secrets
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
