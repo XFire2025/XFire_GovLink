@@ -160,7 +160,7 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
       <SriLankanBackground />
 
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full bg-background/98 dark:bg-card backdrop-blur-md border-b border-border/30 dark:border-border/50 shadow-sm dark:shadow-lg">
+      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-background/98 dark:bg-card backdrop-blur-md border-b border-border/30 dark:border-border/50 shadow-sm dark:shadow-lg">
         <nav className="container mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
           <Link href="/" className="flex items-center space-x-3 group">
             <div className="w-9 h-9 bg-gradient-to-br from-[#FFC72C]/10 to-[#FF5722]/10 rounded-xl p-0.5 flex items-center justify-center border border-[#FFC72C]/20 relative overflow-visible backdrop-blur-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
@@ -228,7 +228,7 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16 md:py-20 relative z-10">
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16 md:py-20 pt-20 sm:pt-24 md:pt-28 relative z-10">
         <div className="w-full max-w-md">
           {/* Title Section */}
           <div className="text-center mb-8 sm:mb-10 animate-fade-in-up">

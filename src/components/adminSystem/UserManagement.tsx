@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useState } from "react";
+import { motion } from "framer-motion";
 import {
   Search,
   Filter,
@@ -15,7 +15,10 @@ import {
   UserCheck,
   MoreHorizontal,
   ShieldCheck,
+  Users,
+  UserCog,
 } from "lucide-react";
+
 
 // Interface definitions
 interface User {
@@ -93,188 +96,225 @@ export default function UserManagement({ userType }: UserManagementProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            {userType === "agents" ? "Agent Management" : "User Management"}
-          </h1>
-          <p className="text-muted-foreground">
-            Manage{" "}
-            {userType === "agents"
-              ? "customer service agents"
-              : "regular users"}{" "}
-            and their permissions
-          </p>
-        </div>
-        <button className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-          <Plus className="w-4 h-4" />
-          Add {userType === "agents" ? "Agent" : "User"}
-        </button>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          />
-        </div>
-        <div className="flex gap-2">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="pending">Pending</option>
-            <option value="suspended">Suspended</option>
-          </select>
-          <button className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-muted transition-colors">
-            <Filter className="w-4 h-4" />
-            Filter
+    <div className="relative min-h-full">
+      {/* Main content */}
+      <div className="space-y-8">
+        {/* Enhanced Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center"
+        >
+          <div className="animate-fade-in-up">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              <span className="flex items-center gap-3">
+                {userType === "agents" ? (
+                  <UserCog className="w-8 h-8 text-[#8D153A]" />
+                ) : (
+                  <Users className="w-8 h-8 text-[#8D153A]" />
+                )}
+                <span className="text-foreground">{userType === "agents" ? "Agent" : "User"}</span>{' '}
+                <span className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
+                  Management
+                </span>
+              </span>
+            </h1>
+            <p className="text-muted-foreground">
+              Manage{" "}
+              {userType === "agents"
+                ? "customer service agents"
+                : "regular users"}{" "}
+              and their permissions
+            </p>
+          </div>
+          <button className="flex items-center gap-2 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 modern-card">
+            <Plus className="w-4 h-4" />
+            Add {userType === "agents" ? "Agent" : "User"}
           </button>
-          <button className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-muted transition-colors">
-            <Download className="w-4 h-4" />
-            Export
-          </button>
-        </div>
-      </div>
+        </motion.div>
 
-      {/* Users Table */}
-      <div className="glass-morphism rounded-2xl border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="text-left p-4 font-semibold">User</th>
-                <th className="text-left p-4 font-semibold">Status</th>
-                <th className="text-left p-4 font-semibold">Verification</th>
-                <th className="text-left p-4 font-semibold">Join Date</th>
-                <th className="text-left p-4 font-semibold">Last Active</th>
-                <th className="text-left p-4 font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-t border-border hover:bg-muted/30 transition-colors"
-                >
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-primary/20 to-primary/30 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-medium">
-                          {user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="font-medium text-foreground">
-                          {user.name}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {user.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                        user.status === "active"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : user.status === "pending"
-                          ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                      }`}
-                    >
-                      {user.status === "active" && (
-                        <CheckCircle className="w-3 h-3" />
-                      )}
-                      {user.status === "pending" && (
-                        <Clock className="w-3 h-3" />
-                      )}
-                      {user.status === "suspended" && (
-                        <XCircle className="w-3 h-3" />
-                      )}
-                      {user.status.charAt(0).toUpperCase() +
-                        user.status.slice(1)}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                        user.verificationStatus === "verified"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          : user.verificationStatus === "pending"
-                          ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                      }`}
-                    >
-                      {user.verificationStatus === "verified" && (
-                        <ShieldCheck className="w-3 h-3" />
-                      )}
-                      {user.verificationStatus === "pending" && (
-                        <Clock className="w-3 h-3" />
-                      )}
-                      {user.verificationStatus === "rejected" && (
-                        <XCircle className="w-3 h-3" />
-                      )}
-                      {user.verificationStatus.charAt(0).toUpperCase() +
-                        user.verificationStatus.slice(1)}
-                    </span>
-                  </td>
-                  <td className="p-4 text-sm text-muted-foreground">
-                    {user.joinDate}
-                  </td>
-                  <td className="p-4 text-sm text-muted-foreground">
-                    {user.lastActive}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <button className="p-1 hover:bg-muted rounded">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="p-1 hover:bg-muted rounded">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      {user.status === "active" ? (
-                        <button
-                          onClick={() =>
-                            handleStatusChange(user.id, "suspended")
-                          }
-                          className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded text-red-600"
-                        >
-                          <UserX className="w-4 h-4" />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleStatusChange(user.id, "active")}
-                          className="p-1 hover:bg-green-100 dark:hover:bg-green-900/30 rounded text-green-600"
-                        >
-                          <UserCheck className="w-4 h-4" />
-                        </button>
-                      )}
-                      <button className="p-1 hover:bg-muted rounded">
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+        {/* Enhanced Search and Filters */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
+          className="flex flex-col sm:flex-row gap-4"
+        >
+          <div className="relative flex-1 group">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-[#8D153A] transition-colors duration-300" />
+            <input
+              type="text"
+              placeholder={`Search ${userType === "agents" ? "agents" : "users"}...`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card hover:shadow-md"
+            />
+          </div>
+          <div className="flex gap-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card hover:shadow-md"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="pending">Pending</option>
+              <option value="suspended">Suspended</option>
+            </select>
+            <button className="flex items-center gap-2 px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl hover:bg-card/80 hover:border-[#FFC72C]/50 transition-all duration-300 modern-card hover:shadow-md">
+              <Filter className="w-4 h-4 text-[#FFC72C]" />
+              Filter
+            </button>
+            <button className="flex items-center gap-2 px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl hover:bg-card/80 hover:border-[#008060]/50 transition-all duration-300 modern-card hover:shadow-md">
+              <Download className="w-4 h-4 text-[#008060]" />
+              Export
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Enhanced Users Table */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+          className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card overflow-hidden"
+        >
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5 border-b border-border/30">
+                <tr>
+                  <th className="text-left p-4 font-semibold text-foreground">{userType === "agents" ? "Agent" : "User"}</th>
+                  <th className="text-left p-4 font-semibold text-foreground">Status</th>
+                  <th className="text-left p-4 font-semibold text-foreground">Verification</th>
+                  <th className="text-left p-4 font-semibold text-foreground">Join Date</th>
+                  <th className="text-left p-4 font-semibold text-foreground">Last Active</th>
+                  <th className="text-left p-4 font-semibold text-foreground">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredUsers.map((user, index) => (
+                  <motion.tr
+                    key={user.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 * index, duration: 0.3 }}
+                    className="border-t border-border/20 hover:bg-card/30 transition-all duration-300 group"
+                  >
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 bg-gradient-to-r rounded-full flex items-center justify-center border-2 shadow-md transition-all duration-300 group-hover:scale-110 ${
+                          userType === "agents" 
+                            ? "from-[#8D153A]/20 to-[#FF5722]/20 border-[#8D153A]/30" 
+                            : "from-[#008060]/20 to-[#FFC72C]/20 border-[#008060]/30"
+                        }`}>
+                          <span className="text-sm font-bold text-foreground">
+                            {user.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="font-medium text-foreground group-hover:text-[#8D153A] transition-colors duration-300">
+                            {user.name}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {user.email}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${
+                          user.status === "active"
+                            ? "bg-[#008060]/10 text-[#008060] border-[#008060]/20"
+                            : user.status === "pending"
+                            ? "bg-[#FFC72C]/10 text-[#FFC72C] border-[#FFC72C]/20"
+                            : "bg-[#FF5722]/10 text-[#FF5722] border-[#FF5722]/20"
+                        }`}
+                      >
+                        {user.status === "active" && (
+                          <CheckCircle className="w-3 h-3" />
+                        )}
+                        {user.status === "pending" && (
+                          <Clock className="w-3 h-3" />
+                        )}
+                        {user.status === "suspended" && (
+                          <XCircle className="w-3 h-3" />
+                        )}
+                        {user.status.charAt(0).toUpperCase() +
+                          user.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${
+                          user.verificationStatus === "verified"
+                            ? "bg-[#8D153A]/10 text-[#8D153A] border-[#8D153A]/20"
+                            : user.verificationStatus === "pending"
+                            ? "bg-[#FFC72C]/10 text-[#FFC72C] border-[#FFC72C]/20"
+                            : "bg-[#FF5722]/10 text-[#FF5722] border-[#FF5722]/20"
+                        }`}
+                      >
+                        {user.verificationStatus === "verified" && (
+                          <ShieldCheck className="w-3 h-3" />
+                        )}
+                        {user.verificationStatus === "pending" && (
+                          <Clock className="w-3 h-3" />
+                        )}
+                        {user.verificationStatus === "rejected" && (
+                          <XCircle className="w-3 h-3" />
+                        )}
+                        {user.verificationStatus.charAt(0).toUpperCase() +
+                          user.verificationStatus.slice(1)}
+                      </span>
+                    </td>
+                    <td className="p-4 text-sm text-muted-foreground font-medium">
+                      {user.joinDate}
+                    </td>
+                    <td className="p-4 text-sm text-muted-foreground font-medium">
+                      {user.lastActive}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <button className="p-2 hover:bg-[#8D153A]/10 rounded-lg transition-all duration-300 hover:scale-110 text-[#8D153A]" title="View Details">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button className="p-2 hover:bg-[#FFC72C]/10 rounded-lg transition-all duration-300 hover:scale-110 text-[#FFC72C]" title="Edit">
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        {user.status === "active" ? (
+                          <button
+                            onClick={() =>
+                              handleStatusChange(user.id, "suspended")
+                            }
+                            className="p-2 hover:bg-[#FF5722]/10 rounded-lg transition-all duration-300 hover:scale-110 text-[#FF5722]"
+                            title="Suspend User"
+                          >
+                            <UserX className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleStatusChange(user.id, "active")}
+                            className="p-2 hover:bg-[#008060]/10 rounded-lg transition-all duration-300 hover:scale-110 text-[#008060]"
+                            title="Activate User"
+                          >
+                            <UserCheck className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button className="p-2 hover:bg-muted/50 rounded-lg transition-all duration-300 hover:scale-110" title="More Actions">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

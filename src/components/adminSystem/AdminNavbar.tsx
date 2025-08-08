@@ -50,135 +50,163 @@ export default function AdminNavbar() {
     }
   ];
 
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case 'info': return 'bg-[#8D153A]';
+      case 'warning': return 'bg-[#FFC72C]';
+      case 'success': return 'bg-[#008060]';
+      default: return 'bg-[#FF5722]';
+    }
+  };
+
   const unreadNotifications = notifications.filter(n => !n.read).length;
 
   return (
-    <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="px-4 lg:px-6 py-4">
+    <header className="sticky top-0 z-[100] bg-gradient-to-b from-card/95 via-card/90 to-card/80 dark:from-card/98 dark:via-card/95 dark:to-card/90 backdrop-blur-md border-b border-border/50 shadow-sm modern-card relative overflow-visible">
+      {/* Background Image */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div 
+          className="absolute inset-0 opacity-25 dark:opacity-15 bg-center bg-no-repeat bg-cover transition-opacity duration-1000"
+          style={{
+            backgroundImage: 'url("/2.png")',
+            backgroundPosition: 'center center',
+            filter: 'saturate(1.1) brightness(1.05)',
+          }}
+        ></div>
+        {/* Gradient overlay for better readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/30 dark:via-transparent dark:to-background/40"></div>
+      </div>
+      
+      <div className="relative z-10 px-4 lg:px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Left Section - Breadcrumb/Title */}
+          {/* Enhanced Left Section - Breadcrumb/Title */}
           <div className="flex items-center gap-4 ml-12 lg:ml-0">
             <div>
-              <h1 className="text-lg lg:text-xl font-semibold text-foreground">Admin Panel</h1>
-              <p className="text-sm text-muted-foreground hidden sm:block">Government Link Administration</p>
+              <h1 className="text-lg lg:text-xl font-bold">
+                <span className="text-foreground">Admin</span>{' '}
+                <span className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
+                  Panel
+                </span>
+              </h1>
+              <p className="text-sm text-muted-foreground hidden sm:block font-medium">
+                Government Link Administration
+              </p>
             </div>
           </div>
 
-        {/* Center Section - Search */}
-        <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
-          <div className="relative w-full">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search users, reports, settings..."
-              className="w-full pl-10 pr-4 py-2 bg-muted/30 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-            />
+          {/* Enhanced Center Section - Search */}
+          <div className="hidden md:flex items-center flex-1 max-w-md mx-8">
+            <div className="relative w-full group">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-[#8D153A] transition-colors duration-300" />
+              <input
+                type="text"
+                placeholder="Search users, reports, settings..."
+                className="w-full pl-10 pr-4 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card hover:shadow-md"
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Right Section - Actions */}
-        <div className="flex items-center gap-4">
-          {/* Theme Toggle */}
-          <ThemeToggle />
+          {/* Enhanced Right Section - Actions */}
+          <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
-          {/* Notifications */}
-          <div className="relative">
-            <button
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 hover:bg-muted rounded-lg transition-colors"
-            >
-              <Bell className="w-5 h-5" />
-              {unreadNotifications > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {unreadNotifications}
-                </span>
-              )}
-            </button>
+            {/* Enhanced Notifications */}
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2.5 hover:bg-card/60 rounded-xl transition-all duration-300 hover:shadow-md modern-card hover:scale-105"
+              >
+                <Bell className="w-5 h-5 text-muted-foreground hover:text-[#8D153A] transition-colors duration-300" />
+                {unreadNotifications > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#FF5722] to-[#FF5722]/90 text-white text-xs rounded-full flex items-center justify-center shadow-md animate-pulse">
+                    {unreadNotifications}
+                  </span>
+                )}
+              </button>
 
-            {/* Notifications Dropdown */}
-            {showNotifications && (
-              <div className="absolute right-0 top-full mt-2 w-80 bg-background border border-border rounded-lg shadow-lg z-50">
-                <div className="p-4 border-b border-border">
-                  <h3 className="font-semibold text-foreground">Notifications</h3>
-                </div>
-                <div className="max-h-96 overflow-y-auto">
-                  {notifications.map((notification) => (
-                    <div 
-                      key={notification.id} 
-                      className={`p-4 border-b border-border hover:bg-muted/30 transition-colors ${
-                        !notification.read ? 'bg-muted/20' : ''
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={`w-2 h-2 rounded-full mt-2 ${
-                          notification.type === 'info' ? 'bg-blue-500' :
-                          notification.type === 'warning' ? 'bg-yellow-500' :
-                          'bg-green-500'
-                        }`} />
-                        <div className="flex-1">
-                          <h4 className="text-sm font-medium text-foreground">{notification.title}</h4>
-                          <p className="text-xs text-muted-foreground">{notification.message}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
+              {/* Enhanced Notifications Dropdown */}
+              {showNotifications && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-card/95 dark:bg-card/98 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl z-[110] modern-card">
+                  <div className="p-4 border-b border-border/30 bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5">
+                    <h3 className="font-bold text-foreground bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
+                      Notifications
+                    </h3>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.map((notification) => (
+                      <div 
+                        key={notification.id} 
+                        className={`p-4 border-b border-border/20 hover:bg-card/60 transition-all duration-300 hover:shadow-sm ${
+                          !notification.read ? 'bg-card/40' : ''
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`w-3 h-3 rounded-full mt-1.5 shadow-sm ${getNotificationColor(notification.type)}`} />
+                          <div className="flex-1">
+                            <h4 className="text-sm font-semibold text-foreground">{notification.title}</h4>
+                            <p className="text-xs text-muted-foreground">{notification.message}</p>
+                            <p className="text-xs text-muted-foreground/80 mt-1 font-medium">{notification.time}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                  <div className="p-3 border-t border-border/30 bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5">
+                    <button className="w-full text-sm text-[#8D153A] hover:text-[#8D153A]/80 transition-colors font-semibold">
+                      View all notifications
+                    </button>
+                  </div>
                 </div>
-                <div className="p-3 border-t border-border">
-                  <button className="w-full text-sm text-primary hover:text-primary/80 transition-colors">
-                    View all notifications
-                  </button>
-                </div>
-              </div>
-            )}
+              )}
           </div>
 
-          {/* Help */}
-          <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-            <HelpCircle className="w-5 h-5" />
-          </button>
+            {/* Enhanced Help */}
+            <button className="p-2.5 hover:bg-card/60 rounded-xl transition-all duration-300 hover:shadow-md modern-card hover:scale-105">
+              <HelpCircle className="w-5 h-5 text-muted-foreground hover:text-[#FFC72C] transition-colors duration-300" />
+            </button>
 
-          {/* Profile Menu */}
+          {/* Enhanced Profile Menu */}
           <div className="relative">
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
-              className="flex items-center gap-2 p-2 hover:bg-muted rounded-lg transition-colors"
+              className="flex items-center gap-2 p-2.5 hover:bg-card/60 rounded-xl transition-all duration-300 hover:shadow-md modern-card hover:scale-105"
             >
-              <div className="w-8 h-8 bg-gradient-to-r from-primary/20 to-primary/30 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium">A</span>
+              <div className="w-8 h-8 bg-gradient-to-r from-[#8D153A]/20 to-[#FF5722]/20 rounded-full flex items-center justify-center border border-[#8D153A]/30 shadow-md">
+                <span className="text-sm font-medium text-[#8D153A]">A</span>
               </div>
-              <span className="hidden md:block text-sm font-medium">Admin</span>
-              <ChevronDown className="w-4 h-4" />
+              <span className="hidden md:block text-sm font-medium text-foreground">Admin</span>
+              <ChevronDown className="w-4 h-4 text-muted-foreground hover:text-[#8D153A] transition-colors duration-300" />
             </button>
 
-            {/* Profile Dropdown */}
+            {/* Enhanced Profile Dropdown */}
             {showProfileMenu && (
-              <div className="absolute right-0 top-full mt-2 w-56 bg-background border border-border rounded-lg shadow-lg z-50">
-                <div className="p-4 border-b border-border">
+              <div className="absolute right-0 top-full mt-2 w-56 bg-card/95 dark:bg-card/98 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl z-[110] modern-card">
+                <div className="p-4 border-b border-border/30 bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-primary/20 to-primary/30 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium">A</span>
+                    <div className="w-10 h-10 bg-gradient-to-r from-[#8D153A]/20 to-[#FF5722]/20 rounded-full flex items-center justify-center border border-[#8D153A]/30 shadow-md">
+                      <span className="text-sm font-medium text-[#8D153A]">A</span>
                     </div>
                     <div>
-                      <h3 className="font-medium text-foreground">Administrator</h3>
+                      <h3 className="font-medium text-foreground bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">Administrator</h3>
                       <p className="text-sm text-muted-foreground">admin@govlink.lk</p>
                     </div>
                   </div>
                 </div>
                 
                 <div className="p-2">
-                  <button className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
-                    <User className="w-4 h-4" />
-                    Profile Settings
+                  <button className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-card/60 hover:shadow-sm rounded-xl transition-all duration-300 hover:scale-105 modern-card">
+                    <User className="w-4 h-4 text-[#8D153A]" />
+                    <span className="text-foreground">Profile Settings</span>
                   </button>
-                  <button className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted rounded-lg transition-colors">
-                    <Settings className="w-4 h-4" />
-                    Admin Settings
+                  <button className="w-full flex items-center gap-3 px-3 py-2.5 text-sm hover:bg-card/60 hover:shadow-sm rounded-xl transition-all duration-300 hover:scale-105 modern-card">
+                    <Settings className="w-4 h-4 text-[#008060]" />
+                    <span className="text-foreground">Admin Settings</span>
                   </button>
-                  <hr className="my-2 border-border" />
+                  <hr className="my-2 border-border/30" />
                   <button 
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-[#FF5722] hover:bg-[#FF5722]/10 hover:shadow-sm rounded-xl transition-all duration-300 hover:scale-105 modern-card"
                   >
                     <LogOut className="w-4 h-4" />
                     Sign Out
@@ -190,14 +218,14 @@ export default function AdminNavbar() {
         </div>
       </div>
 
-      {/* Mobile Search */}
+      {/* Enhanced Mobile Search */}
       <div className="md:hidden mt-4 px-4 lg:px-6">
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+        <div className="relative group">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-[#8D153A] transition-colors duration-300" />
           <input
             type="text"
             placeholder="Search..."
-            className="w-full pl-10 pr-4 py-2 bg-muted/30 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card hover:shadow-md"
           />
         </div>
       </div>
@@ -206,7 +234,7 @@ export default function AdminNavbar() {
       {/* Click outside handlers */}
       {(showProfileMenu || showNotifications) && (
         <div 
-          className="fixed inset-0 z-40" 
+          className="fixed inset-0 z-[105]" 
           onClick={() => {
             setShowProfileMenu(false);
             setShowNotifications(false);
