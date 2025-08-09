@@ -1328,7 +1328,7 @@ const Footer = ({ language }: { language: Language }) => {
 
 // --- MAIN PAGE COMPONENT ---
 export default function Home() {
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>('ta');
 
   const handleLanguageChange = (newLanguage: Language) => {
     setLanguage(newLanguage);
