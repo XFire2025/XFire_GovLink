@@ -293,7 +293,11 @@ export default function AdminLogin() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-[#8D153A] via-[#FF5722] to-[#FFC72C] hover:from-[#FF5722] hover:via-[#8D153A] hover:to-[#FFC72C] text-white font-semibold py-4 px-6 rounded-xl shadow-glow transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 modern-card"
+                className="w-full bg-gradient-to-r from-[#8D153A] via-[#FF5722] to-[#FFC72C] hover:from-[#FF5722] hover:via-[#8D153A] hover:to-[#FFC72C] text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border-2 border-[#8D153A]/20 hover:border-[#8D153A]/40"
+                style={{
+                  boxShadow: '0 4px 14px 0 rgba(141, 21, 58, 0.3), 0 8px 32px rgba(255, 87, 34, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+                }}
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
