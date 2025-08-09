@@ -145,7 +145,7 @@ interface HomeTranslations {
 // Sinhala translations
 const translations: HomeTranslations = {
   // Hero Section
-  heroTitle1: "රජයේ සේවා සරල කිරීම",
+   heroTitle1: "රජයේ සේවා සරල කිරීම",
   heroTitle2: "සෑම ශ්‍රී ලාංකිකයා වෙනුවෙන්",
   heroSubtitle: "ප්‍රශ්න ඇසීම, සේවා සොයාගැනීම, සහ රජයේ තොරතුරු ක්ෂණිකව ලබාගැනීම.",
   heroDescription: "ශ්‍රී ලංකාවේ පොදු සේවා වෙත ඔබේ සෘජු සම්බන්ධතාවය.",
