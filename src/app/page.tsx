@@ -756,7 +756,7 @@ const Hero = ({
           
           {/* Compact Search Interface */}
           <div className="max-w-3xl mx-auto animate-fade-in-up px-4 sm:px-0" style={{animationDelay: '0.4s'}}>
-            <form action="/chat" method="GET" className="relative group mb-4 sm:mb-6">
+            <form action="/User/Chat/Bot" method="GET" className="relative group mb-4 sm:mb-6">
               <div className="relative bg-card/90 dark:bg-card/95 backdrop-blur-md border-2 border-border/50 hover:border-[#FFC72C]/70 rounded-xl p-1.5 transition-all duration-500 hover:shadow-2xl shadow-lg modern-card">
                 <textarea
                   name="q"
