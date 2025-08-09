@@ -1,7 +1,6 @@
 // src/app/User/Chat/Bot/page.tsx
 "use client";
-import React, { Suspense, useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 import ReactMarkdown from 'react-markdown';
@@ -294,6 +293,13 @@ const BotMessage = ({ text, timestamp = new Date() }: { text: string; timestamp?
   );
 };
 
+// --- TOPIC TAG ---
+const TopicTag = ({ text }: { text: string }) => (
+  <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#FFC72C]/10 border border-[#FFC72C]/40 text-[#FFC72C] shadow-glow">
+    <span className="text-xs font-semibold tracking-wide">{text}</span>
+  </div>
+);
+
 // --- PREMIUM CHAT INPUT ---
 const ChatInput = ({ onSendMessage, language = 'en' }: { onSendMessage: (message: string) => void; language?: Language }) => {
   const [message, setMessage] = useState('');
@@ -315,7 +321,7 @@ const ChatInput = ({ onSendMessage, language = 'en' }: { onSendMessage: (message
   };
 
   return (
-    <div className="sticky bottom-0 bg-background/95 dark:bg-card/95 backdrop-blur-md border-t border-border/50 p-4 sm:p-6 z-40">
+    <div className="bg-background/95 dark:bg-card/95 backdrop-blur-md border-t border-border/50 p-4 sm:p-6 z-40">
       <div className="container mx-auto max-w-4xl">
         <div className={`relative transition-all duration-300 ${isFocused ? 'scale-[1.02]' : ''}`}>
           <div className="relative bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl p-2 shadow-glow hover:shadow-2xl transition-all duration-500 border border-border/50 hover:border-[#FFC72C]/60 modern-card">
@@ -476,10 +482,13 @@ function govLinkHelper() {
       subtitle={t.subtitle}
       language={currentLanguage}
       onLanguageChange={handleLanguageChange}
+  size="dense"
+  contentMode="fill"
+  headerContent={<div className="hidden" aria-hidden="true" />}
     >
-      <div className="relative min-h-[70vh]">
-        {/* Chat History Area */}
-        <div className="pb-32"> {/* Add padding for fixed input */}
+      <div className="grid grid-rows-[1fr_auto] h-full max-h-full">
+        {/* Chat History Area (scrollable) */}
+        <div className="min-h-0 overflow-y-auto overscroll-contain pr-1">
           <Suspense fallback={
             <div className="flex items-center justify-center py-20">
               <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl shadow-glow modern-card">
@@ -493,9 +502,8 @@ function govLinkHelper() {
             <ChatContent messages={messages} isTyping={isTyping} language={currentLanguage} />
           </Suspense>
         </div>
-
-        {/* Fixed Input Area */}
-        <div className="absolute bottom-0 left-0 right-0">
+        {/* Input Area (anchored at bottom) */}
+        <div>
           <ChatInput onSendMessage={handleSendMessage} language={currentLanguage} />
         </div>
       </div>
@@ -505,6 +513,11 @@ function govLinkHelper() {
 
 function ChatContent({ messages, isTyping, language = 'en' }: { messages?: {type: 'user' | 'bot', text: string, timestamp: Date}[]; isTyping?: boolean; language?: Language }) {
   const searchParams = useSearchParams();
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages?.length, isTyping, language]);
   const q = searchParams.get('q') ?? undefined;
   const userQuery = q || "How do I renew my passport?";
   const t = chatTranslations[language];
@@ -627,14 +640,9 @@ function govLinkHelper() {
   if (messages && messages.length > 0) {
     return (
       <div className="max-w-4xl mx-auto space-y-2">
-        {/* Welcome Message */}
-        <div className="text-center py-8 mb-8">
-          <div className="inline-flex items-center gap-3 glass-morphism px-6 py-3 rounded-full">
-            <LotusIcon className="w-8 h-8 animate-glow" />
-            <span className="text-sm font-medium text-muted-foreground">
-              Chat started with GovLink Assistant
-            </span>
-          </div>
+  {/* Topic Tag (centered) */}
+  <div className="py-6 mb-2 flex justify-center">
+          <TopicTag text="Chat started with GovLink Assistant" />
         </div>
 
         {/* Render messages */}
@@ -650,6 +658,7 @@ function govLinkHelper() {
         
         {/* Show typing indicator if bot is typing */}
         {isTyping && <TypingIndicator language={language} />}
+        <div ref={bottomRef} />
       </div>
     );
   }
@@ -659,18 +668,14 @@ function govLinkHelper() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-2">
-      {/* Welcome Message */}
-      <div className="text-center py-8 mb-8">
-        <div className="inline-flex items-center gap-3 bg-card/90 dark:bg-card/95 backdrop-blur-md px-6 py-3 rounded-full border border-border/50 modern-card shadow-glow">
-          <LotusIcon className="w-8 h-8 animate-glow" />
-          <span className="text-sm font-medium text-muted-foreground">
-            {t.chatStarted}
-          </span>
-        </div>
+  {/* Topic Tag (centered) */}
+  <div className="py-6 mb-2 flex justify-center">
+        <TopicTag text={t.chatStarted} />
       </div>
 
       <UserMessage text={userQuery} timestamp={new Date()} />
       <BotMessage text={botResponse} timestamp={new Date()} />
+  <div ref={bottomRef} />
     </div>
   );
 }

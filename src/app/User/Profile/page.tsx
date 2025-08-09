@@ -3,6 +3,7 @@
 
 import React, { useState, useMemo, useRef, ChangeEvent, FormEvent } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 
 // Types
@@ -12,6 +13,7 @@ type Language = 'en' | 'si' | 'ta';
 const profileTranslations: Record<Language, {
   title: string;
   subtitle: string;
+  backToDashboard: string;
   personalDetails: string;
   personalDetailsDesc: string;
   myDocuments: string;
@@ -34,6 +36,7 @@ const profileTranslations: Record<Language, {
   en: {
     title: 'Profile Settings',
     subtitle: 'Manage your personal information and account settings',
+    backToDashboard: 'Back to Dashboard',
     personalDetails: 'Personal Details',
     personalDetailsDesc: 'Manage your personal information, address, and contact details.',
     myDocuments: 'My Documents',
@@ -56,6 +59,7 @@ const profileTranslations: Record<Language, {
   si: {
     title: 'පැතිකඩ සැකසුම්',
     subtitle: 'ඔබගේ පුද්ගලික තොරතුරු සහ ගිණුම් සැකසුම් කළමනාකරණය කරන්න',
+    backToDashboard: 'පාලනයට ආපසු',
     personalDetails: 'පුද්ගලික විස්තර',
     personalDetailsDesc: 'ඔබගේ පුද්ගලික තොරතුරු, ලිපිනය සහ සම්බන්ධතා විස්තර කළමනාකරණය කරන්න.',
     myDocuments: 'මගේ ලේඛන',
@@ -78,6 +82,7 @@ const profileTranslations: Record<Language, {
   ta: {
     title: 'சுயவிவர அமைப்புகள்',
     subtitle: 'உங்கள் தனிப்பட்ட தகவல்கள் மற்றும் கணக்கு அமைப்புகளை நிர்வகிக்கவும்',
+    backToDashboard: 'டாஷ்போர்டுக்கு திரும்பவும்',
     personalDetails: 'தனிப்பட்ட விவரங்கள்',
     personalDetailsDesc: 'உங்கள் தனிப்பட்ட தகவல், முகவரி மற்றும் தொடர்பு விவரங்களை நிர்வகிக்கவும்.',
     myDocuments: 'எனது ஆவணங்கள்',
@@ -100,6 +105,10 @@ const profileTranslations: Record<Language, {
 };
 
 // --- PREMIUM SVG ICON COMPONENTS ---
+const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+);
+
 const UserIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 );
@@ -229,6 +238,17 @@ export default function ProfilePage() {
       onLanguageChange={handleLanguageChange}
     >
       <div className="max-w-6xl mx-auto">
+        {/* Back Button */}
+        <div className="mb-8">
+          <Link 
+            href="/User/Dashboard"
+            className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
+          >
+            <ArrowLeftIcon className="w-4 h-4" />
+            {t.backToDashboard}
+          </Link>
+        </div>
+
         <div className="lg:grid lg:grid-cols-12 lg:gap-12">
           {/* --- SIDEBAR --- */}
           <aside className="lg:col-span-3 mb-12 lg:mb-0">

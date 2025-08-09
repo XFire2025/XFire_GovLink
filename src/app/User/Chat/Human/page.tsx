@@ -1,11 +1,123 @@
 "use client";
 import React, { Suspense, useState, useEffect } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
-import { useSearchParams } from 'next/navigation';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { useSearchParams, useRouter } from 'next/navigation';
+
+// Types
+type Language = 'en' | 'si' | 'ta';
+
+// Chat translations
+const chatTranslations: Record<Language, {
+  title: string;
+  subtitle: string;
+  backToDashboard: string;
+  connecting: string;
+  connectedTo: string;
+  online: string;
+  typing: string;
+  away: string;
+  generatingResponse: string;
+  isPreparingResponse: string;
+  typeMessage: string;
+  attachFile: string;
+  quickReplies: {
+    help1: string;
+    help2: string;
+    help3: string;
+    help4: string;
+  };
+  fileAttachment: string;
+  justNow: string;
+  minutesAgo: string;
+  hoursAgo: string;
+  daysAgo: string;
+  now: string;
+}> = {
+  en: {
+    title: 'Live Support',
+    subtitle: 'Get real-time assistance from our government service specialists',
+    backToDashboard: 'Back to Dashboard',
+    connecting: 'Connecting to agent...',
+    connectedTo: 'Connected to',
+    online: 'Online',
+    typing: 'Typing...',
+    away: 'Away',
+    generatingResponse: 'Generating response...',
+    isPreparingResponse: 'is preparing your response',
+    typeMessage: 'Type your message...',
+    attachFile: 'Attach file',
+    quickReplies: {
+      help1: 'I need help with passport renewal',
+      help2: 'Can you guide me through the process?',
+      help3: 'What documents do I need?',
+      help4: 'Thank you for your help'
+    },
+    fileAttachment: 'File attachment',
+    justNow: 'Just now',
+    minutesAgo: 'm ago',
+    hoursAgo: 'h ago',
+    daysAgo: 'd ago',
+    now: 'Just now'
+  },
+  si: {
+    title: 'සජීවී සහාය',
+    subtitle: 'අපගේ රජයේ සේවා විශේෂඥයන්ගෙන් තත්‍ය කාලීන සහාය ලබා ගන්න',
+    backToDashboard: 'පාලනයට ආපසු',
+    connecting: 'නිලධාරියා සමඟ සම්බන්ධ වෙමින්...',
+    connectedTo: 'සම්බන්ධ වී ඇත',
+    online: 'මාර්ගගතව',
+    typing: 'ටයිප් කරමින්...',
+    away: 'ඈත',
+    generatingResponse: 'ප්‍රතිචාරය ජනනය කරමින්...',
+    isPreparingResponse: 'ඔබගේ ප්‍රතිචාරය සකස් කරමින්',
+    typeMessage: 'ඔබගේ පණිවිඩය ටයිප් කරන්න...',
+    attachFile: 'ගොනුව අමුණන්න',
+    quickReplies: {
+      help1: 'මට ගමන් බලපත්‍ර අලුත් කිරීමට උදව් අවශ්‍යයි',
+      help2: 'ඔබට මාව ක්‍රියාවලිය හරහා මඟ පෙන්විය හැකිද?',
+      help3: 'මට කුමන ලේඛන අවශ්‍යද?',
+      help4: 'ඔබගේ උදව්වට ස්තූතියි'
+    },
+    fileAttachment: 'ගොනුව අමුණා ඇත',
+    justNow: 'දැන්',
+    minutesAgo: 'මි පෙර',
+    hoursAgo: 'පැය පෙර',
+    daysAgo: 'දින පෙර',
+    now: 'දැන්'
+  },
+  ta: {
+    title: 'நேரடி ஆதரவு',
+    subtitle: 'எங்கள் அரசு சேவை நிபுணர்களிடமிருந்து நிகழ்நேர உதவியைப் பெறுங்கள்',
+    backToDashboard: 'டாஷ்போர்டுக்கு திரும்பவும்',
+    connecting: 'முகவருடன் இணைக்கிறது...',
+    connectedTo: 'இணைக்கப்பட்டது',
+    online: 'ஆன்லைன்',
+    typing: 'டைப் செய்கிறது...',
+    away: 'தொலைவில்',
+    generatingResponse: 'பதிலை உருவாக்குகிறது...',
+    isPreparingResponse: 'உங்கள் பதிலைத் தயாரிக்கிறது',
+    typeMessage: 'உங்கள் செய்தியை டைப் செய்யுங்கள்...',
+    attachFile: 'கோப்பை இணைக்கவும்',
+    quickReplies: {
+      help1: 'எனக்கு பாஸ்போர்ட் புதுப்பிப்புக்கு உதவி தேவை',
+      help2: 'செயல்முறையின் மூலம் எனக்கு வழிகாட்ட முடியுமா?',
+      help3: 'எனக்கு என்ன ஆவணங்கள் தேவை?',
+      help4: 'உங்கள் உதவிக்கு நன்றி'
+    },
+    fileAttachment: 'கோப்பு இணைப்பு',
+    justNow: 'இப்போது',
+    minutesAgo: 'மி முன்',
+    hoursAgo: 'மணி முன்',
+    daysAgo: 'நாள் முன்',
+    now: 'இப்போது'
+  }
+};
 
 // --- PREMIUM SVG ICON COMPONENTS ---
+const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+);
+
 const SendIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="22" y1="2" x2="11" y2="13"/>
@@ -116,67 +228,65 @@ const getAgentById = (agentId: string): SupportAgent => {
 };
 
 // --- PREMIUM HEADER COMPONENT ---
-const ChatHeader = ({ agent }: { agent: SupportAgent }) => (
-  <header className="glass-morphism backdrop-blur-xl border-b border-border/50 sticky top-0 z-50">
-    <nav className="container mx-auto px-6 py-4">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <Link href="/User/Chat/Wait" className="p-2 hover:bg-card/50 rounded-lg transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </Link>
-          
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Image
-                src={agent.avatar} 
-                alt={agent.name}
-                width={48}
-                height={48}
-                className="w-12 h-12 rounded-full object-cover border-2 border-[#FFC72C]/20"
-              />
-              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background ${
-                agent.status === 'online' ? 'bg-green-500' : 
-                agent.status === 'typing' ? 'bg-[#FFC72C]' : 'bg-gray-500'
+const ChatHeader = ({ agent, onBack, t }: { agent: SupportAgent; onBack: () => void; t: typeof chatTranslations.en }) => (
+  <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md border-b border-border/50 p-4 modern-card">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center space-x-4">
+        <button 
+          onClick={onBack}
+          className="p-2 hover:bg-card/50 rounded-xl transition-all duration-300 hover:scale-105 text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeftIcon className="w-5 h-5" />
+        </button>
+        
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Image
+              src={agent.avatar} 
+              alt={agent.name}
+              width={48}
+              height={48}
+              className="w-12 h-12 rounded-full object-cover border-2 border-[#FFC72C]/30 shadow-lg"
+            />
+            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background shadow-lg ${
+              agent.status === 'online' ? 'bg-[#008060]' : 
+              agent.status === 'typing' ? 'bg-[#FFC72C]' : 'bg-muted-foreground'
+            }`}></div>
+          </div>
+          <div>
+            <h1 className="text-lg font-bold text-foreground">{agent.name}</h1>
+            <p className="text-sm text-muted-foreground">{agent.role}</p>
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${
+                agent.status === 'online' ? 'bg-[#008060]' : 
+                agent.status === 'typing' ? 'bg-[#FFC72C]' : 'bg-muted-foreground'
               }`}></div>
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-foreground">{agent.name}</h1>
-              <p className="text-sm text-muted-foreground">{agent.role}</p>
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  agent.status === 'online' ? 'bg-green-500' : 
-                  agent.status === 'typing' ? 'bg-[#FFC72C]' : 'bg-gray-500'
-                }`}></div>
-                <span className="text-xs text-muted-foreground">
-                  {agent.status === 'online' ? 'Online' : 
-                   agent.status === 'typing' ? 'Typing...' : 'Away'}
-                </span>
-              </div>
+              <span className="text-xs text-muted-foreground">
+                {agent.status === 'online' ? t.online : 
+                 agent.status === 'typing' ? t.typing : t.away}
+              </span>
             </div>
           </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          <button className="p-2 glass-morphism rounded-lg hover:bg-[#FFC72C]/10 transition-colors group">
-            <PhoneIcon className="text-muted-foreground group-hover:text-[#FFC72C]" />
-          </button>
-          <button className="p-2 glass-morphism rounded-lg hover:bg-[#FFC72C]/10 transition-colors group">
-            <VideoIcon className="text-muted-foreground group-hover:text-[#FFC72C]" />
-          </button>
-          <button className="p-2 glass-morphism rounded-lg hover:bg-[#FFC72C]/10 transition-colors group">
-            <MoreVerticalIcon className="text-muted-foreground group-hover:text-[#FFC72C]" />
-          </button>
-          <ThemeToggle />
-        </div>
       </div>
-    </nav>
-  </header>
+      
+      <div className="flex items-center gap-2">
+        <button className="p-2 bg-card/50 hover:bg-[#FFC72C]/10 rounded-xl transition-all duration-300 hover:scale-105 group modern-card">
+          <PhoneIcon className="text-muted-foreground group-hover:text-[#FFC72C]" />
+        </button>
+        <button className="p-2 bg-card/50 hover:bg-[#FFC72C]/10 rounded-xl transition-all duration-300 hover:scale-105 group modern-card">
+          <VideoIcon className="text-muted-foreground group-hover:text-[#FFC72C]" />
+        </button>
+        <button className="p-2 bg-card/50 hover:bg-[#FFC72C]/10 rounded-xl transition-all duration-300 hover:scale-105 group modern-card">
+          <MoreVerticalIcon className="text-muted-foreground group-hover:text-[#FFC72C]" />
+        </button>
+      </div>
+    </div>
+  </div>
 );
 
 // --- MESSAGE COMPONENTS ---
-const TimeAgo = ({ timestamp }: { timestamp: Date }) => {
+const TimeAgo = ({ timestamp, t }: { timestamp: Date; t: typeof chatTranslations.en }) => {
   const [timeAgo, setTimeAgo] = useState('');
 
   useEffect(() => {
@@ -185,16 +295,16 @@ const TimeAgo = ({ timestamp }: { timestamp: Date }) => {
       const diff = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
 
       if (diff < 60) {
-        setTimeAgo('Just now');
+        setTimeAgo(t.now);
       } else if (diff < 3600) {
         const minutes = Math.floor(diff / 60);
-        setTimeAgo(`${minutes}m ago`);
+        setTimeAgo(`${minutes} ${t.minutesAgo}`);
       } else if (diff < 86400) {
         const hours = Math.floor(diff / 3600);
-        setTimeAgo(`${hours}h ago`);
+        setTimeAgo(`${hours} ${t.hoursAgo}`);
       } else {
         const days = Math.floor(diff / 86400);
-        setTimeAgo(`${days}d ago`);
+        setTimeAgo(`${days} ${t.daysAgo}`);
       }
     };
 
@@ -202,12 +312,12 @@ const TimeAgo = ({ timestamp }: { timestamp: Date }) => {
     const interval = setInterval(updateTimeAgo, 60000); // Update every minute
 
     return () => clearInterval(interval);
-  }, [timestamp]);
+  }, [timestamp, t]);
 
   return <span className="text-xs text-muted-foreground">{timeAgo}</span>;
 };
 
-const UserMessage = ({ message }: { message: ChatMessage }) => (
+const UserMessage = ({ message, t }: { message: ChatMessage; t: typeof chatTranslations.en }) => (
   <div className="flex justify-end my-4 animate-fade-in-up">
     <div className="max-w-2xl">
       <div className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white p-4 rounded-2xl rounded-br-lg shadow-glow">
@@ -224,7 +334,7 @@ const UserMessage = ({ message }: { message: ChatMessage }) => (
         )}
       </div>
       <div className="flex items-center justify-end gap-2 mt-1">
-        <TimeAgo timestamp={message.timestamp} />
+        <TimeAgo timestamp={message.timestamp} t={t} />
         <div className="flex items-center">
           {message.status === 'sent' && <CheckIcon className="text-muted-foreground" />}
           {message.status === 'delivered' && <CheckCheck className="text-muted-foreground" />}
@@ -235,7 +345,7 @@ const UserMessage = ({ message }: { message: ChatMessage }) => (
   </div>
 );
 
-const AgentMessage = ({ message, agent }: { message: ChatMessage; agent: SupportAgent }) => (
+const AgentMessage = ({ message, agent, t }: { message: ChatMessage; agent: SupportAgent; t: typeof chatTranslations.en }) => (
   <div className="flex justify-start my-4 animate-fade-in-up">
     <div className="flex gap-3 max-w-4xl">
       <div className="flex-shrink-0">
@@ -264,7 +374,7 @@ const AgentMessage = ({ message, agent }: { message: ChatMessage; agent: Support
           )}
         </div>
         <div className="text-xs text-muted-foreground mt-1">
-          {agent.name} • <TimeAgo timestamp={message.timestamp} />
+          {agent.name} • <TimeAgo timestamp={message.timestamp} t={t} />
         </div>
       </div>
     </div>
@@ -396,6 +506,10 @@ const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string, type?: 
 
 // --- MAIN CHAT COMPONENT ---
 function HumanChatContent({ agentId }: { agentId: string }) {
+  const router = useRouter();
+  const [language] = useState<Language>('en');
+  const t = chatTranslations[language];
+  
   const [agent] = useState<SupportAgent>(getAgentById(agentId));
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -409,6 +523,10 @@ function HumanChatContent({ agentId }: { agentId: string }) {
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
+
+  const handleBack = () => {
+    router.push('/User/Dashboard');
+  };
 
   const handleSendMessage = (content: string, type: 'text' | 'file' = 'text') => {
     const newMessage: ChatMessage = {
@@ -491,7 +609,7 @@ function HumanChatContent({ agentId }: { agentId: string }) {
       <div className="absolute bottom-20 left-10 w-40 h-40 bg-[#FF5722]/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
       
       <div className="relative z-10 flex flex-col h-full">
-        <ChatHeader agent={agent} />
+        <ChatHeader agent={agent} onBack={handleBack} t={t} />
 
         {/* Chat Messages Area */}
         <main className="flex-1 overflow-y-auto">
@@ -510,9 +628,9 @@ function HumanChatContent({ agentId }: { agentId: string }) {
               {/* Messages */}
               {messages.map((message) => (
                 message.senderType === 'user' ? (
-                  <UserMessage key={message.id} message={message} />
+                  <UserMessage key={message.id} message={message} t={t} />
                 ) : (
-                  <AgentMessage key={message.id} message={message} agent={agent} />
+                  <AgentMessage key={message.id} message={message} agent={agent} t={t} />
                 )
               ))}
               

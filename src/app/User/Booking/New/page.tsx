@@ -49,6 +49,7 @@ const newBookingTranslations: Record<Language, {
   en: {
     title: 'Book Appointment',
     subtitle: 'Schedule your meeting with government officials',
+    backToBookings: 'Back to Bookings',
     step1Title: 'Step 1: Agent',
     step1Desc: 'Select the type of official you need to meet.',
     step2Title: 'Step 2: Schedule',
@@ -84,6 +85,7 @@ const newBookingTranslations: Record<Language, {
   si: {
     title: 'හමුවීම් වෙන්කිරීම',
     subtitle: 'රජයේ නිලධාරීන් සමඟ ඔබගේ හමුවීම සකස් කරන්න',
+    backToBookings: 'වෙන්කිරීම් වෙත ආපසු',
     step1Title: 'පියවර 1: නිලධාරි',
     step1Desc: 'ඔබට හමුවීමට අවශ්‍ය නිලධාරියාගේ වර්ගය තෝරන්න.',
     step2Title: 'පියවර 2: කාලසටහන',
@@ -119,6 +121,7 @@ const newBookingTranslations: Record<Language, {
   ta: {
     title: 'சந்திப்பு முன்பதிவு',
     subtitle: 'அரசு அதிகாரிகளுடன் உங்கள் சந்திப்பை திட்டமிடுங்கள்',
+    backToBookings: 'முன்பதிவுகளுக்கு திரும்பவும்',
     step1Title: 'படி 1: அதிகாரி',
     step1Desc: 'நீங்கள் சந்திக்க வேண்டிய அதிகாரியின் வகையைத் தேர்ந்தெடுக்கவும்.',
     step2Title: 'படி 2: அட்டவணை',
@@ -287,7 +290,7 @@ const Step = ({ icon: Icon, title, description, children }: { icon: React.Elemen
     <div className="animate-fade-in-up">
         <div className="mb-6">
             <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 modern-card">
-                <div className="w-2 h-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full animate-pulse"></div>
+                <Icon className="w-4 h-4 text-[#FFC72C]" />
                 <span className="text-xs sm:text-sm font-medium text-foreground">{title}</span>
             </div>
             <p className="text-muted-foreground">{description}</p>
@@ -520,6 +523,17 @@ export default function NewBookingPage() {
 			onLanguageChange={handleLanguageChange}
 		>
 			<div className="max-w-4xl mx-auto">
+				{/* Back Button */}
+				<div className="mb-8">
+					<Link 
+						href="/User/Booking"
+						className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
+					>
+						<ArrowLeftIcon className="w-4 h-4" />
+						{t.backToBookings}
+					</Link>
+				</div>
+
 				{success && <div className="mb-8"><SuccessAlert message={success} /></div>}
 				{error && <div className="mb-8"><ErrorAlert message={error} /></div>}
 			

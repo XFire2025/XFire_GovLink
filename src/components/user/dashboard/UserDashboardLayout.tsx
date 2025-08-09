@@ -136,6 +136,9 @@ interface UserDashboardLayoutProps {
   subtitle?: string;
   language?: Language;
   onLanguageChange?: (language: Language) => void;
+  size?: 'default' | 'compact' | 'dense';
+  contentMode?: 'normal' | 'fill';
+  headerContent?: React.ReactNode;
 }
 
 const UserDashboardLayout: React.FC<UserDashboardLayoutProps> = ({ 
@@ -143,7 +146,10 @@ const UserDashboardLayout: React.FC<UserDashboardLayoutProps> = ({
   title, 
   subtitle,
   language = 'en',
-  onLanguageChange
+  onLanguageChange,
+  size = 'default',
+  contentMode = 'normal',
+  headerContent
 }) => {
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -311,20 +317,43 @@ const UserDashboardLayout: React.FC<UserDashboardLayoutProps> = ({
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-8 sm:pb-12 relative z-10">
-        <div className="text-center mb-12 animate-fade-in-up">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight">
-            {title}
-          </h1>
-          
-          {subtitle && (
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              {subtitle}
-            </p>
-          )}
-        </div>
-
-        {children}
+      <main className={`container mx-auto px-4 sm:px-6 ${
+          size === 'dense' ? 'pt-16 sm:pt-20 pb-4 sm:pb-6'
+        : size === 'compact' ? 'pt-20 sm:pt-24 pb-6 sm:pb-8'
+        : 'pt-24 sm:pt-28 pb-8 sm:pb-12'
+        } ${contentMode === 'fill' ? 'min-h-[100dvh] max-h-[100dvh] overflow-hidden grid grid-rows-[auto_1fr]' : ''} relative z-10`}>
+        {headerContent ? (
+          <div className={`${size === 'dense' ? 'mb-4' : size === 'compact' ? 'mb-6' : 'mb-8'} animate-fade-in-up`}>
+            {headerContent}
+          </div>
+        ) : (
+          <div className={`text-center ${size === 'dense' ? 'mb-4' : size === 'compact' ? 'mb-6' : 'mb-12'} animate-fade-in-up`}>
+            <h1 className={`${
+              size === 'dense' ? 'text-xl sm:text-2xl md:text-3xl'
+            : size === 'compact' ? 'text-2xl sm:text-3xl md:text-4xl'
+            : 'text-3xl sm:text-4xl md:text-5xl'
+            } font-bold ${size === 'dense' ? 'mb-2' : 'mb-3 sm:mb-4'} leading-tight`}>
+              {title}
+            </h1>
+            
+            {subtitle && (
+              <p className={`${
+                size === 'dense' ? 'hidden sm:block text-sm sm:text-base'
+              : size === 'compact' ? 'text-base sm:text-lg'
+              : 'text-lg sm:text-xl'
+              } text-muted-foreground max-w-2xl mx-auto leading-relaxed`}>
+                {subtitle}
+              </p>
+            )}
+          </div>
+        )}
+        {contentMode === 'fill' ? (
+          <div className="min-h-0">
+            {children}
+          </div>
+        ) : (
+          children
+        )}
       </main>
     </div>
   );
