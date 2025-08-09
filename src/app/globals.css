@@ -22,7 +22,7 @@
   --color-border: oklch(0.88 0.015 85);
   --color-input: oklch(0.9 0.01 85);
   --color-ring: oklch(0.35 0.15 15);
-  --radius: 0.75rem;  
+  --radius: 0.75rem;
   /* Legacy CSS variables for compatibility */
   --background: var(--color-background);
   --foreground: var(--color-foreground);
@@ -80,6 +80,8 @@
   
   body {
     @apply bg-background text-foreground;
+    /* THIS IS THE ONLY ADDED LINE - IT CREATES THE FONT STACK */
+    font-family: var(--font-noto-sinhala), var(--font-noto-tamil), var(--font-noto-sans), sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-x: hidden;
     transition: background-color 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), 

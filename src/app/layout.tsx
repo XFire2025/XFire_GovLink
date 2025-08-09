@@ -1,10 +1,30 @@
 // app/layout.tsx
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+// 1. Import all three font packages
+import { Noto_Sans, Noto_Sans_Sinhala, Noto_Sans_Tamil } from 'next/font/google';
 import './globals.css';
-import { Providers } from './providers'; // Import the new provider
+import { Providers } from './providers';
 
-const inter = Inter({ subsets: ['latin'] });
+// 2. Configure Noto Sans for Latin characters (English)
+const notoSans = Noto_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-noto-sans', // Define CSS Variable
+});
+
+// 3. Configure Noto Sans for Sinhala characters
+const notoSansSinhala = Noto_Sans_Sinhala({
+  subsets: ['sinhala'],
+  weight: ['400', '500', '700'],
+  variable: '--font-noto-sinhala', // Define CSS Variable
+});
+
+// 4. Configure Noto Sans for Tamil characters
+const notoSansTamil = Noto_Sans_Tamil({
+  subsets: ['tamil'],
+  weight: ['400', '500', '700'],
+  variable: '--font-noto-tamil', // Define CSS Variable
+});
 
 export const metadata: Metadata = {
   title: 'GovLink Sri Lanka',
@@ -18,7 +38,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      {/* 5. Combine all font variables into the className */}
+      <body
+        className={`${notoSans.variable} ${notoSansSinhala.variable} ${notoSansTamil.variable}`}
+      >
         <Providers>{children}</Providers>
       </body>
     </html>
