@@ -1,14 +1,80 @@
-// app/chat/page.tsx
+// src/app/User/Chat/Bot/page.tsx
 "use client";
 import React, { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import 'highlight.js/styles/github-dark.css';
+
+// Types
+type Language = 'en' | 'si' | 'ta';
+
+// Chat translations
+const chatTranslations: Record<Language, {
+  title: string;
+  subtitle: string;
+  newChat: string;
+  askFollowUp: string;
+  analyzing: string;
+  preparing: string;
+  chatStarted: string;
+  suggestions: {
+    moreDetails: string;
+    relatedServices: string;
+    howToApply: string;
+    contactInfo: string;
+  };
+}> = {
+  en: {
+    title: 'Live Support',
+    subtitle: 'Get instant help with government services and procedures',
+    newChat: 'New Chat',
+    askFollowUp: 'Ask a follow-up question...',
+    analyzing: 'Analyzing your question...',
+    preparing: 'GovLink Assistant is preparing your response',
+    chatStarted: 'Chat started with GovLink Assistant',
+    suggestions: {
+      moreDetails: 'More details',
+      relatedServices: 'Related services',
+      howToApply: 'How to apply',
+      contactInfo: 'Contact info'
+    }
+  },
+  si: {
+    title: 'සජීවී සහාය',
+    subtitle: 'රජයේ සේවා සහ ක්‍රියා පටිපාටි සම්බන්ධයෙන් ක්ෂණික උදව් ලබා ගන්න',
+    newChat: 'නව කතාබස්',
+    askFollowUp: 'පසු විපරම් ප්‍රශ්නයක් අසන්න...',
+    analyzing: 'ඔබගේ ප්‍රශ්නය විශ්ලේෂණය කරමින්...',
+    preparing: 'GovLink සහායක ඔබගේ පිළිතුර සූදානම් කරමින්',
+    chatStarted: 'GovLink සහායක සමඟ කතාබස් ආරම්භ විය',
+    suggestions: {
+      moreDetails: 'වැඩි විස්තර',
+      relatedServices: 'සම්බන්ධිත සේවා',
+      howToApply: 'අයදුම් කරන ආකාරය',
+      contactInfo: 'සම්බන්ධතා තොරතුරු'
+    }
+  },
+  ta: {
+    title: 'நேரடி ஆதரவு',
+    subtitle: 'அரசு சேவைகள் மற்றும் நடைமுறைகளில் உடனடி உதவி பெறுங்கள்',
+    newChat: 'புதிய அரட்டை',
+    askFollowUp: 'பின்தொடர்ந்து கேள்வி கேளுங்கள்...',
+    analyzing: 'உங்கள் கேள்வியை பகுப்பாய்வு செய்கிறது...',
+    preparing: 'GovLink உதவியாளர் உங்கள் பதிலை தயாரிக்கிறது',
+    chatStarted: 'GovLink உதவியாளருடன் அரட்டை தொடங்கப்பட்டது',
+    suggestions: {
+      moreDetails: 'மேலும் விவரங்கள்',
+      relatedServices: 'தொடர்புடைய சேவைகள்',
+      howToApply: 'எப்படி விண்ணபிப்பது',
+      contactInfo: 'தொடர்பு தகவல்'
+    }
+  }
+};
 
 // --- PREMIUM SVG ICON COMPONENTS ---
 const SendIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -52,39 +118,6 @@ const GovLinkBotIcon = () => (
   </div>
 );
 
-// --- PREMIUM HEADER COMPONENT ---
-const Header = () => (
-  <header className="glass-morphism backdrop-blur-xl border-b border-border/50 sticky top-0 z-50">
-    <nav className="container mx-auto px-6 py-4">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-3">
-          <LotusIcon className="animate-glow" />
-          <div>
-            <h1 className="text-2xl font-bold text-gradient">GovLink</h1>
-            <p className="text-xs text-muted-foreground font-medium">Chat Assistant</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <Link 
-            href="/User/Chat/Bot" 
-            className="text-muted-foreground hover:text-foreground transition-colors duration-300 px-4 py-2 rounded-full hover:bg-card/30 text-sm font-medium"
-          >
-            New Chat
-          </Link>
-          <Link 
-            href="/" 
-            className="relative overflow-hidden bg-transparent border-2 border-[#FFC72C] text-[#FFC72C] px-6 py-2.5 rounded-full font-semibold transition-all duration-300 hover:bg-[#FFC72C] hover:text-[#8D153A] hover:scale-105 hover:shadow-glow group"
-          >
-            <span className="relative z-10">Home</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </Link>
-          <ThemeToggle />
-        </div>
-      </div>
-    </nav>
-  </header>
-);
 
 // --- PREMIUM MESSAGE COMPONENTS ---
 const TimeAgo = ({ timestamp }: { timestamp: Date }) => {
@@ -121,8 +154,8 @@ const TimeAgo = ({ timestamp }: { timestamp: Date }) => {
 const UserMessage = ({ text, timestamp = new Date() }: { text: string; timestamp?: Date }) => (
   <div className="flex justify-end my-6 animate-fade-in-up">
     <div className="max-w-2xl">
-      <div className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white p-6 rounded-3xl rounded-br-lg shadow-glow">
-        <p className="leading-relaxed">{text}</p>
+      <div className="bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white p-6 rounded-2xl rounded-br-lg shadow-lg hover:shadow-2xl transition-all duration-300">
+        <p className="leading-relaxed font-medium">{text}</p>
       </div>
       <div className="text-right mt-2">
         <TimeAgo timestamp={timestamp} />
@@ -132,28 +165,31 @@ const UserMessage = ({ text, timestamp = new Date() }: { text: string; timestamp
 );
 
 // --- TYPING INDICATOR ---
-const TypingIndicator = () => (
-  <div className="flex justify-start my-6 animate-fade-in-up">
-    <div className="flex gap-4 max-w-4xl">
-      <div className="flex-shrink-0">
-        <GovLinkBotIcon />
-      </div>
-      <div className="flex-1">
-        <div className="glass-morphism backdrop-blur-xl p-6 rounded-3xl rounded-bl-lg shadow-xl border border-border/50">
-          <div className="flex items-center space-x-1 text-muted-foreground">
-            <span className="animate-pulse">•</span>
-            <span className="animate-pulse" style={{animationDelay: '0.2s'}}>•</span>
-            <span className="animate-pulse" style={{animationDelay: '0.4s'}}>•</span>
-            <span className="ml-2 text-sm">Analyzing your question...</span>
-          </div>
+const TypingIndicator = ({ language = 'en' }: { language?: Language }) => {
+  const t = chatTranslations[language];
+  return (
+    <div className="flex justify-start my-6 animate-fade-in-up">
+      <div className="flex gap-4 max-w-4xl">
+        <div className="flex-shrink-0">
+          <GovLinkBotIcon />
         </div>
-        <div className="text-xs text-muted-foreground mt-2">
-          GovLink Assistant is preparing your response
+        <div className="flex-1">
+          <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl rounded-bl-lg shadow-glow border border-border/50 modern-card">
+            <div className="flex items-center space-x-1 text-muted-foreground">
+              <span className="animate-pulse">•</span>
+              <span className="animate-pulse" style={{animationDelay: '0.2s'}}>•</span>
+              <span className="animate-pulse" style={{animationDelay: '0.4s'}}>•</span>
+              <span className="ml-2 text-sm">{t.analyzing}</span>
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground mt-2">
+            {t.preparing}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const BotMessage = ({ text, timestamp = new Date() }: { text: string; timestamp?: Date }) => {
   return (
@@ -163,8 +199,8 @@ const BotMessage = ({ text, timestamp = new Date() }: { text: string; timestamp?
           <GovLinkBotIcon />
         </div>
         <div className="flex-1">
-          <div className="glass-morphism backdrop-blur-xl p-6 rounded-3xl rounded-bl-lg shadow-xl border border-border/50">
-            <div className="prose prose-lg prose-invert max-w-none leading-relaxed text-foreground markdown-content">
+          <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl rounded-bl-lg shadow-glow border border-border/50 modern-card hover:border-[#FFC72C]/30 transition-all duration-300">
+            <div className="prose prose-lg max-w-none leading-relaxed text-foreground markdown-content">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeHighlight, rehypeRaw]}
@@ -259,9 +295,10 @@ const BotMessage = ({ text, timestamp = new Date() }: { text: string; timestamp?
 };
 
 // --- PREMIUM CHAT INPUT ---
-const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string) => void }) => {
+const ChatInput = ({ onSendMessage, language = 'en' }: { onSendMessage: (message: string) => void; language?: Language }) => {
   const [message, setMessage] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const t = chatTranslations[language];
 
   const handleSend = () => {
     if (message.trim()) {
@@ -278,10 +315,10 @@ const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string) => void
   };
 
   return (
-    <div className="glass-morphism backdrop-blur-xl border-t border-border/50 p-6">
-      <div className="container mx-auto">
-        <div className={`relative transition-all duration-300 ${isFocused ? 'scale-105' : ''}`}>
-          <div className="relative glass-morphism rounded-2xl p-2 shadow-glow hover:shadow-2xl transition-all duration-500">
+    <div className="sticky bottom-0 bg-background/95 dark:bg-card/95 backdrop-blur-md border-t border-border/50 p-4 sm:p-6 z-40">
+      <div className="container mx-auto max-w-4xl">
+        <div className={`relative transition-all duration-300 ${isFocused ? 'scale-[1.02]' : ''}`}>
+          <div className="relative bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl p-2 shadow-glow hover:shadow-2xl transition-all duration-500 border border-border/50 hover:border-[#FFC72C]/60 modern-card">
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -289,7 +326,7 @@ const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string) => void
               onBlur={() => setIsFocused(false)}
               onKeyPress={handleKeyPress}
               className="w-full bg-transparent text-foreground placeholder-muted-foreground p-4 pr-16 rounded-xl resize-none focus:outline-none leading-relaxed border-none"
-              placeholder="Ask a follow-up question..."
+              placeholder={t.askFollowUp}
               rows={1}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
@@ -299,7 +336,7 @@ const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string) => void
             />
             <button 
               onClick={handleSend}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 hover:scale-110 shadow-glow group disabled:opacity-50"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-2xl group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               disabled={!message.trim()}
             >
               <SendIcon className="h-5 w-5 text-white group-hover:translate-x-0.5 transition-transform duration-300" />
@@ -308,11 +345,16 @@ const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string) => void
           
           {/* Suggestions */}
           <div className="mt-4 flex flex-wrap gap-2">
-            {["More details", "Related services", "How to apply", "Contact info"].map((suggestion, index) => (
+            {[
+              t.suggestions.moreDetails, 
+              t.suggestions.relatedServices, 
+              t.suggestions.howToApply, 
+              t.suggestions.contactInfo
+            ].map((suggestion, index) => (
               <button
                 key={index}
                 onClick={() => setMessage(suggestion)}
-                className="px-3 py-1.5 bg-card/50 hover:bg-card border border-border hover:border-[#FFC72C] rounded-full text-xs font-medium transition-all duration-300 hover:scale-105"
+                className="px-3 py-1.5 bg-card/50 dark:bg-card/70 hover:bg-card border border-border/50 hover:border-[#FFC72C]/60 rounded-full text-xs font-medium transition-all duration-300 hover:scale-105 text-foreground hover:text-[#FFC72C] backdrop-blur-sm"
               >
                 {suggestion}
               </button>
@@ -326,8 +368,14 @@ const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string) => void
 
 // --- MAIN CHAT PAGE COMPONENT ---
 export default function GovLinkChatPage() {
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   const [messages, setMessages] = useState<{type: 'user' | 'bot', text: string, timestamp: Date}[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const t = chatTranslations[currentLanguage];
+
+  const handleLanguageChange = (newLanguage: Language) => {
+    setCurrentLanguage(newLanguage);
+  };
 
   const handleSendMessage = (message: string) => {
     // Add user message
@@ -416,44 +464,50 @@ function govLinkHelper() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 gradient-mesh opacity-30"></div>
-      <div className="absolute top-10 right-10 w-32 h-32 bg-[#FFC72C]/5 rounded-full blur-3xl "></div>
-      <div className="absolute bottom-20 left-10 w-40 h-40 bg-[#FF5722]/5 rounded-full blur-3xl " style={{animationDelay: '2s'}}></div>
-      
-      <div className="relative z-10 flex flex-col h-full">
-        <Header />
-
+    <UserDashboardLayout
+      title={
+        <span className="animate-title-wave">
+          <span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
+          <span className="text-gradient">
+            {t.title.split(' ')[1] || ''}
+          </span>
+        </span>
+      }
+      subtitle={t.subtitle}
+      language={currentLanguage}
+      onLanguageChange={handleLanguageChange}
+    >
+      <div className="relative min-h-[70vh]">
         {/* Chat History Area */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto px-6 py-8">
-            <Suspense fallback={
-              <div className="flex items-center justify-center py-20">
-                <div className="glass-morphism p-6 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-6 h-6 border-2 border-[#FFC72C] border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-muted-foreground">Loading conversation...</span>
-                  </div>
+        <div className="pb-32"> {/* Add padding for fixed input */}
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-20">
+              <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl shadow-glow modern-card">
+                <div className="flex items-center gap-3">
+                  <div className="w-6 h-6 border-2 border-[#FFC72C] border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-muted-foreground">Loading conversation...</span>
                 </div>
               </div>
-            }>
-              <ChatContent messages={messages} isTyping={isTyping} />
-            </Suspense>
-          </div>
-        </main>
+            </div>
+          }>
+            <ChatContent messages={messages} isTyping={isTyping} language={currentLanguage} />
+          </Suspense>
+        </div>
 
         {/* Fixed Input Area */}
-        <ChatInput onSendMessage={handleSendMessage} />
+        <div className="absolute bottom-0 left-0 right-0">
+          <ChatInput onSendMessage={handleSendMessage} language={currentLanguage} />
+        </div>
       </div>
-    </div>
+    </UserDashboardLayout>
   );
 };
 
-function ChatContent({ messages, isTyping }: { messages?: {type: 'user' | 'bot', text: string, timestamp: Date}[]; isTyping?: boolean }) {
+function ChatContent({ messages, isTyping, language = 'en' }: { messages?: {type: 'user' | 'bot', text: string, timestamp: Date}[]; isTyping?: boolean; language?: Language }) {
   const searchParams = useSearchParams();
   const q = searchParams.get('q') ?? undefined;
   const userQuery = q || "How do I renew my passport?";
+  const t = chatTranslations[language];
 
   // Generate dynamic response based on user query
   const generateBotResponse = (query: string) => {
@@ -595,7 +649,7 @@ function govLinkHelper() {
         ))}
         
         {/* Show typing indicator if bot is typing */}
-        {isTyping && <TypingIndicator />}
+        {isTyping && <TypingIndicator language={language} />}
       </div>
     );
   }
@@ -607,10 +661,10 @@ function govLinkHelper() {
     <div className="max-w-4xl mx-auto space-y-2">
       {/* Welcome Message */}
       <div className="text-center py-8 mb-8">
-        <div className="inline-flex items-center gap-3 glass-morphism px-6 py-3 rounded-full">
+        <div className="inline-flex items-center gap-3 bg-card/90 dark:bg-card/95 backdrop-blur-md px-6 py-3 rounded-full border border-border/50 modern-card shadow-glow">
           <LotusIcon className="w-8 h-8 animate-glow" />
           <span className="text-sm font-medium text-muted-foreground">
-            Chat started with GovLink Assistant
+            {t.chatStarted}
           </span>
         </div>
       </div>
