@@ -295,8 +295,11 @@ const BotMessage = ({ text, timestamp = new Date() }: { text: string; timestamp?
 
 // --- TOPIC TAG ---
 const TopicTag = ({ text }: { text: string }) => (
-  <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#FFC72C]/10 border border-[#FFC72C]/40 text-[#FFC72C] shadow-glow">
-    <span className="text-xs font-semibold tracking-wide">{text}</span>
+  <div
+    className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold tracking-wide select-none
+      bg-card/90 dark:bg-card/95 backdrop-blur-md border border-border/50 shadow-sm"
+  >
+    <span className="text-gradient">{text}</span>
   </div>
 );
 
@@ -484,11 +487,11 @@ function govLinkHelper() {
       onLanguageChange={handleLanguageChange}
   size="dense"
   contentMode="fill"
-  headerContent={<div className="hidden" aria-hidden="true" />}
+      headerContent={<div className="hidden" aria-hidden="true" />}
     >
       <div className="grid grid-rows-[1fr_auto] h-full max-h-full">
         {/* Chat History Area (scrollable) */}
-        <div className="min-h-0 overflow-y-auto overscroll-contain pr-1">
+  <div className="min-h-0 overflow-y-auto overscroll-contain pr-1">
           <Suspense fallback={
             <div className="flex items-center justify-center py-20">
               <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl shadow-glow modern-card">
