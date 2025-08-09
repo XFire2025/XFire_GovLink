@@ -84,81 +84,119 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ language = 'en' }) =>
 
   return (
     <div className="space-y-8">
-      {/* Account Status Overview */}
-      <div className="glass-morphism p-6 rounded-2xl border border-border/50 shadow-glow animate-fade-in-up">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center">
-              <span className="text-white text-xl font-bold">D</span>
+      {/* Enhanced Account Status Overview */}
+      <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-border/50 shadow-glow animate-fade-in-up modern-card group hover:shadow-2xl transition-all duration-500">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex items-center gap-6">
+            <div className="relative">
+              <div className="w-20 h-20 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-2xl flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-500">
+                <span className="text-white text-2xl font-bold">D</span>
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#008060] rounded-full border-2 border-background flex items-center justify-center">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-foreground">Agent DEMO1234</h3>
-              <p className="text-sm text-muted-foreground">Department of Immigration & Emigration</p>
-              <div className="flex items-center gap-2 mt-1">
-                <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse"></div>
-                <span className="text-sm text-[#008060] font-medium">{t.activeStatus}</span>
+              <h3 className="text-2xl font-bold text-foreground group-hover:text-[#FFC72C] transition-colors duration-300">Agent DEMO1234</h3>
+              <p className="text-lg text-muted-foreground mb-2">Department of Immigration & Emigration</p>
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#008060]/10 text-[#008060] rounded-full text-sm font-medium border border-[#008060]/20">
+                  <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse"></div>
+                  <span>{t.activeStatus}</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FFC72C]/10 text-[#FFC72C] rounded-full text-sm font-medium border border-[#FFC72C]/20">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <circle cx="12" cy="16" r="1"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                  <span>Verified Account</span>
+                </div>
               </div>
             </div>
           </div>
           
-          <div className="text-right">
-            <div className="text-sm text-muted-foreground">{t.lastUpdated}</div>
-            <div className="text-sm font-medium text-foreground">{formatLastUpdated(lastSaved)}</div>
+          <div className="lg:text-right">
+            <div className="text-sm text-muted-foreground mb-1">{t.lastUpdated}</div>
+            <div className="text-lg font-semibold text-foreground">{formatLastUpdated(lastSaved)}</div>
+            <div className="mt-2 flex lg:justify-end">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FF5722]/10 text-[#FF5722] rounded-full text-sm font-medium border border-[#FF5722]/20">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span>Session Active</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="glass-morphism p-2 rounded-2xl border border-border/50 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
-        <div className="flex">
+      {/* Enhanced Tab Navigation */}
+      <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-2 rounded-2xl border border-border/50 shadow-glow animate-fade-in-up modern-card" style={{animationDelay: '0.1s'}}>
+        <div className="flex bg-card/30 rounded-xl p-1">
           <button
             onClick={() => setActiveTab('personal')}
-            className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-xl text-sm font-medium transition-all duration-300 ${
+            className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg text-sm font-medium transition-all duration-300 relative overflow-hidden ${
               activeTab === 'personal'
-                ? 'bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white shadow-lg'
-                : 'text-muted-foreground hover:text-foreground hover:bg-card/30'
+                ? 'bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white shadow-xl scale-105'
+                : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
             }`}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={activeTab === 'personal' ? 'animate-pulse' : ''}>
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
             <span className="hidden sm:block">{t.personalInfo}</span>
+            <span className="sm:hidden">Info</span>
+            {activeTab === 'personal' && (
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FFC72C]/20 to-[#FF5722]/20 rounded-lg blur-xl"></div>
+            )}
           </button>
           
           <button
             onClick={() => setActiveTab('security')}
-            className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-xl text-sm font-medium transition-all duration-300 ${
+            className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg text-sm font-medium transition-all duration-300 relative overflow-hidden ${
               activeTab === 'security'
-                ? 'bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white shadow-lg'
-                : 'text-muted-foreground hover:text-foreground hover:bg-card/30'
+                ? 'bg-gradient-to-r from-[#FF5722] to-[#8D153A] text-white shadow-xl scale-105'
+                : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
             }`}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={activeTab === 'security' ? 'animate-pulse' : ''}>
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <circle cx="12" cy="16" r="1" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
             <span className="hidden sm:block">{t.security}</span>
+            <span className="sm:hidden">Security</span>
+            {activeTab === 'security' && (
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FF5722]/20 to-[#8D153A]/20 rounded-lg blur-xl"></div>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Tab Content */}
+      {/* Enhanced Tab Content */}
       <div className="animate-fade-in-up" style={{animationDelay: '0.2s'}}>
         {activeTab === 'personal' && (
           <div className="space-y-6">
-            <div className="glass-morphism p-6 rounded-2xl border border-border/50 shadow-glow">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-gradient-to-r from-[#FFC72C]/10 to-[#FF5722]/10 rounded-lg">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFC72C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-border/50 shadow-glow modern-card hover:shadow-2xl transition-all duration-500 group">
+              <div className="flex items-start gap-4 mb-8">
+                <div className="p-3 bg-gradient-to-r from-[#FFC72C]/10 to-[#FF5722]/10 rounded-xl group-hover:from-[#FFC72C]/20 group-hover:to-[#FF5722]/20 transition-all duration-300 border border-[#FFC72C]/20">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFC72C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform duration-300">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">{t.personalInfo}</h3>
-                  <p className="text-sm text-muted-foreground">{t.personalInfoDesc}</p>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-foreground group-hover:text-[#FFC72C] transition-colors duration-300 mb-2">{t.personalInfo}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{t.personalInfoDesc}</p>
+                  <div className="mt-4 flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse"></div>
+                    <span className="text-[#008060] font-medium">All fields validated</span>
+                  </div>
                 </div>
               </div>
               
@@ -169,18 +207,22 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ language = 'en' }) =>
 
         {activeTab === 'security' && (
           <div className="space-y-6">
-            <div className="glass-morphism p-6 rounded-2xl border border-border/50 shadow-glow">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-gradient-to-r from-[#FF5722]/10 to-[#8D153A]/10 rounded-lg">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF5722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-border/50 shadow-glow modern-card hover:shadow-2xl transition-all duration-500 group">
+              <div className="flex items-start gap-4 mb-8">
+                <div className="p-3 bg-gradient-to-r from-[#FF5722]/10 to-[#8D153A]/10 rounded-xl group-hover:from-[#FF5722]/20 group-hover:to-[#8D153A]/20 transition-all duration-300 border border-[#FF5722]/20">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF5722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform duration-300">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <circle cx="12" cy="16" r="1" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">{t.security}</h3>
-                  <p className="text-sm text-muted-foreground">{t.securityDesc}</p>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-foreground group-hover:text-[#FF5722] transition-colors duration-300 mb-2">{t.security}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{t.securityDesc}</p>
+                  <div className="mt-4 flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse"></div>
+                    <span className="text-[#008060] font-medium">Security verified</span>
+                  </div>
                 </div>
               </div>
               
