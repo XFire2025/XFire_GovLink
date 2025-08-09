@@ -1,4 +1,4 @@
-// src/components/agent/auth/AgentAuthLayout.tsx
+// src/components/user/auth/UserAuthLayout.tsx
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -8,43 +8,43 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 type Language = 'en' | 'si' | 'ta';
 
 interface Translation {
-  governmentAccess: string;
-  agentPortal: string;
+  citizenAccess: string;
+  citizenPortal: string;
   subtitle: string;
   backToHome: string;
   technicalAssistance: string;
-  contactItSupport: string;
+  contactSupport: string;
   copyright: string;
 }
 
 // Translation data
 const translations: Record<Language, Translation> = {
   en: {
-    governmentAccess: 'Government Access',
-    agentPortal: 'Agent Portal',
-    subtitle: 'Secure access for authorized government personnel',
+    citizenAccess: 'Citizen Access',
+    citizenPortal: 'Citizen Portal',
+    subtitle: 'Secure access to government services',
     backToHome: '← Back to Home',
     technicalAssistance: 'Need technical assistance?',
-    contactItSupport: 'Contact IT Support',
-    copyright: '© 2025 Government of Sri Lanka • Authorized Personnel Only'
+    contactSupport: 'Contact Support',
+    copyright: '© 2025 Government of Sri Lanka • For all citizens'
   },
   si: {
-    governmentAccess: 'රාජ්‍ය ප්‍රවේශය',
-    agentPortal: 'නිලධාරි පෝට්ලය',
-    subtitle: 'බලයලත් රාජ්‍ය නිලධාරීන් සඳහා ආරක්ෂිත ප්‍රවේශය',
+    citizenAccess: 'පුරවැසි ප්‍රවේශය',
+    citizenPortal: 'පුරවැසි පෝට්ලය',
+    subtitle: 'රාජ්‍ය සේවා සඳහා ආරක්ෂිත ප්‍රවේශය',
     backToHome: '← මුල් පිටුවට',
     technicalAssistance: 'තාක්ෂණික සහායක අවශ්‍යද?',
-    contactItSupport: 'තාක්ෂණික සහාය අමතන්න',
-    copyright: '© 2025 ශ්‍රී ලංකා රජය • බලයලත් කර්මිකයන් පමණි'
+    contactSupport: 'සහාය අමතන්න',
+    copyright: '© 2025 ශ්‍රී ලංකා රජය • සියලුම පුරවැසියන් සඳහා'
   },
   ta: {
-    governmentAccess: 'அரசு அணுகல்',
-    agentPortal: 'அதிகாரி போர்டல்',
-    subtitle: 'அங்கீகரிக்கப்பட்ட அரசு ஊழியர்களுக்கான பாதுகாப்பான அணுகல்',
+    citizenAccess: 'குடிமக்கள் அணுகல்',
+    citizenPortal: 'குடிமக்கள் போர்டல்',
+    subtitle: 'அரசு சேவைகளுக்கான பாதுகாப்பான அணுகல்',
     backToHome: '← முகப்புக்கு திரும்பு',
     technicalAssistance: 'தொழில்நுட்ப உதவி தேவையா?',
-    contactItSupport: 'IT ஆதரவை தொடர்பு கொள்ளுங்கள்',
-    copyright: '© 2025 இலங்கை அரசாங்கம் • அங்கீகரிக்கப்பட்ட ஊழியர்கள் மட்டுமே'
+    contactSupport: 'ஆதரவைத் தொடர்பு கொள்ளுங்கள்',
+    copyright: '© 2025 இலங்கை அரசாங்கம் • அனைத்து குடிமக்களுக்கும்'
   }
 };
 
@@ -52,10 +52,10 @@ const translations: Record<Language, Translation> = {
 const languageOptions = [
   { code: 'en', label: 'English', nativeLabel: 'English' },
   { code: 'si', label: 'Sinhala', nativeLabel: 'සිංහල' },
-  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ්' }
+  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ்' }
 ];
 
-// EXACT SAME Lotus Icon as Landing Page with Sri Lankan Colors
+// EXACT SAME Lotus Icon as Agent Layout
 const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} viewBox="0 0 100 100">
     {/* Outer layer petals */}
@@ -98,7 +98,7 @@ const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-// EXACT SAME Sri Lankan Background Component as Landing Page
+// EXACT SAME Sri Lankan Background Component
 const SriLankanBackground = () => {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -129,7 +129,7 @@ const SriLankanBackground = () => {
   );
 };
 
-interface AgentAuthLayoutProps {
+interface UserAuthLayoutProps {
   children: React.ReactNode;
   title: React.ReactNode;
   subtitle?: string;
@@ -137,7 +137,7 @@ interface AgentAuthLayoutProps {
   onLanguageChange?: (language: Language) => void;
 }
 
-const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({ 
+const UserAuthLayout: React.FC<UserAuthLayoutProps> = ({ 
   children, 
   title, 
   subtitle,
@@ -156,10 +156,10 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden theme-transition-slow">
-      {/* EXACT SAME Sri Lankan Background as Landing Page */}
+      {/* EXACT SAME Sri Lankan Background */}
       <SriLankanBackground />
 
-      {/* Header */}
+      {/* Fixed Header with proper positioning */}
       <header className="fixed top-0 left-0 right-0 z-50 w-full bg-background/98 dark:bg-card backdrop-blur-md border-b border-border/30 dark:border-border/50 shadow-sm dark:shadow-lg">
         <nav className="container mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
           <Link href="/" className="flex items-center space-x-3 group">
@@ -168,7 +168,7 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
             </div>
             <div className="flex flex-col">
               <span className="text-xl md:text-2xl font-bold text-gradient leading-none">GovLink</span>
-              <span className="text-xs text-muted-foreground/70 font-medium leading-none">{t.agentPortal}</span>
+              <span className="text-xs text-muted-foreground/70 font-medium leading-none">{t.citizenPortal}</span>
             </div>
           </Link>
 
@@ -180,7 +180,7 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
               {t.backToHome}
             </Link>
             
-            {/* Language Dropdown - EXACT SAME as Landing Page */}
+            {/* Language Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -199,7 +199,7 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
                     className="fixed inset-0 z-40" 
                     onClick={() => setIsDropdownOpen(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-36 sm:w-40 glass-morphism border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-50">
+                  <div className="absolute right-0 top-full mt-2 w-36 sm:w-40 backdrop-blur-md bg-card/90 dark:bg-card/95 border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-50">
                     {languageOptions.map((lang) => (
                       <button
                         key={lang.code}
@@ -227,14 +227,14 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
         </nav>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content - Adjusted for fixed header */}
       <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16 md:py-20 pt-20 sm:pt-24 md:pt-28 relative z-10">
         <div className="w-full max-w-md">
           {/* Title Section */}
           <div className="text-center mb-8 sm:mb-10 animate-fade-in-up">
             <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 sm:mb-6 modern-card">
               <div className="w-2 h-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full animate-pulse"></div>
-              <span className="text-xs sm:text-sm font-medium text-foreground">{t.governmentAccess}</span>
+              <span className="text-xs sm:text-sm font-medium text-foreground">{t.citizenAccess}</span>
             </div>
             
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 leading-tight">
@@ -246,7 +246,7 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
             </p>
           </div>
 
-          {/* Form Container - EXACT SAME as Landing Page cards */}
+          {/* Form Container */}
           <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 hover:border-[#FFC72C]/70 hover:shadow-2xl transition-all duration-500 animate-fade-in-up modern-card p-6 sm:p-8 shadow-glow" style={{animationDelay: '0.2s'}}>
             {children}
           </div>
@@ -256,7 +256,7 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
             <p className="text-xs sm:text-sm text-muted-foreground">
               {t.technicalAssistance}{' '}
               <button className="text-[#FFC72C] hover:text-[#FF5722] transition-all duration-300 underline font-medium hover:scale-105">
-                {t.contactItSupport}
+                {t.contactSupport}
               </button>
             </p>
           </div>
@@ -277,4 +277,4 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
   );
 };
 
-export default AgentAuthLayout;
+export default UserAuthLayout;

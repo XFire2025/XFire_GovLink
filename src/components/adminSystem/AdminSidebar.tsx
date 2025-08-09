@@ -133,10 +133,10 @@ export default function AdminSidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-background border border-border shadow-lg hover:bg-muted transition-colors"
+        className="fixed top-6 left-4 z-[110] lg:hidden p-2.5 rounded-xl bg-card/95 dark:bg-card/98 backdrop-blur-md border border-border/50 shadow-xl hover:bg-muted hover:shadow-2xl hover:scale-105 transition-all duration-300 modern-card"
         aria-label="Open admin menu"
       >
-        <Menu className="w-5 h-5" />
+        <Menu className="w-5 h-5 text-foreground" />
       </button>
 
       {/* Enhanced Sidebar */}
@@ -144,7 +144,7 @@ export default function AdminSidebar() {
         className={`
         fixed lg:sticky top-0 h-screen bg-gradient-to-b from-card/95 via-card/90 to-card/80 dark:from-card/98 dark:via-card/95 dark:to-card/90
         border-r border-border/50 backdrop-blur-md flex flex-col transition-all duration-300 ease-in-out
-        shadow-2xl modern-card z-40 relative overflow-hidden
+        shadow-2xl modern-card z-40 overflow-hidden
         ${isCollapsed ? "w-16" : "w-64"}
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}
@@ -160,7 +160,8 @@ export default function AdminSidebar() {
             }}
           ></div>
           {/* Gradient overlay for better readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/30 dark:via-transparent dark:to-background/40"></div>
+                    {/* Background overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/70 dark:via-background/50 dark:to-background/80"></div>
         </div>
         {/* Enhanced Header */}
         <div className="relative z-10 p-4 border-b border-border/30 bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5">
@@ -170,7 +171,7 @@ export default function AdminSidebar() {
                 <div className="w-8 h-8 bg-gradient-to-r from-[#8D153A]/20 to-[#FF5722]/20 rounded-lg flex items-center justify-center border border-[#8D153A]/30 shadow-md">
                   <Settings className="w-4 h-4 text-[#8D153A]" />
                 </div>
-                <span className="font-bold text-foreground bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
+                <span className="font-bold bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
                   Admin Panel
                 </span>
               </div>

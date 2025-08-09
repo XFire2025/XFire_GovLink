@@ -1,58 +1,165 @@
-// e.g., app/user/booking/new/page.tsx
+// src/app/User/Booking/New/page.tsx
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Header } from '@/components/Header'; // Assuming Header is in a shared components directory
+import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 
-// --- SHARED COMPONENTS (Copied for consistency) ---
+// Types
+type Language = 'en' | 'si' | 'ta';
 
-const GlobalParticleBackground = () => (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.25] sm:opacity-[0.30] md:opacity-[0.35] dark:opacity-0">
-            <Image src="/flag-of-sri-lanka-1.gif" alt="Sri Lankan Flag Background" fill className="object-cover object-center scale-110 sm:scale-105 md:scale-100" style={{ filter: 'contrast(2.2) brightness(0.45) saturate(2.2) sepia(0.25) hue-rotate(8deg)', mixBlendMode: 'multiply' }} unoptimized={true} priority={false} />
-        </div>
-        <div className="absolute inset-0 opacity-0 dark:opacity-[0.02]">
-            <Image src="/flag-of-sri-lanka-1.gif" alt="Sri Lankan Flag Background" fill className="object-cover object-center scale-110 sm:scale-105 md:scale-100" unoptimized={true} priority={false} />
-        </div>
-        <div className="absolute top-20 left-10 w-24 h-24 bg-[#8D153A]/10 dark:bg-[#FFC72C]/6 rounded-full blur-xl"></div>
-        <div className="absolute top-40 right-20 w-20 h-20 bg-[#FF5722]/12 dark:bg-[#FF5722]/6 rounded-full blur-xl"></div>
-        <div className="absolute bottom-20 left-8 h-36 w-36 rounded-full bg-[#008060]/10 dark:bg-[#008060]/6 blur-2xl" />
-        <div className="absolute bottom-6 right-10 h-24 w-24 rounded-full bg-[#FFC72C]/15 dark:bg-[#FFC72C]/8 blur-xl" />
-    </div>
-);
-
-const Footer = () => (
-    <footer className="relative py-16 mt-24">
-        <div className="container mx-auto px-6">
-            <div className="pt-8 border-t border-border text-center">
-                <p className="text-muted-foreground text-sm">
-                    &copy; {new Date().getFullYear()} GovLink Sri Lanka. An initiative to streamline public services.
-                </p>
-            </div>
-        </div>
-    </footer>
-);
-
-const SectionTitle = ({ title, subtitle }: { title: string; subtitle?: string }) => (
-    <div className="text-center mb-12 sm:mb-16">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">
-            <span className="text-gradient">{title}</span>
-        </h1>
-        {subtitle && (
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                {subtitle}
-            </p>
-        )}
-        <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-gradient-to-r from-[#FFC72C] to-[#FF5722]" />
-    </div>
-);
+// New booking translations
+const newBookingTranslations: Record<Language, {
+  title: string;
+  subtitle: string;
+  backToBookings: string;
+  step1Title: string;
+  step1Desc: string;
+  step2Title: string;
+  step2Desc: string;
+  step3Title: string;
+  step3Desc: string;
+  agentDesignation: string;
+  agentName: string;
+  selectDesignation: string;
+  selectAgent: string;
+  selectDesignationFirst: string;
+  pickDay: string;
+  availableSlots: string;
+  selectAgentAndDay: string;
+  availableSlotsWillAppear: string;
+  availableTimesFor: string;
+  slotsAvailable: string;
+  noSlotsAvailable: string;
+  tryDifferentDay: string;
+  notes: string;
+  notesPlaceholder: string;
+  cancel: string;
+  requestBooking: string;
+  submitting: string;
+  booked: string;
+  errors: {
+    selectDesignation: string;
+    selectAgent: string;
+    pickDay: string;
+    chooseTimeSlot: string;
+  };
+}> = {
+  en: {
+    title: 'Book Appointment',
+    subtitle: 'Schedule your meeting with government officials',
+    backToBookings: 'Back to Bookings',
+    step1Title: 'Step 1: Agent',
+    step1Desc: 'Select the type of official you need to meet.',
+    step2Title: 'Step 2: Schedule',
+    step2Desc: 'Pick an available day and time slot for your appointment.',
+    step3Title: 'Step 3: Details',
+    step3Desc: 'Provide any additional notes for your appointment.',
+    agentDesignation: 'Agent Designation',
+    agentName: 'Agent Name',
+    selectDesignation: 'Select a designation...',
+    selectAgent: 'Select an agent...',
+    selectDesignationFirst: 'Select a designation first',
+    pickDay: 'Pick a Day',
+    availableSlots: 'Available Slots',
+    selectAgentAndDay: 'Select an agent and a day first',
+    availableSlotsWillAppear: 'Available time slots will appear here',
+    availableTimesFor: 'Available Times for',
+    slotsAvailable: 'slots available',
+    noSlotsAvailable: 'No slots available',
+    tryDifferentDay: 'Please try a different day or agent',
+    notes: 'Notes (Optional)',
+    notesPlaceholder: 'Add any specific details, questions, or required documents...',
+    cancel: 'Cancel',
+    requestBooking: 'Request Booking',
+    submitting: 'Submitting...',
+    booked: 'Booked!',
+    errors: {
+      selectDesignation: 'Please select an agent designation',
+      selectAgent: 'Please select an agent',
+      pickDay: 'Please pick a day for your appointment',
+      chooseTimeSlot: 'Please choose an available time slot'
+    }
+  },
+  si: {
+    title: 'හමුවීම් වෙන්කිරීම',
+    subtitle: 'රජයේ නිලධාරීන් සමඟ ඔබගේ හමුවීම සකස් කරන්න',
+    backToBookings: 'වෙන්කිරීම් වෙත ආපසු',
+    step1Title: 'පියවර 1: නිලධාරි',
+    step1Desc: 'ඔබට හමුවීමට අවශ්‍ය නිලධාරියාගේ වර්ගය තෝරන්න.',
+    step2Title: 'පියවර 2: කාලසටහන',
+    step2Desc: 'ඔබගේ හමුවීම සඳහා පවතින දිනයක් සහ වේලාවක් තෝරන්න.',
+    step3Title: 'පියවර 3: විස්තර',
+    step3Desc: 'ඔබගේ හමුවීම සඳහා අමතර සටහන් සපයන්න.',
+    agentDesignation: 'නිලධාරි තනතුර',
+    agentName: 'නිලධාරි නම',
+    selectDesignation: 'තනතුරක් තෝරන්න...',
+    selectAgent: 'නිලධාරියෙකු තෝරන්න...',
+    selectDesignationFirst: 'මුලින්ම තනතුරක් තෝරන්න',
+    pickDay: 'දිනයක් තෝරන්න',
+    availableSlots: 'පවතින වේලාවන්',
+    selectAgentAndDay: 'මුලින්ම නිලධාරියෙකු සහ දිනයක් තෝරන්න',
+    availableSlotsWillAppear: 'පවතින වේලාවන් මෙහි පෙන්වනු ඇත',
+    availableTimesFor: 'සඳහා පවතින වේලාවන්',
+    slotsAvailable: 'වේලාවන් පවතී',
+    noSlotsAvailable: 'වේලාවන් නොමැත',
+    tryDifferentDay: 'කරුණාකර වෙනත් දිනයක් හෝ නිලධාරියෙකු උත්සාහ කරන්න',
+    notes: 'සටහන් (විකල්ප)',
+    notesPlaceholder: 'විශේෂ විස්තර, ප්‍රශ්න, හෝ අවශ්‍ය ලේඛන එක් කරන්න...',
+    cancel: 'අවලංගු කරන්න',
+    requestBooking: 'වෙන්කිරීම ඉල්ලන්න',
+    submitting: 'ඉදිරිපත් කරමින්...',
+    booked: 'වෙන් කරන ලදී!',
+    errors: {
+      selectDesignation: 'කරුණාකර නිලධාරි තනතුරක් තෝරන්න',
+      selectAgent: 'කරුණාකර නිලධාරියෙකු තෝරන්න',
+      pickDay: 'කරුණාකර ඔබගේ හමුවීම සඳහා දිනයක් තෝරන්න',
+      chooseTimeSlot: 'කරුණාකර පවතින වේලාවක් තෝරන්න'
+    }
+  },
+  ta: {
+    title: 'சந்திப்பு முன்பதிவு',
+    subtitle: 'அரசு அதிகாரிகளுடன் உங்கள் சந்திப்பை திட்டமிடுங்கள்',
+    backToBookings: 'முன்பதிவுகளுக்கு திரும்பவும்',
+    step1Title: 'படி 1: அதிகாரி',
+    step1Desc: 'நீங்கள் சந்திக்க வேண்டிய அதிகாரியின் வகையைத் தேர்ந்தெடுக்கவும்.',
+    step2Title: 'படி 2: அட்டவணை',
+    step2Desc: 'உங்கள் சந்திப்புக்கு கிடைக்கும் நாள் மற்றும் நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்.',
+    step3Title: 'படி 3: விவரங்கள்',
+    step3Desc: 'உங்கள் சந்திப்புக்கான கூடுதல் குறிப்புகளை வழங்கவும்.',
+    agentDesignation: 'அதிகாரி பதவி',
+    agentName: 'அதிகாரி பெயர்',
+    selectDesignation: 'ஒரு பதவியைத் தேர்ந்தெடுக்கவும்...',
+    selectAgent: 'ஒரு அதிகாரியைத் தேர்ந்தெடுக்கவும்...',
+    selectDesignationFirst: 'முதலில் ஒரு பதவியைத் தேர்ந்தெடுக்கவும்',
+    pickDay: 'ஒரு நாளைத் தேர்ந்தெடுக்கவும்',
+    availableSlots: 'கிடைக்கும் நேரங்கள்',
+    selectAgentAndDay: 'முதலில் ஒரு அதிகாரி மற்றும் நாளைத் தேர்ந்தெடுக்கவும்',
+    availableSlotsWillAppear: 'கிடைக்கும் நேர இடைவெளிகள் இங்கே தோன்றும்',
+    availableTimesFor: 'க்கு கிடைக்கும் நேரங்கள்',
+    slotsAvailable: 'இடைவெளிகள் கிடைக்கின்றன',
+    noSlotsAvailable: 'இடைவெளிகள் கிடைக்கவில்லை',
+    tryDifferentDay: 'தயவுசெய்து வேறு நாள் அல்லது அதிகாரியை முயற்சிக்கவும்',
+    notes: 'குறிப்புகள் (விருப்பமானது)',
+    notesPlaceholder: 'குறிப்பிட்ட விவரங்கள், கேள்விகள், அல்லது தேவையான ஆவணங்களைச் சேர்க்கவும்...',
+    cancel: 'ரத்துசெய்',
+    requestBooking: 'முன்பதிவு கோரிக்கை',
+    submitting: 'சமர்ப்பிக்கிறது...',
+    booked: 'முன்பதிவு செய்யப்பட்டது!',
+    errors: {
+      selectDesignation: 'தயவுசெய்து ஒரு அதிகாரி பதவியைத் தேர்ந்தெடுக்கவும்',
+      selectAgent: 'தயவுசெய்து ஒரு அதிகாரியைத் தேர்ந்தெடுக்கவும்',
+      pickDay: 'தயவுசெய்து உங்கள் சந்திப்புக்கு ஒரு நாளைத் தேர்ந்தெடுக்கவும்',
+      chooseTimeSlot: 'தயவுசெய்து கிடைக்கும் நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்'
+    }
+  }
+};
 
 // --- PAGE-SPECIFIC COMPONENTS & ICONS ---
 
 // Icons
+const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
 const UserCheckIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>;
 const CalendarClockIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.25V14"/><circle cx="16" cy="16" r="5.5"/></svg>;
 const ClipboardIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>;
@@ -122,12 +229,12 @@ const CustomDropdown = ({
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 disabled={disabled}
                 className={`
-                    w-full text-left px-4 py-3 rounded-xl border transition-all duration-300 flex items-center justify-between
+                    w-full text-left px-4 py-3 rounded-xl border transition-all duration-300 flex items-center justify-between backdrop-blur-md
                     ${disabled 
-                        ? 'opacity-60 cursor-not-allowed bg-card/20 border-border/30' 
-                        : 'bg-card/40 border-border/50 hover:border-[#FFC72C]/50 hover:bg-card/60 focus:border-[#FFC72C] focus:ring-2 focus:ring-[#FFC72C]/30'
+                        ? 'opacity-60 cursor-not-allowed bg-card/20 dark:bg-card/30 border-border/30' 
+                        : 'bg-card/50 dark:bg-card/70 border-border/50 hover:border-[#FFC72C]/60 hover:bg-card/70 dark:hover:bg-card/80 focus:border-[#FFC72C] focus:ring-2 focus:ring-[#FFC72C]/30'
                     }
-                    backdrop-blur-sm shadow-lg
+                    shadow-md hover:shadow-lg modern-card
                 `}
             >
                 <span className={`${value ? 'text-foreground' : 'text-muted-foreground'} font-medium`}>
@@ -149,7 +256,7 @@ const CustomDropdown = ({
                     
                     {/* Options */}
                     <div className="absolute top-full left-0 right-0 mt-2 z-20">
-                        <div className="bg-card/95 border border-border/70 rounded-xl shadow-2xl backdrop-blur-sm overflow-hidden">
+                        <div className="bg-card/95 dark:bg-card/95 border border-border/50 rounded-xl shadow-glow backdrop-blur-md overflow-hidden modern-card">
                             <div className="max-h-60 overflow-y-auto">
                                 {options.map((option, index) => (
                                     <button
@@ -157,10 +264,10 @@ const CustomDropdown = ({
                                         type="button"
                                         onClick={() => handleSelect(option.value)}
                                         className={`
-                                            w-full text-left px-4 py-3 transition-all duration-150 border-b border-border/40 last:border-b-0
+                                            w-full text-left px-4 py-3 transition-all duration-200 border-b border-border/30 last:border-b-0
                                             ${value === option.value 
-                                                ? 'bg-[#FFC72C]/30 text-[#FFC72C] font-semibold' 
-                                                : 'text-foreground hover:bg-card/80 hover:text-[#FFC72C]'
+                                                ? 'bg-[#FFC72C]/20 text-[#FFC72C] font-semibold' 
+                                                : 'text-foreground hover:bg-card/30 hover:text-[#FFC72C]'
                                             }
                                             ${index === 0 ? 'rounded-t-xl' : ''}
                                             ${index === options.length - 1 ? 'rounded-b-xl' : ''}
@@ -180,15 +287,15 @@ const CustomDropdown = ({
 
 // Form Step component for visual structure
 const Step = ({ icon: Icon, title, description, children }: { icon: React.ElementType; title: string; description: string; children: React.ReactNode }) => (
-    <div className="grid md:grid-cols-4 gap-4 md:gap-8">
-        <div className="md:col-span-1">
-            <div className="flex items-center gap-3">
-                <Icon className="w-8 h-8 text-[#FFC72C]" />
-                <h3 className="text-xl font-bold text-gradient">{title}</h3>
+    <div className="animate-fade-in-up">
+        <div className="mb-6">
+            <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 modern-card">
+                <Icon className="w-4 h-4 text-[#FFC72C]" />
+                <span className="text-xs sm:text-sm font-medium text-foreground">{title}</span>
             </div>
-            <p className="text-sm text-muted-foreground mt-2 ml-11 md:ml-0">{description}</p>
+            <p className="text-muted-foreground">{description}</p>
         </div>
-        <div className="md:col-span-3 space-y-6">
+        <div className="space-y-6">
             {children}
         </div>
     </div>
@@ -196,15 +303,15 @@ const Step = ({ icon: Icon, title, description, children }: { icon: React.Elemen
 
 // Themed alert components
 const SuccessAlert = ({ message }: { message: string }) => (
-    <div className="glass-morphism-light p-4 rounded-2xl border border-emerald-500/30 flex items-center gap-3">
-        <CheckCircleIcon className="w-6 h-6 text-emerald-400 flex-shrink-0" />
-        <p className="text-sm font-medium text-emerald-300">{message}</p>
+    <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-4 rounded-2xl border border-[#008060]/30 flex items-center gap-3 shadow-glow modern-card animate-fade-in-up">
+        <CheckCircleIcon className="w-6 h-6 text-[#008060] flex-shrink-0" />
+        <p className="text-sm font-medium text-[#008060]">{message}</p>
     </div>
 );
 const ErrorAlert = ({ message }: { message: string }) => (
-    <div className="glass-morphism-light p-4 rounded-2xl border border-red-500/30 flex items-center gap-3">
-        <AlertTriangleIcon className="w-6 h-6 text-red-400 flex-shrink-0" />
-        <p className="text-sm font-medium text-red-300">{message}</p>
+    <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-4 rounded-2xl border border-[#FF5722]/30 flex items-center gap-3 shadow-glow modern-card animate-fade-in-up">
+        <AlertTriangleIcon className="w-6 h-6 text-[#FF5722] flex-shrink-0" />
+        <p className="text-sm font-medium text-[#FF5722]">{message}</p>
     </div>
 );
 
@@ -229,8 +336,8 @@ const TimeSlotCard = ({
     };
 
     const getSlotStatus = () => {
-        if (!isAvailable) return { text: 'Unavailable', color: 'text-red-400' };
-        if (isSelected) return { text: 'Selected', color: 'text-emerald-400' };
+        if (!isAvailable) return { text: 'Unavailable', color: 'text-[#FF5722]' };
+        if (isSelected) return { text: 'Selected', color: 'text-[#008060]' };
         return { text: 'Available', color: 'text-[#FFC72C]' };
     };
 
@@ -240,27 +347,33 @@ const TimeSlotCard = ({
         <div
             onClick={isAvailable ? onSelect : undefined}
             className={`
-                relative p-4 rounded-2xl border transition-all duration-300 cursor-pointer group
+                relative p-4 rounded-2xl border transition-all duration-300 cursor-pointer group backdrop-blur-md modern-card
                 ${!isAvailable 
-                    ? 'bg-card/20 border-red-500/30 opacity-60 cursor-not-allowed' 
+                    ? 'bg-card/20 dark:bg-card/30 border-[#FF5722]/30 opacity-60 cursor-not-allowed' 
                     : isSelected 
-                        ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-600/20 border-emerald-500/50 shadow-lg shadow-emerald-500/20' 
-                        : 'bg-card/40 border-border/50 hover:border-[#FFC72C]/50 hover:bg-card/60 hover:shadow-lg hover:shadow-[#FFC72C]/10'
+                        ? 'bg-gradient-to-br from-[#008060]/20 to-[#FFC72C]/20 border-[#008060]/50 shadow-glow hover:shadow-2xl' 
+                        : 'bg-card/50 dark:bg-card/70 border-border/50 hover:border-[#FFC72C]/60 hover:bg-card/70 dark:hover:bg-card/80 hover:shadow-lg hover-lift'
                 }
             `}
         >
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${isSelected ? 'bg-emerald-500/20' : 'bg-[#FFC72C]/20'}`}>
-                        <ClockIcon className={`w-4 h-4 ${isSelected ? 'text-emerald-400' : 'text-[#FFC72C]'}`} />
+                    <div className={`p-2 rounded-xl transition-all duration-300 ${
+                        isSelected 
+                            ? 'bg-[#008060]/20 border border-[#008060]/30' 
+                            : 'bg-[#FFC72C]/20 border border-[#FFC72C]/30'
+                    }`}>
+                        <ClockIcon className={`w-4 h-4 transition-transform duration-300 group-hover:scale-110 ${
+                            isSelected ? 'text-[#008060]' : 'text-[#FFC72C]'
+                        }`} />
                     </div>
                     <div>
-                        <div className="font-semibold text-foreground text-lg">
+                        <div className="font-semibold text-foreground text-lg transition-colors duration-300 group-hover:text-[#FFC72C]">
                             {formatTime(slot)}
                         </div>
                         {/* Only show status text for available/selected slots, not unavailable ones */}
                         {isAvailable && (
-                            <div className={`text-xs font-medium ${status.color}`}>
+                            <div className={`text-xs font-medium transition-colors duration-300 ${status.color}`}>
                                 {status.text}
                             </div>
                         )}
@@ -268,19 +381,24 @@ const TimeSlotCard = ({
                 </div>
                 
                 {isSelected && (
-                    <div className="p-1 rounded-full bg-emerald-500/20">
-                        <CheckCircleIcon className="w-5 h-5 text-emerald-400" />
+                    <div className="p-1.5 rounded-xl bg-[#008060]/20 border border-[#008060]/30 animate-pulse">
+                        <CheckCircleIcon className="w-5 h-5 text-[#008060]" />
                     </div>
                 )}
             </div>
             
             {!isAvailable && (
-                <div className="absolute inset-0 flex items-center justify-center bg-card/30 backdrop-blur-sm rounded-2xl">
-                    <span className="text-xs font-medium text-red-400 bg-red-500/20 px-2 py-1 rounded-full">
+                <div className="absolute inset-0 flex items-center justify-center bg-card/50 dark:bg-card/60 backdrop-blur-sm rounded-2xl">
+                    <span className="text-xs font-medium text-[#FF5722] bg-[#FF5722]/20 px-3 py-1.5 rounded-full border border-[#FF5722]/30">
                         Unavailable
                     </span>
                 </div>
             )}
+            
+            {/* Hover Effect Gradient */}
+            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FFC72C]/5 via-transparent to-[#FF5722]/5 rounded-2xl"></div>
+            </div>
         </div>
     );
 };
@@ -333,10 +451,16 @@ function mockAvailability(dayKey: string, agent: string) {
 // --- MAIN PAGE COMPONENT ---
 export default function NewBookingPage() {
 	const router = useRouter();
+	const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
 	const [form, setForm] = useState({ designation: "", agent: "", day: "", slot: "", notes: "" });
 	const [submitting, setSubmitting] = useState(false);
 	const [success, setSuccess] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
+	const t = newBookingTranslations[currentLanguage];
+
+	const handleLanguageChange = (newLanguage: Language) => {
+		setCurrentLanguage(newLanguage);
+	};
 
 	// Increase to 14 days
 	const days = useMemo(() => generateDays(14), []);
@@ -353,10 +477,10 @@ export default function NewBookingPage() {
 	function selectSlot(slot: string) { if (availableSlots.has(slot)) setForm((prev) => ({ ...prev, slot })); }
 
 	function validate() {
-		if (!form.designation) return "Please select an agent designation";
-		if (!form.agent) return "Please select an agent";
-		if (!form.day) return "Please pick a day for your appointment";
-		if (!form.slot) return "Please choose an available time slot";
+		if (!form.designation) return t.errors.selectDesignation;
+		if (!form.agent) return t.errors.selectAgent;
+		if (!form.day) return t.errors.pickDay;
+		if (!form.slot) return t.errors.chooseTimeSlot;
 		return null;
 	}
 
@@ -385,101 +509,118 @@ export default function NewBookingPage() {
 	}
 
 	return (
-        <div className="bg-background text-foreground min-h-screen relative">
-            <GlobalParticleBackground />
-            <div className="relative z-10">
-                <Header />
-                <main className="container mx-auto px-4 sm:px-6 py-32 sm:py-40">
-                    <SectionTitle title="Book an Appointment" subtitle="Choose a designation, pick your agent, then select a day and time." />
-                    
-                    <div className="max-w-4xl mx-auto">
-                        {success && <div className="mb-8"><SuccessAlert message={success} /></div>}
-                        {error && <div className="mb-8"><ErrorAlert message={error} /></div>}
-                    
-                        <form onSubmit={handleSubmit} className="glass-morphism p-6 sm:p-8 rounded-3xl border border-border/50">
-                            <div className="space-y-12">
-                                <Step icon={UserCheckIcon} title="Step 1: Agent" description="Select the type of official you need to meet.">
-                                    <div>
-                                        <label htmlFor="designation" className="form-label">Agent Designation</label>
-                                        <CustomDropdown
-                                            id="designation"
-                                            name="designation"
-                                            value={form.designation}
-                                            onChange={handleChange}
-                                            placeholder="Select a designation..."
-                                            options={DESIGNATIONS}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label htmlFor="agent" className="form-label">Agent Name</label>
-                                        <CustomDropdown
-                                            id="agent"
-                                            name="agent"
-                                            value={form.agent}
-                                            onChange={handleChange}
-                                            disabled={!form.designation}
-                                            placeholder={form.designation ? "Select an agent..." : "Select a designation first"}
-                                            options={agents}
-                                        />
-                                    </div>
-                                </Step>
+		<UserDashboardLayout
+			title={
+				<span className="animate-title-wave">
+					<span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
+					<span className="text-gradient">
+						{t.title.split(' ')[1] || ''}
+					</span>
+				</span>
+			}
+			subtitle={t.subtitle}
+			language={currentLanguage}
+			onLanguageChange={handleLanguageChange}
+		>
+			<div className="max-w-4xl mx-auto">
+				{/* Back Button */}
+				<div className="mb-8">
+					<Link 
+						href="/User/Booking"
+						className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
+					>
+						<ArrowLeftIcon className="w-4 h-4" />
+						{t.backToBookings}
+					</Link>
+				</div>
 
-                                <div className="border-t border-border/20"></div>
+				{success && <div className="mb-8"><SuccessAlert message={success} /></div>}
+				{error && <div className="mb-8"><ErrorAlert message={error} /></div>}
+			
+				<form onSubmit={handleSubmit} className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-border/50 shadow-glow modern-card hover:border-[#FFC72C]/30 transition-all duration-500">
+					<div className="space-y-12">
+						<Step icon={UserCheckIcon} title={t.step1Title} description={t.step1Desc}>
+							<div>
+								<label htmlFor="designation" className="block text-sm font-medium text-muted-foreground mb-2">{t.agentDesignation}</label>
+								<CustomDropdown
+									id="designation"
+									name="designation"
+									value={form.designation}
+									onChange={handleChange}
+									placeholder={t.selectDesignation}
+									options={DESIGNATIONS}
+								/>
+							</div>
+							<div>
+								<label htmlFor="agent" className="block text-sm font-medium text-muted-foreground mb-2">{t.agentName}</label>
+								<CustomDropdown
+									id="agent"
+									name="agent"
+									value={form.agent}
+									onChange={handleChange}
+									disabled={!form.designation}
+									placeholder={form.designation ? t.selectAgent : t.selectDesignationFirst}
+									options={agents}
+								/>
+							</div>
+						</Step>
 
-                                <Step icon={CalendarClockIcon} title="Step 2: Schedule" description="Pick an available day and time slot for your appointment.">
-                                    <div>
-                                        <label className="form-label">Pick a Day</label>
-                                        <div className="glass-morphism-inner p-4 rounded-xl">
-                                            {/* Responsive grid: max 7 columns on large screens, fewer on small */}
-                                            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2">
-                                                {days.map((d) => {
-                                                    const isActive = form.day === d.key;
-                                                    const dayOfWeek = d.date.getDay(); // 0 = Sunday, 6 = Saturday
-                                                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-                                                    
-                                                    return (
-                                                        <button
-                                                            type="button"
-                                                            key={d.key}
-                                                            onClick={() => !isWeekend && selectDay(d.key)}
-                                                            disabled={isWeekend}
-                                                            className={`rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-200 text-center ${
-                                                                isWeekend 
-                                                                    ? 'bg-card/20 text-muted-foreground/50 cursor-not-allowed opacity-60' 
-                                                                    : isActive 
-                                                                        ? 'bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white shadow-lg' 
-                                                                        : 'bg-card/50 hover:bg-card/80 text-muted-foreground'
-                                                            }`}
-                                                        >
-                                                            {d.label}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
+						<div className="border-t border-border/30"></div>
+
+						<Step icon={CalendarClockIcon} title={t.step2Title} description={t.step2Desc}>
+							<div>
+								<label className="block text-sm font-medium text-muted-foreground mb-2">{t.pickDay}</label>
+								<div className="bg-card/50 dark:bg-card/60 backdrop-blur-md p-4 rounded-xl border border-border/30 modern-card">
+									{/* Responsive grid: max 7 columns on large screens, fewer on small */}
+									<div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
+										{days.map((d) => {
+											const isActive = form.day === d.key;
+											const dayOfWeek = d.date.getDay(); // 0 = Sunday, 6 = Saturday
+											const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+											
+											return (
+												<button
+													type="button"
+													key={d.key}
+													onClick={() => !isWeekend && selectDay(d.key)}
+													disabled={isWeekend}
+													className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-300 text-center backdrop-blur-sm hover:scale-105 ${
+														isWeekend 
+															? 'bg-card/20 dark:bg-card/30 text-muted-foreground/50 cursor-not-allowed opacity-60 border border-border/20' 
+															: isActive 
+																? 'bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white shadow-lg hover:shadow-2xl border border-[#FFC72C]/50' 
+																: 'bg-card/50 dark:bg-card/70 hover:bg-card/70 dark:hover:bg-card/80 text-foreground hover:text-[#FFC72C] border border-border/30 hover:border-[#FFC72C]/60'
+													}`}
+												>
+													{d.label}
+												</button>
+											);
+										})}
+									</div>
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="form-label">Available Slots</label>
-                                        <div className="glass-morphism-inner p-4 rounded-xl">
-                                            {!form.day || !form.agent ? (
-                                                <div className="flex items-center justify-center text-center gap-3 py-12">
-                                                    <InfoIcon className="w-8 h-8 text-muted-foreground/70" />
-                                                    <div>
-                                                        <p className="text-muted-foreground font-medium mb-1">Select an agent and a day first</p>
-                                                        <p className="text-sm text-muted-foreground/70">Available time slots will appear here</p>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <h4 className="font-semibold text-foreground">
-                                                            Available Times for {days.find(d => d.key === form.day)?.label}
-                                                        </h4>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            {Array.from(availableSlots).length} slots available
-                                                        </div>
-                                                    </div>
+							<div>
+								<label className="block text-sm font-medium text-muted-foreground mb-2">{t.availableSlots}</label>
+								<div className="bg-card/50 dark:bg-card/60 backdrop-blur-md p-4 rounded-xl border border-border/30 modern-card">
+									{!form.day || !form.agent ? (
+										<div className="flex items-center justify-center text-center gap-3 py-12">
+											<InfoIcon className="w-8 h-8 text-muted-foreground/70" />
+											<div>
+												<p className="text-muted-foreground font-medium mb-1">{t.selectAgentAndDay}</p>
+												<p className="text-sm text-muted-foreground/70">{t.availableSlotsWillAppear}</p>
+											</div>
+										</div>
+									) : (
+										<div className="space-y-4">
+											<div className="flex items-center justify-between">
+												<h4 className="font-semibold text-foreground">
+													{t.availableTimesFor} {days.find(d => d.key === form.day)?.label}
+												</h4>
+												<div className="text-sm text-muted-foreground">
+													{Array.from(availableSlots).length} {t.slotsAvailable}
+												</div>
+											</div>
                                                     
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                                         {slots.map((s) => {
@@ -497,74 +638,54 @@ export default function NewBookingPage() {
                                                         })}
                                                     </div>
                                                     
-                                                    {Array.from(availableSlots).length === 0 && (
-                                                        <div className="text-center py-8">
-                                                            <AlertTriangleIcon className="w-12 h-12 text-yellow-400 mx-auto mb-3" />
-                                                            <p className="text-muted-foreground font-medium mb-1">No slots available</p>
-                                                            <p className="text-sm text-muted-foreground/70">Please try a different day or agent</p>
-                                                        </div>
-                                                    )}
+											{Array.from(availableSlots).length === 0 && (
+												<div className="text-center py-8">
+													<AlertTriangleIcon className="w-12 h-12 text-[#FFC72C] mx-auto mb-3" />
+													<p className="text-muted-foreground font-medium mb-1">{t.noSlotsAvailable}</p>
+													<p className="text-sm text-muted-foreground/70">{t.tryDifferentDay}</p>
+												</div>
+											)}
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                 </Step>
                                 
-                                <div className="border-t border-border/20"></div>
+						<div className="border-t border-border/30"></div>
 
-                                <Step icon={ClipboardIcon} title="Step 3: Details" description="Provide any additional notes for your appointment.">
-                                    <div>
-                                        <label htmlFor="notes" className="form-label">Notes (Optional)</label>
-                                        <textarea id="notes" name="notes" value={form.notes} onChange={handleChange} rows={4} placeholder="Add any specific details, questions, or required documents..." className="form-input" />
-                                    </div>
-                                </Step>
+						<Step icon={ClipboardIcon} title={t.step3Title} description={t.step3Desc}>
+							<div>
+								<label htmlFor="notes" className="block text-sm font-medium text-muted-foreground mb-2">{t.notes}</label>
+								<textarea 
+									id="notes" 
+									name="notes" 
+									value={form.notes} 
+									onChange={handleChange} 
+									rows={4} 
+									placeholder={t.notesPlaceholder} 
+									className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-md text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60 resize-none" 
+								/>
+							</div>
+						</Step>
 
-                                <div className="border-t border-border/20 pt-8 flex items-center justify-end gap-4">
-                                    <Link href="/user/booking" className="btn-secondary-premium">Cancel</Link>
-                                    <button type="submit" disabled={submitting || !!success} className="btn-primary-premium">{submitting ? "Submitting..." : (success ? "Booked!" : "Request Booking")}</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </main>
-                <Footer />
-            </div>
-
-            {/* Local styles for form inputs */}
-            <style jsx>{`
-                .form-label {
-                    display: block;
-                    margin-bottom: 0.5rem;
-                    font-size: 0.875rem; /* 14px */
-                    font-weight: 600;
-                    color: var(--color-muted-foreground);
-                }
-                .form-input {
-                    display: block;
-                    width: 100%;
-                    background-color: hsla(var(--card-hsl), 0.5);
-                    border: 1px solid hsla(var(--border-hsl), 0.5);
-                    border-radius: 0.75rem; /* 12px */
-                    padding: 0.75rem 1rem;
-                    font-size: 0.875rem;
-                    color: var(--color-foreground);
-                    transition: all 0.2s ease-in-out;
-                }
-                .form-input:focus {
-                    outline: none;
-                    border-color: #FFC72C;
-                    box-shadow: 0 0 0 3px rgba(255, 199, 44, 0.3);
-                }
-                .form-input::placeholder {
-                    color: var(--color-muted-foreground);
-                    opacity: 0.7;
-                }
-                .form-input:disabled {
-                    cursor: not-allowed;
-                    opacity: 0.6;
-                    background-color: hsla(var(--card-hsl), 0.2);
-                }
-            `}</style>
-        </div>
+						<div className="border-t border-border/30 pt-8 flex flex-col sm:flex-row items-center justify-end gap-4">
+							<Link 
+								href="/User/Booking" 
+								className="w-full sm:w-auto px-6 py-3 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105 text-center"
+							>
+								{t.cancel}
+							</Link>
+							<button 
+								type="submit" 
+								disabled={submitting || !!success} 
+								className="w-full sm:w-auto px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-2xl"
+							>
+								{submitting ? t.submitting : (success ? t.booked : t.requestBooking)}
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</UserDashboardLayout>
 	);
 }

@@ -1,50 +1,51 @@
-// src/components/agent/auth/AgentAuthLayout.tsx
+// src/components/user/dashboard/UserDashboardLayout.tsx
 "use client";
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 // Types for translations
 type Language = 'en' | 'si' | 'ta';
 
 interface Translation {
-  governmentAccess: string;
-  agentPortal: string;
-  subtitle: string;
-  backToHome: string;
-  technicalAssistance: string;
-  contactItSupport: string;
-  copyright: string;
+  dashboard: string;
+  citizenPortal: string;
+  logout: string;
+  profile: string;
+  settings: string;
+  help: string;
+  notifications: string;
 }
 
 // Translation data
 const translations: Record<Language, Translation> = {
   en: {
-    governmentAccess: 'Government Access',
-    agentPortal: 'Agent Portal',
-    subtitle: 'Secure access for authorized government personnel',
-    backToHome: '← Back to Home',
-    technicalAssistance: 'Need technical assistance?',
-    contactItSupport: 'Contact IT Support',
-    copyright: '© 2025 Government of Sri Lanka • Authorized Personnel Only'
+    dashboard: 'Dashboard',
+    citizenPortal: 'Citizen Portal',
+    logout: 'Logout',
+    profile: 'Profile',
+    settings: 'Settings',
+    help: 'Help',
+    notifications: 'Notifications'
   },
   si: {
-    governmentAccess: 'රාජ්‍ය ප්‍රවේශය',
-    agentPortal: 'නිලධාරි පෝට්ලය',
-    subtitle: 'බලයලත් රාජ්‍ය නිලධාරීන් සඳහා ආරක්ෂිත ප්‍රවේශය',
-    backToHome: '← මුල් පිටුවට',
-    technicalAssistance: 'තාක්ෂණික සහායක අවශ්‍යද?',
-    contactItSupport: 'තාක්ෂණික සහාය අමතන්න',
-    copyright: '© 2025 ශ්‍රී ලංකා රජය • බලයලත් කර්මිකයන් පමණි'
+    dashboard: 'පාලනය',
+    citizenPortal: 'පුරවැසි පෝට්ලය',
+    logout: 'ඉවත්වන්න',
+    profile: 'පැතිකඩ',
+    settings: 'සැකසුම්',
+    help: 'උදව්',
+    notifications: 'දැනුම්දීම්'
   },
   ta: {
-    governmentAccess: 'அரசு அணுகல்',
-    agentPortal: 'அதிகாரி போர்டல்',
-    subtitle: 'அங்கீகரிக்கப்பட்ட அரசு ஊழியர்களுக்கான பாதுகாப்பான அணுகல்',
-    backToHome: '← முகப்புக்கு திரும்பு',
-    technicalAssistance: 'தொழில்நுட்ப உதவி தேவையா?',
-    contactItSupport: 'IT ஆதரவை தொடர்பு கொள்ளுங்கள்',
-    copyright: '© 2025 இலங்கை அரசாங்கம் • அங்கீகரிக்கப்பட்ட ஊழியர்கள் மட்டுமே'
+    dashboard: 'டாஷ்போர்டு',
+    citizenPortal: 'குடிமக்கள் போர்டல்',
+    logout: 'வெளியேறு',
+    profile: 'சுயவிவரம்',
+    settings: 'அமைப்புகள்',
+    help: 'உதவி',
+    notifications: 'அறிவிப்புகள்'
   }
 };
 
@@ -52,10 +53,10 @@ const translations: Record<Language, Translation> = {
 const languageOptions = [
   { code: 'en', label: 'English', nativeLabel: 'English' },
   { code: 'si', label: 'Sinhala', nativeLabel: 'සිංහල' },
-  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ්' }
+  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ்' }
 ];
 
-// EXACT SAME Lotus Icon as Landing Page with Sri Lankan Colors
+// EXACT SAME Lotus Icon as Agent Layout
 const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} viewBox="0 0 100 100">
     {/* Outer layer petals */}
@@ -98,7 +99,7 @@ const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-// EXACT SAME Sri Lankan Background Component as Landing Page
+// EXACT SAME Sri Lankan Background Component
 const SriLankanBackground = () => {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -129,22 +130,30 @@ const SriLankanBackground = () => {
   );
 };
 
-interface AgentAuthLayoutProps {
+interface UserDashboardLayoutProps {
   children: React.ReactNode;
   title: React.ReactNode;
   subtitle?: string;
   language?: Language;
   onLanguageChange?: (language: Language) => void;
+  size?: 'default' | 'compact' | 'dense';
+  contentMode?: 'normal' | 'fill';
+  headerContent?: React.ReactNode;
 }
 
-const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({ 
+const UserDashboardLayout: React.FC<UserDashboardLayoutProps> = ({ 
   children, 
   title, 
   subtitle,
   language = 'en',
-  onLanguageChange
+  onLanguageChange,
+  size = 'default',
+  contentMode = 'normal',
+  headerContent
 }) => {
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const t = translations[language];
 
   const handleLanguageChange = (newLanguage: Language) => {
@@ -154,33 +163,47 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
     setIsDropdownOpen(false);
   };
 
+  const handleLogout = () => {
+    router.push('/User/Auth/Login');
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden theme-transition-slow">
-      {/* EXACT SAME Sri Lankan Background as Landing Page */}
+      {/* EXACT SAME Sri Lankan Background */}
       <SriLankanBackground />
-
-      {/* Header */}
+      
+      {/* Header - EXACT SAME styling as Agent Layout */}
       <header className="fixed top-0 left-0 right-0 z-50 w-full bg-background/98 dark:bg-card backdrop-blur-md border-b border-border/30 dark:border-border/50 shadow-sm dark:shadow-lg">
         <nav className="container mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
-          <Link href="/" className="flex items-center space-x-3 group">
+          <div className="flex items-center space-x-3 group">
             <div className="w-9 h-9 bg-gradient-to-br from-[#FFC72C]/10 to-[#FF5722]/10 rounded-xl p-0.5 flex items-center justify-center border border-[#FFC72C]/20 relative overflow-visible backdrop-blur-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
               <LotusIcon className="w-11 h-11 absolute transition-transform duration-300 group-hover:rotate-12" />
             </div>
             <div className="flex flex-col">
               <span className="text-xl md:text-2xl font-bold text-gradient leading-none">GovLink</span>
-              <span className="text-xs text-muted-foreground/70 font-medium leading-none">{t.agentPortal}</span>
+              <span className="text-xs text-muted-foreground/70 font-medium leading-none">{t.citizenPortal}</span>
             </div>
-          </Link>
+          </div>
 
           <div className="flex items-center gap-3 sm:gap-4">
-            <Link 
-              href="/" 
-              className="text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors duration-300 hover:scale-105 font-medium"
-            >
-              {t.backToHome}
-            </Link>
-            
-            {/* Language Dropdown - EXACT SAME as Landing Page */}
+            {/* Notification Bell */}
+            <div className="relative">
+              <button 
+                className="p-2.5 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 hover:border-[#FFC72C]/60 text-foreground hover:bg-card/80 dark:hover:bg-card/90 transition-all duration-300 shadow-md hover:shadow-lg modern-card hover:scale-105"
+                aria-label={t.notifications}
+                title={t.notifications}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                </svg>
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#FF5722] to-[#8D153A] text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                  2
+                </span>
+              </button>
+            </div>
+
+            {/* Language Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -199,7 +222,7 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
                     className="fixed inset-0 z-40" 
                     onClick={() => setIsDropdownOpen(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-36 sm:w-40 glass-morphism border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-50">
+                  <div className="absolute right-0 top-full mt-2 w-36 sm:w-40 backdrop-blur-md bg-card/90 dark:bg-card/95 border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-50">
                     {languageOptions.map((lang) => (
                       <button
                         key={lang.code}
@@ -221,6 +244,72 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
               )}
             </div>
             
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 hover:border-[#FFC72C]/60 text-sm font-medium text-foreground hover:bg-card/80 dark:hover:bg-card/90 transition-all duration-300 shadow-md hover:shadow-lg modern-card"
+              >
+                <div className="w-8 h-8 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-xs font-bold">S</span>
+                </div>
+                <span className="hidden sm:block">Sanduni P.</span>
+                <svg className={`w-4 h-4 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+
+              {isProfileDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-48 backdrop-blur-md bg-card/90 dark:bg-card/95 border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-50">
+                    <div className="px-4 py-3 border-b border-border/30">
+                      <div className="font-medium text-foreground">Sanduni Perera</div>
+                      <div className="text-xs text-muted-foreground">Citizen Account</div>
+                    </div>
+                    <Link href="/User/Profile" className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                      {t.profile}
+                    </Link>
+                    <button className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1" />
+                      </svg>
+                      {t.settings}
+                    </button>
+                    <button className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                        <path d="M12 17h.01" />
+                      </svg>
+                      {t.help}
+                    </button>
+                    <div className="border-t border-border/30">
+                      <button 
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-[#FF5722] hover:bg-[#FF5722]/10 transition-all duration-200 flex items-center gap-3"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                          <polyline points="16 17 21 12 16 7" />
+                          <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        {t.logout}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            
             <div className="w-px h-6 bg-border/50"></div>
             <ThemeToggle />
           </div>
@@ -228,53 +317,46 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16 md:py-20 pt-20 sm:pt-24 md:pt-28 relative z-10">
-        <div className="w-full max-w-md">
-          {/* Title Section */}
-          <div className="text-center mb-8 sm:mb-10 animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 sm:mb-6 modern-card">
-              <div className="w-2 h-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full animate-pulse"></div>
-              <span className="text-xs sm:text-sm font-medium text-foreground">{t.governmentAccess}</span>
-            </div>
-            
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 leading-tight">
-              {title}
-            </h2>
-            
-            <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
-              {subtitle || t.subtitle}
-            </p>
+      <main className={`container mx-auto px-4 sm:px-6 ${
+          size === 'dense' ? 'pt-16 sm:pt-20 pb-4 sm:pb-6'
+        : size === 'compact' ? 'pt-20 sm:pt-24 pb-6 sm:pb-8'
+        : 'pt-24 sm:pt-28 pb-8 sm:pb-12'
+        } ${contentMode === 'fill' ? 'min-h-[100dvh] max-h-[100dvh] overflow-hidden grid grid-rows-[auto_1fr]' : ''} relative z-10`}>
+        {headerContent ? (
+          <div className={`${size === 'dense' ? 'mb-4' : size === 'compact' ? 'mb-6' : 'mb-8'} animate-fade-in-up`}>
+            {headerContent}
           </div>
-
-          {/* Form Container - EXACT SAME as Landing Page cards */}
-          <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 hover:border-[#FFC72C]/70 hover:shadow-2xl transition-all duration-500 animate-fade-in-up modern-card p-6 sm:p-8 shadow-glow" style={{animationDelay: '0.2s'}}>
+        ) : (
+          <div className={`text-center ${size === 'dense' ? 'mb-4' : size === 'compact' ? 'mb-6' : 'mb-12'} animate-fade-in-up`}>
+            <h1 className={`${
+              size === 'dense' ? 'text-xl sm:text-2xl md:text-3xl'
+            : size === 'compact' ? 'text-2xl sm:text-3xl md:text-4xl'
+            : 'text-3xl sm:text-4xl md:text-5xl'
+            } font-bold ${size === 'dense' ? 'mb-2' : 'mb-3 sm:mb-4'} leading-tight`}>
+              {title}
+            </h1>
+            
+            {subtitle && (
+              <p className={`${
+                size === 'dense' ? 'hidden sm:block text-sm sm:text-base'
+              : size === 'compact' ? 'text-base sm:text-lg'
+              : 'text-lg sm:text-xl'
+              } text-muted-foreground max-w-2xl mx-auto leading-relaxed`}>
+                {subtitle}
+              </p>
+            )}
+          </div>
+        )}
+        {contentMode === 'fill' ? (
+          <div className="min-h-0">
             {children}
           </div>
-
-          {/* Support Information */}
-          <div className="text-center mt-6 sm:mt-8 animate-fade-in-up" style={{animationDelay: '0.4s'}}>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {t.technicalAssistance}{' '}
-              <button className="text-[#FFC72C] hover:text-[#FF5722] transition-all duration-300 underline font-medium hover:scale-105">
-                {t.contactItSupport}
-              </button>
-            </p>
-          </div>
-        </div>
+        ) : (
+          children
+        )}
       </main>
-
-      {/* Footer */}
-      <footer className="relative z-10 pb-6 sm:pb-8">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="text-center">
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {t.copyright}
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
 
-export default AgentAuthLayout;
+export default UserDashboardLayout;
