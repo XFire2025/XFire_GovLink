@@ -32,6 +32,13 @@ const profileTranslations: Record<Language, {
   saved: string;
   noDocuments: string;
   noDocumentsDesc: string;
+  verificationStatus: string;
+  accountNotVerified: string;
+  verifyNow: string;
+  verificationRequired: string;
+  verificationDesc: string;
+  verified: string;
+  verifiedDesc: string;
 }> = {
   en: {
     title: 'Profile Settings',
@@ -54,7 +61,14 @@ const profileTranslations: Record<Language, {
     saving: 'Saving...',
     saved: 'Saved',
     noDocuments: 'No Documents Found',
-    noDocumentsDesc: 'Your uploaded documents and completed forms will appear here for easy access.'
+    noDocumentsDesc: 'Your uploaded documents and completed forms will appear here for easy access.',
+    verificationStatus: 'Verification Status',
+    accountNotVerified: 'Account Not Verified',
+    verifyNow: 'Verify Now',
+    verificationRequired: 'Verification Required',
+    verificationDesc: 'Verify your identity to access all government services and ensure account security.',
+    verified: 'Verified Account',
+    verifiedDesc: 'Your account is verified and has full access to all services.'
   },
   si: {
     title: 'පැතිකඩ සැකසුම්',
@@ -77,7 +91,14 @@ const profileTranslations: Record<Language, {
     saving: 'සුරකිමින්...',
     saved: 'සුරකින ලදී',
     noDocuments: 'ලේඛන හමු නොවීය',
-    noDocumentsDesc: 'ඔබ උඩුගත කළ ලේඛන සහ සම්පූර්ණ කළ ආකෘති පහසු ප්‍රවේශය සඳහා මෙහි දිස්වනු ඇත.'
+    noDocumentsDesc: 'ඔබ උඩුගත කළ ලේඛන සහ සම්පූර්ණ කළ ආකෘති පහසු ප්‍රවේශය සඳහා මෙහි දිස්වනු ඇත.',
+    verificationStatus: 'සත්‍යාපන තත්ත්වය',
+    accountNotVerified: 'ගිණුම සත්‍යාපනය කර නැත',
+    verifyNow: 'දැන් සත්‍යාපනය කරන්න',
+    verificationRequired: 'සත්‍යාපනය අවශ්‍යයි',
+    verificationDesc: 'සියලුම රාජ්‍ය සේවා වෙත ප්‍රවේශ වීමට සහ ගිණුම් ආරක්ෂාව සහතික කිරීමට ඔබගේ අනන්‍යතාවය සත්‍යාපනය කරන්න.',
+    verified: 'සත්‍යාපිත ගිණුම',
+    verifiedDesc: 'ඔබගේ ගිණුම සත්‍යාපනය කර ඇති අතර සියලුම සේවා වෙත සම්පූර්ණ ප්‍රවේශයක් ඇත.'
   },
   ta: {
     title: 'சுயவிவர அமைப்புகள்',
@@ -100,7 +121,14 @@ const profileTranslations: Record<Language, {
     saving: 'சேமிக்கிறது...',
     saved: 'சேமிக்கப்பட்டது',
     noDocuments: 'ஆவணங்கள் எதுவும் கிடைக்கவில்லை',
-    noDocumentsDesc: 'உங்கள் பதிவேற்றிய ஆவணங்கள் மற்றும் நிறைவு செய்யப்பட்ட படிவங்கள் எளிதான அணுகலுக்காக இங்கே தோன்றும்.'
+    noDocumentsDesc: 'உங்கள் பதிவேற்றிய ஆவணங்கள் மற்றும் நிறைவு செய்யப்பட்ட படிவங்கள் எளிதான அணுகலுக்காக இங்கே தோன்றும்.',
+    verificationStatus: 'சரிபார்ப்பு நிலை',
+    accountNotVerified: 'கணக்கு சரிபார்க்கப்படவில்லை',
+    verifyNow: 'இப்போது சரிபார்க்கவும்',
+    verificationRequired: 'சரிபார்ப்பு தேவை',
+    verificationDesc: 'அனைத்து அரசாங்க சேவைகளையும் அணுகவும் கணக்கு பாதுகாப்பை உறுதிப்படுத்தவும் உங்கள் அடையாளத்தை சரிபார்க்கவும்.',
+    verified: 'சரிபார்க்கப்பட்ட கணக்கு',
+    verifiedDesc: 'உங்கள் கணக்கு சரிபார்க்கப்பட்டுள்ளது மற்றும் அனைத்து சேவைகளுக்கும் முழு அணுகல் உள்ளது.'
   }
 };
 
@@ -123,6 +151,18 @@ const UploadIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+);
+
+const ShieldIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+);
+
+const ShieldCheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M9 12l2 2 4-4"/></svg>
+);
+
+const AlertTriangleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
 );
 
 // --- DEFAULT AVATAR (INLINE SVG) ---
@@ -179,6 +219,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
+  const [isVerified, setIsVerified] = useState(false); // For demo - normally from API
   const fileRef = useRef<HTMLInputElement | null>(null);
   const t = profileTranslations[currentLanguage];
 
@@ -313,15 +354,65 @@ export default function ProfilePage() {
                           <input ref={fileRef} type="file" accept="image/*" onChange={onAvatarChange} className="hidden" />
                         </div>
 
-                        <div className="w-full bg-card/80 dark:bg-card/90 backdrop-blur-md p-5 rounded-2xl border border-border/30 shadow-glow modern-card hover:border-[#FFC72C]/40 transition-all duration-300">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-sm font-semibold text-foreground">{t.profileCompleteness}</span>
-                            <span className="font-bold text-gradient">{completenessPct}%</span>
+                        <div className="w-full space-y-4">
+                          {/* Profile Completeness */}
+                          <div className="bg-card/80 dark:bg-card/90 backdrop-blur-md p-5 rounded-2xl border border-border/30 shadow-glow modern-card hover:border-[#FFC72C]/40 transition-all duration-300">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-semibold text-foreground">{t.profileCompleteness}</span>
+                              <span className="font-bold text-gradient">{completenessPct}%</span>
+                            </div>
+                            <div className="h-2.5 w-full bg-muted/30 rounded-full overflow-hidden border border-border/20">
+                              <div className="h-full bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full transition-all duration-700 ease-out shadow-sm" style={{ width: `${completenessPct}%` }}/>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-3 text-center leading-relaxed">{t.completeProfileHelp}</p>
                           </div>
-                          <div className="h-2.5 w-full bg-muted/30 rounded-full overflow-hidden border border-border/20">
-                            <div className="h-full bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full transition-all duration-700 ease-out shadow-sm" style={{ width: `${completenessPct}%` }}/>
+
+                          {/* Verification Status */}
+                          <div className={`
+                            bg-card/80 dark:bg-card/90 backdrop-blur-md p-5 rounded-2xl border shadow-glow modern-card transition-all duration-300
+                            ${isVerified 
+                              ? 'border-[#008060]/30 hover:border-[#008060]/50' 
+                              : 'border-[#FF5722]/30 hover:border-[#FF5722]/50'
+                            }
+                          `}>
+                            <div className="flex items-center gap-3 mb-3">
+                              {isVerified ? (
+                                <div className="p-2 bg-[#008060]/10 rounded-xl">
+                                  <ShieldCheckIcon className="w-5 h-5 text-[#008060]" />
+                                </div>
+                              ) : (
+                                <div className="p-2 bg-[#FF5722]/10 rounded-xl">
+                                  <AlertTriangleIcon className="w-5 h-5 text-[#FF5722]" />
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-semibold text-foreground">{t.verificationStatus}</span>
+                                  <div className={`
+                                    w-2 h-2 rounded-full animate-pulse
+                                    ${isVerified ? 'bg-[#008060]' : 'bg-[#FF5722]'}
+                                  `}></div>
+                                </div>
+                                <p className={`text-xs mt-1 ${isVerified ? 'text-[#008060]' : 'text-[#FF5722]'}`}>
+                                  {isVerified ? t.verified : t.accountNotVerified}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+                              {isVerified ? t.verifiedDesc : t.verificationDesc}
+                            </p>
+                            
+                            {!isVerified && (
+                              <Link 
+                                href="/User/Profile/Verification"
+                                className="inline-flex items-center justify-center w-full px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#FF5722] to-[#8D153A] hover:from-[#8D153A] hover:to-[#FF5722] rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-2xl group"
+                              >
+                                <ShieldIcon className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                                {t.verifyNow}
+                              </Link>
+                            )}
                           </div>
-                          <p className="text-xs text-muted-foreground mt-3 text-center leading-relaxed">{t.completeProfileHelp}</p>
                         </div>
                       </div>
 
@@ -434,12 +525,50 @@ export default function ProfilePage() {
                   </div>
                   <p className="text-muted-foreground">{t.myDocumentsDesc}</p>
                 </div>
-                <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-border/50 shadow-glow modern-card text-center min-h-[400px] flex flex-col justify-center items-center">
-                  <div className="w-20 h-20 bg-gradient-to-r from-[#FFC72C]/10 to-[#FF5722]/10 rounded-2xl flex items-center justify-center mb-6 border border-[#FFC72C]/20">
-                    <DocumentIcon className="w-10 h-10 text-muted-foreground/60" />
+                <div className="space-y-8">
+                  {/* Verification Card */}
+                  {!isVerified && (
+                    <div className="bg-gradient-to-r from-[#FF5722]/10 to-[#8D153A]/10 rounded-2xl p-6 border border-[#FF5722]/20 animate-fade-in-up">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-[#FF5722]/10 rounded-xl flex-shrink-0">
+                          <AlertTriangleIcon className="w-6 h-6 text-[#FF5722]" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-bold text-foreground mb-2">{t.verificationRequired}</h3>
+                          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                            {t.verificationDesc}
+                          </p>
+                          <Link 
+                            href="/User/Profile/Verification"
+                            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-[#FF5722] to-[#8D153A] hover:from-[#8D153A] hover:to-[#FF5722] rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-2xl group"
+                          >
+                            <ShieldIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
+                            {t.verifyNow}
+                            <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M5 12h14"/>
+                              <path d="M12 5l7 7-7 7"/>
+                            </svg>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Documents Section */}
+                  <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-border/50 shadow-glow modern-card text-center min-h-[400px] flex flex-col justify-center items-center">
+                    <div className="w-20 h-20 bg-gradient-to-r from-[#FFC72C]/10 to-[#FF5722]/10 rounded-2xl flex items-center justify-center mb-6 border border-[#FFC72C]/20">
+                      <DocumentIcon className="w-10 h-10 text-muted-foreground/60" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2 text-foreground">{t.noDocuments}</h3>
+                    <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">{t.noDocumentsDesc}</p>
+                    
+                    {isVerified && (
+                      <div className="mt-6 flex items-center gap-2 px-4 py-2 bg-[#008060]/10 rounded-xl border border-[#008060]/20">
+                        <ShieldCheckIcon className="w-4 h-4 text-[#008060]" />
+                        <span className="text-sm font-medium text-[#008060]">{t.verified}</span>
+                      </div>
+                    )}
                   </div>
-                  <h3 className="text-xl font-bold mb-2 text-foreground">{t.noDocuments}</h3>
-                  <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">{t.noDocumentsDesc}</p>
                 </div>
               </div>
             )}
