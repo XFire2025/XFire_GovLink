@@ -1,7 +1,6 @@
 // src/components/agent/profile/ProfileLayout.tsx
 "use client";
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -89,7 +88,7 @@ const ProfileIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 interface ProfileLayoutProps {
   children: React.ReactNode;
-  title: React.ReactNode;
+  title?: React.ReactNode; // Made optional since we're using fixed text
   subtitle?: string;
   language?: Language;
   onLanguageChange?: (language: Language) => void;
@@ -97,7 +96,6 @@ interface ProfileLayoutProps {
 
 const ProfileLayout: React.FC<ProfileLayoutProps> = ({ 
   children, 
-  title, 
   subtitle,
   language = 'en',
   onLanguageChange
@@ -120,112 +118,107 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden theme-transition-slow">
-      {/* EXACT SAME Background as Other Pages */}
+      {/* Modern Sri Lankan Background with Enhanced Profile Styling */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.25] sm:opacity-[0.30] md:opacity-[0.35] dark:opacity-0">
-          <Image 
-            src="/flag-of-sri-lanka-1.gif" 
-            alt="Sri Lankan Flag Background" 
-            fill
-            className="object-cover object-center animate-pulse-move scale-110 sm:scale-105 md:scale-100"
+        {/* Main background image */}
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-background/95">
+          <div 
+            className="absolute inset-0 opacity-55 dark:opacity-15 bg-center bg-no-repeat bg-cover transition-opacity duration-1000"
             style={{
-              animationDelay: '0s',
-              filter: 'contrast(2.2) brightness(0.45) saturate(2.2) sepia(0.25) hue-rotate(8deg)',
-              mixBlendMode: 'multiply'
+              backgroundImage: 'url("/2.png")',
+              backgroundPosition: 'center 20%',
+              filter: 'saturate(1.2) brightness(1.1)',
             }}
-            unoptimized={true}
-            priority={false}
-          />
+          ></div>
+          {/* Overlay gradients for better text readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/40 dark:from-background/40 dark:via-transparent dark:to-background/60"></div>
         </div>
         
-        <div className="absolute inset-0 opacity-0 dark:opacity-[0.02] sm:dark:opacity-[0.025] md:dark:opacity-[0.03]">
-          <Image 
-            src="/flag-of-sri-lanka-1.gif" 
-            alt="Sri Lankan Flag Background" 
-            fill
-            className="object-cover object-center animate-pulse-move scale-110 sm:scale-105 md:scale-100"
-            style={{animationDelay: '0s'}}
-            unoptimized={true}
-            priority={false}
-          />
+        {/* Enhanced profile-specific accent patterns */}
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-[#FFC72C]/8 dark:bg-[#FFC72C]/4 rounded-full blur-3xl animate-pulse" style={{animationDuration: '8s'}}></div>
+          <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-[#8D153A]/8 dark:bg-[#8D153A]/4 rounded-full blur-3xl animate-pulse" style={{animationDuration: '12s', animationDelay: '4s'}}></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#FF5722]/6 dark:bg-[#FF5722]/3 rounded-full blur-3xl animate-pulse" style={{animationDuration: '10s', animationDelay: '2s'}}></div>
+          {/* Additional profile-specific accents */}
+          <div className="absolute top-3/4 right-1/3 w-48 h-48 bg-[#FFA726]/6 dark:bg-[#FFA726]/3 rounded-full blur-2xl animate-pulse" style={{animationDuration: '14s', animationDelay: '1s'}}></div>
+          <div className="absolute top-1/6 left-1/5 w-56 h-56 bg-[#FF9800]/5 dark:bg-[#FF9800]/2 rounded-full blur-3xl animate-pulse" style={{animationDuration: '16s', animationDelay: '6s'}}></div>
         </div>
-        
-        <div className="absolute inset-0 opacity-[0.08] sm:opacity-[0.12] md:opacity-[0.15] dark:opacity-0">
-          <div className="w-full h-full bg-gradient-to-br from-[#8D153A]/30 via-transparent to-[#FF5722]/30 animate-pulse-move"></div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#FFC72C]/25 via-transparent to-[#8D153A]/25 animate-float"></div>
-        </div>
-
-        {/* Particles */}
-        <div className="absolute top-16 sm:top-20 left-4 sm:left-6 md:left-10 w-16 sm:w-24 md:w-32 h-16 sm:h-24 md:h-32 bg-[#8D153A]/15 sm:bg-[#8D153A]/18 md:bg-[#8D153A]/20 dark:bg-[#FFC72C]/8 dark:sm:bg-[#FFC72C]/9 dark:md:bg-[#FFC72C]/10 rounded-full blur-lg sm:blur-xl animate-drift"></div>
-        <div className="absolute top-32 sm:top-40 right-8 sm:right-12 md:right-20 w-12 sm:w-18 md:w-24 h-12 sm:h-18 md:h-24 bg-[#FF5722]/20 sm:bg-[#FF5722]/23 md:bg-[#FF5722]/25 dark:bg-[#FF5722]/8 dark:sm:bg-[#FF5722]/9 dark:md:bg-[#FF5722]/10 rounded-full blur-lg sm:blur-xl animate-drift-reverse"></div>
-        <div className="absolute top-1/4 left-8 sm:left-12 md:left-20 w-20 sm:w-30 md:w-40 h-20 sm:h-30 md:h-40 bg-[#8D153A]/10 sm:bg-[#8D153A]/13 md:bg-[#8D153A]/15 dark:bg-[#8D153A]/5 dark:sm:bg-[#8D153A]/7 dark:md:bg-[#8D153A]/8 rounded-full blur-xl sm:blur-2xl animate-pulse-move"></div>
-        <div className="absolute bottom-12 sm:bottom-20 right-1/4 sm:right-1/3 w-14 sm:w-21 md:w-28 h-14 sm:h-21 md:h-28 bg-[#FF5722]/20 sm:bg-[#FF5722]/23 md:bg-[#FF5722]/25 dark:bg-[#FF5722]/10 dark:sm:bg-[#FF5722]/11 dark:md:bg-[#FF5722]/12 rounded-full blur-lg sm:blur-xl animate-drift-reverse" style={{animationDelay: '2s'}}></div>
       </div>
-
-      {/* Gradient Mesh Overlay */}
-      <div className="fixed inset-0 gradient-mesh opacity-30 pointer-events-none z-[5]"></div>
       
-      {/* Header */}
-      <header className="glass-morphism backdrop-blur-xl border-b border-border/50 sticky top-0 z-50">
-        <nav className="container mx-auto px-4 sm:px-6 py-4 sm:py-5">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4 animate-fade-in-up">
-              <Link href="/agent/dashboard" className="text-left hover:scale-105 transition-all duration-300">
-                <h1 className="text-xl sm:text-2xl md:text-2xl font-bold text-gradient">GovLink</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground font-medium">{t.agentPortal}</p>
+      {/* Modern Header */}
+      <header className="sticky top-0 z-50 w-full bg-card/95 dark:bg-card/98 backdrop-blur-md border-b border-border/50 shadow-glow modern-card">
+        <nav className="container mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
+          <div className="flex items-center space-x-3 group">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#FFC72C]/10 to-[#FF5722]/10 rounded-xl p-0.5 flex items-center justify-center border border-[#FFC72C]/20 relative overflow-visible backdrop-blur-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
+              <ProfileIcon className="w-11 h-11 absolute transition-transform duration-300 group-hover:rotate-12" />
+            </div>
+            <div className="flex flex-col">
+              <Link href="/agent/dashboard" className="text-xl md:text-2xl font-bold text-gradient leading-none hover:scale-105 transition-transform duration-300">
+                GovLink
               </Link>
-              <div className="h-8 w-px bg-border/50"></div>
-              <div className="text-left">
-                <h2 className="text-lg sm:text-xl font-semibold text-foreground">{t.profile}</h2>
-                <p className="text-xs text-muted-foreground">Settings & Preferences</p>
-              </div>
+              <span className="text-xs text-muted-foreground/70 font-medium leading-none">{t.agentPortal}</span>
+            </div>
+            <div className="h-8 w-px bg-border/50 ml-2"></div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-foreground">{t.profile}</span>
+              <span className="text-xs text-muted-foreground">Settings & Configuration</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Back to Dashboard Button */}
+            <Link 
+              href="/agent/dashboard" 
+              className="hidden lg:flex items-center gap-2 px-3 py-2 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 hover:border-[#FFC72C]/60 text-sm font-medium text-foreground hover:bg-card/80 dark:hover:bg-card/90 transition-all duration-300 shadow-md hover:shadow-lg modern-card"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5m7-7-7 7 7 7"/>
+              </svg>
+              <span>{t.backToDashboard.replace('← ', '')}</span>
+            </Link>
+
+            {/* Notification Bell */}
+            <div className="relative">
+              <button 
+                className="p-2.5 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 hover:border-[#FFC72C]/60 text-foreground hover:bg-card/80 dark:hover:bg-card/90 transition-all duration-300 shadow-md hover:shadow-lg modern-card hover:scale-105"
+                aria-label={t.notifications}
+                title={t.notifications}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+                  <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+                </svg>
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#FF5722] to-[#8D153A] text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                  1
+                </span>
+              </button>
             </div>
 
-            <div className="flex items-center gap-3 sm:gap-4">
-              {/* Back to Dashboard Link */}
-              <Link 
-                href="/agent/dashboard" 
-                className="hidden md:flex text-sm text-muted-foreground hover:text-foreground transition-colors duration-300 hover:scale-105 font-medium"
+            {/* Language Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 hover:border-[#FFC72C]/60 text-sm font-medium text-foreground hover:bg-card/80 dark:hover:bg-card/90 transition-all duration-300 shadow-md hover:shadow-lg modern-card"
+                aria-label={`Current language: ${languageOptions.find(lang => lang.code === language)?.nativeLabel}`}
               >
-                {t.backToDashboard}
-              </Link>
+                <span className="text-xs sm:text-sm">{languageOptions.find(lang => lang.code === language)?.nativeLabel}</span>
+                <svg className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
 
-              {/* Notification Bell */}
-              <div className="relative">
-                <button 
-                  className="p-2 rounded-xl bg-card/30 border border-border/50 text-foreground hover:bg-card/50 transition-all duration-300 hover:scale-105"
-                  aria-label={t.notifications}
-                  title={t.notifications}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-                    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-                  </svg>
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#FF5722] to-[#8D153A] text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
-                    1
-                  </span>
-                </button>
-              </div>
-
-              {/* Language Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-card/30 border border-border/50 text-sm font-medium text-foreground hover:bg-card/50 transition-all duration-300"
-                >
-                  <span>{languageOptions.find(lang => lang.code === language)?.nativeLabel}</span>
-                  <svg className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </button>
-
-                {isDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-40 glass-morphism border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up">
+              {isDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-36 sm:w-40 bg-card/95 dark:bg-card/98 backdrop-blur-md border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-50 modern-card">
                     {languageOptions.map((lang) => (
                       <button
                         key={lang.code}
                         onClick={() => handleLanguageChange(lang.code as Language)}
-                        className={`w-full text-left px-4 py-3 text-sm font-medium transition-all duration-200 hover:bg-card/30 ${
+                        className={`w-full text-left px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-medium transition-all duration-200 hover:bg-card/30 ${
                           language === lang.code 
                             ? 'bg-[#FFC72C]/10 text-[#FFC72C] border-l-2 border-l-[#FFC72C]' 
                             : 'text-foreground'
@@ -238,27 +231,33 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
                       </button>
                     ))}
                   </div>
-                )}
-              </div>
-              
-              {/* Profile Dropdown */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl bg-card/30 border border-border/50 text-sm font-medium text-foreground hover:bg-card/50 transition-all duration-300"
-                >
-                  <div className="w-8 h-8 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">D</span>
-                  </div>
-                  <span className="hidden sm:block">DEMO1234</span>
-                  <svg className={`w-4 h-4 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M6 9l6 6 6-6" />
-                  </svg>
-                </button>
+                </>
+              )}
+            </div>
+            
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                className="flex items-center gap-3 px-3 py-2 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 hover:border-[#FFC72C]/60 text-sm font-medium text-foreground hover:bg-card/80 dark:hover:bg-card/90 transition-all duration-300 shadow-md hover:shadow-lg modern-card"
+              >
+                <div className="w-8 h-8 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-xs font-bold">D</span>
+                </div>
+                <span className="hidden sm:block">DEMO1234</span>
+                <svg className={`w-4 h-4 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
 
-                {isProfileDropdownOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 glass-morphism border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up">
-                    <div className="px-4 py-3 border-b border-border/30">
+              {isProfileDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-card/95 dark:bg-card/98 backdrop-blur-md border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-50 modern-card">
+                    <div className="px-4 py-3 border-b border-border/30 bg-gradient-to-r from-[#FFC72C]/5 to-[#FF5722]/5">
                       <div className="font-medium text-foreground">DEMO1234</div>
                       <div className="text-xs text-muted-foreground">Immigration & Emigration</div>
                     </div>
@@ -298,32 +297,64 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
                       </button>
                     </div>
                   </div>
-                )}
-              </div>
-              
-              <ThemeToggle />
+                </>
+              )}
             </div>
+            
+            <div className="w-px h-6 bg-border/50"></div>
+            <ThemeToggle />
           </div>
         </nav>
       </header>
 
       {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10">
-        {/* Title Section */}
+        {/* Enhanced Title Section with Profile Focus */}
         <div className="text-center mb-12 animate-fade-in-up">
-          <div className="mb-4">
-            <ProfileIcon className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto animate-glow" />
+          <div className="mb-6 relative">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FFC72C]/20 to-[#FF5722]/20 rounded-2xl blur-xl animate-pulse"></div>
+              <div className="relative w-full h-full bg-gradient-to-br from-[#FFC72C]/10 to-[#FF5722]/10 rounded-2xl p-1 border border-[#FFC72C]/30 backdrop-blur-sm shadow-2xl">
+                <ProfileIcon className="w-full h-full animate-glow" />
+              </div>
+            </div>
+            
+            {/* Status Badge */}
+            <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 modern-card">
+              <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse"></div>
+              <span className="text-xs sm:text-sm font-medium text-foreground">Agent Profile Settings</span>
+            </div>
           </div>
           
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
-            {title}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight animate-title-wave">
+            <span className="text-foreground">Profile</span>{' '}
+            <span className="text-gradient">Settings</span>
           </h1>
           
           {subtitle && (
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               {subtitle}
             </p>
           )}
+          
+          {/* Agent Info Card */}
+          <div className="mt-8 inline-block">
+            <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-4 rounded-2xl border border-border/50 shadow-glow modern-card hover:shadow-2xl transition-all duration-500 group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                  <span className="text-white text-lg font-bold">D</span>
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-foreground group-hover:text-[#FFC72C] transition-colors duration-300">Agent DEMO1234</div>
+                  <div className="text-sm text-muted-foreground">Immigration & Emigration</div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse"></div>
+                    <span className="text-xs text-[#008060] font-medium">Active Session</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {children}
