@@ -6,6 +6,8 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { CompactLanguageSwitcher } from "./LanguageSwitcher";
+import { useTranslation } from "@/lib/i18n/hooks/useTranslation";
 
 // Types for translations
 type Language = 'en' | 'si' | 'ta';
@@ -208,12 +210,8 @@ export const Header: React.FC<HeaderProps> = ({
             </Link>
             <div className="w-px h-6 bg-border/50"></div>
             {/* Language Selector */}
-            {onLanguageChange && (
-              <>
-                <LanguageSelector language={language} onLanguageChange={onLanguageChange} />
-                <div className="w-px h-6 bg-border/50"></div>
-              </>
-            )}
+            <CompactLanguageSwitcher className="text-xs sm:text-sm" />
+            <div className="w-px h-6 bg-border/50"></div>
             <ThemeToggle />
           </div>
 

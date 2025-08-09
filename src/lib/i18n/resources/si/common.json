@@ -1,0 +1,73 @@
+{
+  "buttons": {
+    "save": "සුරකින්න",
+    "cancel": "අවලංගු කරන්න",
+    "submit": "ඉදිරිපත් කරන්න",
+    "back": "ආපසු",
+    "next": "ඊළඟ",
+    "previous": "පෙර",
+    "search": "සොයන්න",
+    "filter": "පෙරහන",
+    "sort": "වර්ග කරන්න",
+    "export": "නිර්යාත කරන්න",
+    "import": "ආයාත කරන්න",
+    "delete": "මකන්න",
+    "edit": "සංස්කරණය කරන්න",
+    "view": "බලන්න",
+    "add": "එකතු කරන්න",
+    "remove": "ඉවත් කරන්න",
+    "yes": "ඔව්",
+    "no": "නැහැ",
+    "confirm": "තහවුරු කරන්න",
+    "close": "වසන්න",
+    "open": "විවෘත කරන්න",
+    "loading": "පූරණය වෙමින්...",
+    "more": "තව",
+    "less": "අඩු",
+    "showAll": "සියල්ල පෙන්වන්න",
+    "hideAll": "සියල්ල සඟවන්න"
+  },
+  "status": {
+    "error": "දෝෂයක්",
+    "success": "සාර්ථකයි",
+    "warning": "අනතුරු ඇඟවීම",
+    "info": "තොරතුරු",
+    "pending": "පොරොත්තුවෙන්",
+    "approved": "අනුමත",
+    "rejected": "ප්‍රතික්ෂේප",
+    "inProgress": "ක්‍රියාත්මක වෙමින්",
+    "completed": "සම්පූර්ණ",
+    "active": "සක්‍රීය",
+    "inactive": "අක්‍රීය"
+  },
+  "language": {
+    "selector": "භාෂාව",
+    "change": "භාෂාව වෙනස් කරන්න",
+    "current": "වර්තමාන භාෂාව",
+    "english": "English",
+    "sinhala": "සිංහල",
+    "tamil": "தமிழ்"
+  },
+  "time": {
+    "today": "අද",
+    "yesterday": "ඊයේ",
+    "tomorrow": "හෙට",
+    "thisWeek": "මෙම සතිය",
+    "lastWeek": "පසුගිය සතිය",
+    "thisMonth": "මෙම මාසය",
+    "lastMonth": "පසුගිය මාසය",
+    "thisYear": "මෙම වර්ෂය",
+    "lastYear": "පසුගිය වර්ෂය"
+  },
+  "pagination": {
+    "first": "පළමු",
+    "last": "අවසාන",
+    "page": "පිටුව",
+    "of": "න්",
+    "showing": "පෙන්වමින්",
+    "to": "සිට",
+    "entries": "ඇතුළත් කිරීම්",
+    "noData": "දත්ත නොමැත",
+    "noResults": "ප්‍රතිඵල නොමැත"
+  }
+}

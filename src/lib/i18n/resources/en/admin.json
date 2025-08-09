@@ -1,0 +1,63 @@
+{
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "systemOverview": "System Overview",
+    "userManagement": "User Management",
+    "systemHealth": "System Health",
+    "dailyStats": "Daily Statistics"
+  },
+  "users": {
+    "title": "User Management",
+    "totalUsers": "Total Users",
+    "activeUsers": "Active Users",
+    "newRegistrations": "New Registrations",
+    "userDetails": "User Details",
+    "blockUser": "Block User",
+    "unblockUser": "Unblock User",
+    "deleteUser": "Delete User",
+    "exportUsers": "Export Users"
+  },
+  "agents": {
+    "title": "Agent Management",
+    "totalAgents": "Total Agents",
+    "onlineAgents": "Online Agents",
+    "agentPerformance": "Agent Performance",
+    "addAgent": "Add New Agent",
+    "editAgent": "Edit Agent",
+    "deactivateAgent": "Deactivate Agent"
+  },
+  "verification": {
+    "title": "Account Verification",
+    "pendingVerifications": "Pending Verifications",
+    "verifyAccount": "Verify Account",
+    "rejectVerification": "Reject Verification",
+    "verificationHistory": "Verification History",
+    "documentReview": "Document Review"
+  },
+  "reports": {
+    "title": "Reports & Analytics",
+    "generateReport": "Generate Report",
+    "userActivity": "User Activity Report",
+    "systemUsage": "System Usage Report",
+    "performanceReport": "Performance Report",
+    "exportReport": "Export Report",
+    "scheduleReport": "Schedule Report"
+  },
+  "systemConfig": {
+    "title": "System Configuration",
+    "generalSettings": "General Settings",
+    "securitySettings": "Security Settings",
+    "emailSettings": "Email Settings",
+    "notificationSettings": "Notification Settings",
+    "backupSettings": "Backup Settings",
+    "maintenanceMode": "Maintenance Mode"
+  },
+  "suspension": {
+    "title": "Account Suspension",
+    "suspendedAccounts": "Suspended Accounts",
+    "suspendAccount": "Suspend Account",
+    "unsuspendAccount": "Unsuspend Account",
+    "suspensionReason": "Suspension Reason",
+    "suspensionHistory": "Suspension History"
+  }
+}
