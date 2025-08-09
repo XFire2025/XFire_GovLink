@@ -1,15 +1,116 @@
 "use client";
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
-// Types
+// Types - EXACT SAME as Agent Chat
 type Language = 'en' | 'si' | 'ta';
 
-// Chat translations
+interface ChatMessage {
+  id: string;
+  sender: 'agent' | 'citizen' | 'system';
+  content: string;
+  timestamp: string;
+  type: 'text' | 'file' | 'system';
+  fileName?: string;
+  fileUrl?: string;
+}
+
+interface SupportAgent {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+  status: 'online' | 'typing' | 'away';
+  lastSeen?: string;
+}
+
+// EXACT SAME Lotus Icon as Agent Chat with Sri Lankan Flag Colors
+const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} viewBox="0 0 100 100">
+    {/* Outer layer petals */}
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(36 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(72 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(108 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(144 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(180 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(216 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(252 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(288 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(324 50 50)"/>
+
+    {/* Middle layer petals */}
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(18 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(54 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(90 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(126 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(162 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(198 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(234 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(270 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(306 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(342 50 50)"/>
+
+    {/* Inner petals */}
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(45 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(90 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(135 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(180 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(225 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(270 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(315 50 50)"/>
+
+    {/* Center */}
+    <circle cx="50" cy="50" r="7" fill="#FFC72C"/>
+    <circle cx="50" cy="50" r="3" fill="#FF8F00"/>
+  </svg>
+);
+
+// EXACT SAME Sri Lankan Background Component as Agent Chat
+const SriLankanBackground = () => {
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+      {/* Main background image */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-background/95">
+        <div 
+          className="absolute inset-0 opacity-55 dark:opacity-15 bg-center bg-no-repeat bg-cover transition-opacity duration-1000"
+          style={{
+            backgroundImage: 'url("/2.png")',
+            backgroundPosition: 'center 20%',
+            filter: 'saturate(1.2) brightness(1.1)',
+          }}
+        ></div>
+        {/* Overlay gradients for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/40 dark:from-background/40 dark:via-transparent dark:to-background/60"></div>
+      </div>
+      
+      {/* Enhanced lotus-inspired accent patterns */}
+      <div className="absolute top-0 left-0 w-full h-full">
+        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-[#FFC72C]/8 dark:bg-[#FFC72C]/4 rounded-full blur-3xl animate-pulse" style={{animationDuration: '8s'}}></div>
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-[#8D153A]/8 dark:bg-[#8D153A]/4 rounded-full blur-3xl animate-pulse" style={{animationDuration: '12s', animationDelay: '4s'}}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#FF5722]/6 dark:bg-[#FF5722]/3 rounded-full blur-3xl animate-pulse" style={{animationDuration: '10s', animationDelay: '2s'}}></div>
+        {/* Additional subtle accents */}
+        <div className="absolute top-3/4 right-1/3 w-48 h-48 bg-[#FFA726]/6 dark:bg-[#FFA726]/3 rounded-full blur-2xl animate-pulse" style={{animationDuration: '14s', animationDelay: '1s'}}></div>
+        <div className="absolute top-1/6 left-1/5 w-56 h-56 bg-[#FF9800]/5 dark:bg-[#FF9800]/2 rounded-full blur-3xl animate-pulse" style={{animationDuration: '16s', animationDelay: '6s'}}></div>
+      </div>
+    </div>
+  );
+};
+
+// Language options - EXACT SAME as Agent Chat
+const languageOptions = [
+  { code: 'en', label: 'English', nativeLabel: 'English' },
+  { code: 'si', label: 'Sinhala', nativeLabel: 'සිංහල' },
+  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ்' }
+];
+
+// Chat translations - EXACT SAME structure as Agent Chat but from citizen perspective
 const chatTranslations: Record<Language, {
-  title: string;
-  subtitle: string;
+
   backToDashboard: string;
   connecting: string;
   connectedTo: string;
@@ -20,6 +121,13 @@ const chatTranslations: Record<Language, {
   isPreparingResponse: string;
   typeMessage: string;
   attachFile: string;
+  sendMessage: string;
+  chatSupport: string;
+  liveSupport: string;
+  citizenPortal: string;
+  sessionInfo: string;
+  duration: string;
+  status: string;
   quickReplies: {
     help1: string;
     help2: string;
@@ -32,20 +140,27 @@ const chatTranslations: Record<Language, {
   hoursAgo: string;
   daysAgo: string;
   now: string;
+  you: string;
+  fileSent: string;
 }> = {
   en: {
-    title: 'Live Support',
-    subtitle: 'Get real-time assistance from our government service specialists',
-    backToDashboard: 'Back to Dashboard',
+    backToDashboard: '← Back to Dashboard',
     connecting: 'Connecting to agent...',
     connectedTo: 'Connected to',
     online: 'Online',
-    typing: 'Typing...',
+    typing: 'is typing...',
     away: 'Away',
     generatingResponse: 'Generating response...',
     isPreparingResponse: 'is preparing your response',
     typeMessage: 'Type your message...',
     attachFile: 'Attach file',
+    sendMessage: 'Send message',
+    chatSupport: 'Chat Support',
+    liveSupport: 'Live Support',
+    citizenPortal: 'Citizen Portal',
+    sessionInfo: 'Session Information',
+    duration: 'Duration',
+    status: 'Status',
     quickReplies: {
       help1: 'I need help with passport renewal',
       help2: 'Can you guide me through the process?',
@@ -57,21 +172,28 @@ const chatTranslations: Record<Language, {
     minutesAgo: 'm ago',
     hoursAgo: 'h ago',
     daysAgo: 'd ago',
-    now: 'Just now'
+    now: 'Just now',
+    you: 'You',
+    fileSent: 'File sent'
   },
   si: {
-    title: 'සජීවී සහාය',
-    subtitle: 'අපගේ රජයේ සේවා විශේෂඥයන්ගෙන් තත්‍ය කාලීන සහාය ලබා ගන්න',
-    backToDashboard: 'පාලනයට ආපසු',
+    backToDashboard: '← පාලනයට ආපසු',
     connecting: 'නිලධාරියා සමඟ සම්බන්ධ වෙමින්...',
     connectedTo: 'සම්බන්ධ වී ඇත',
-    online: 'මාර්ගගතව',
+    online: 'සබැඳි',
     typing: 'ටයිප් කරමින්...',
     away: 'ඈත',
     generatingResponse: 'ප්‍රතිචාරය ජනනය කරමින්...',
     isPreparingResponse: 'ඔබගේ ප්‍රතිචාරය සකස් කරමින්',
     typeMessage: 'ඔබගේ පණිවිඩය ටයිප් කරන්න...',
-    attachFile: 'ගොනුව අමුණන්න',
+    attachFile: 'ගොනුව ඇමුණන්න',
+    sendMessage: 'පණිවිඩය යවන්න',
+    chatSupport: 'කතාබස් සහාය',
+    liveSupport: 'සජීවී සහාය',
+    citizenPortal: 'පුරවැසි පෝට්ලය',
+    sessionInfo: 'සැසි තොරතුරු',
+    duration: 'කාලසීමාව',
+    status: 'තත්ත්වය',
     quickReplies: {
       help1: 'මට ගමන් බලපත්‍ර අලුත් කිරීමට උදව් අවශ්‍යයි',
       help2: 'ඔබට මාව ක්‍රියාවලිය හරහා මඟ පෙන්විය හැකිද?',
@@ -83,12 +205,12 @@ const chatTranslations: Record<Language, {
     minutesAgo: 'මි පෙර',
     hoursAgo: 'පැය පෙර',
     daysAgo: 'දින පෙර',
-    now: 'දැන්'
+    now: 'දැන්',
+    you: 'ඔබ',
+    fileSent: 'ගොනුව යවන ලදී'
   },
   ta: {
-    title: 'நேரடி ஆதரவு',
-    subtitle: 'எங்கள் அரசு சேவை நிபுணர்களிடமிருந்து நிகழ்நேர உதவியைப் பெறுங்கள்',
-    backToDashboard: 'டாஷ்போர்டுக்கு திரும்பவும்',
+    backToDashboard: '← டாஷ்போர்டுக்கு திரும்பவும்',
     connecting: 'முகவருடன் இணைக்கிறது...',
     connectedTo: 'இணைக்கப்பட்டது',
     online: 'ஆன்லைன்',
@@ -98,6 +220,13 @@ const chatTranslations: Record<Language, {
     isPreparingResponse: 'உங்கள் பதிலைத் தயாரிக்கிறது',
     typeMessage: 'உங்கள் செய்தியை டைப் செய்யுங்கள்...',
     attachFile: 'கோப்பை இணைக்கவும்',
+    sendMessage: 'செய்தி அனுப்பு',
+    chatSupport: 'அரட்டை ஆதரவு',
+    liveSupport: 'நேரடி ஆதரவு',
+    citizenPortal: 'குடிமக்கள் போர்டல்',
+    sessionInfo: 'அமர்வு தகவல்',
+    duration: 'கால அளவு',
+    status: 'நிலை',
     quickReplies: {
       help1: 'எனக்கு பாஸ்போர்ட் புதுப்பிப்புக்கு உதவி தேவை',
       help2: 'செயல்முறையின் மூலம் எனக்கு வழிகாட்ட முடியுமா?',
@@ -109,94 +238,11 @@ const chatTranslations: Record<Language, {
     minutesAgo: 'மி முன்',
     hoursAgo: 'மணி முன்',
     daysAgo: 'நாள் முன்',
-    now: 'இப்போது'
+    now: 'இப்போது',
+    you: 'நீங்கள்',
+    fileSent: 'கோப்பு அனுப்பப்பட்டது'
   }
 };
-
-// --- PREMIUM SVG ICON COMPONENTS ---
-const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-);
-
-const SendIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="22" y1="2" x2="11" y2="13"/>
-    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-  </svg>
-);
-
-const PhoneIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-  </svg>
-);
-
-const VideoIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="23 7 16 12 23 17 23 7"/>
-    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-  </svg>
-);
-
-const FileIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-    <polyline points="14,2 14,8 20,8"/>
-    <line x1="16" y1="13" x2="8" y2="13"/>
-    <line x1="16" y1="17" x2="8" y2="17"/>
-    <polyline points="10,9 9,9 8,9"/>
-  </svg>
-);
-
-const PaperclipIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.64 16.2a2 2 0 0 1-2.83-2.83l8.49-8.49"/>
-  </svg>
-);
-
-const MoreVerticalIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="1"/>
-    <circle cx="12" cy="5" r="1"/>
-    <circle cx="12" cy="19" r="1"/>
-  </svg>
-);
-
-const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20,6 9,17 4,12"/>
-  </svg>
-);
-
-const CheckCheck = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 11 12 14l4-4"/>
-    <path d="m21 12-3 3-3-3"/>
-  </svg>
-);
-
-
-// Support Agent Interface
-interface SupportAgent {
-  id: string;
-  name: string;
-  role: string;
-  avatar: string;
-  status: 'online' | 'typing' | 'away';
-  lastSeen?: string;
-}
-
-interface ChatMessage {
-  id: string;
-  senderId: string;
-  senderType: 'user' | 'agent';
-  content: string;
-  timestamp: Date;
-  status: 'sent' | 'delivered' | 'read';
-  type: 'text' | 'file' | 'system';
-  fileUrl?: string;
-  fileName?: string;
-}
 
 // Mock agent data
 const getAgentById = (agentId: string): SupportAgent => {
@@ -205,21 +251,21 @@ const getAgentById = (agentId: string): SupportAgent => {
       id: 'agent-1',
       name: 'Nirma Perera',
       role: 'Senior Support Specialist',
-      avatar: '/api/placeholder/64/64',
+      avatar: '/Agent.png',
       status: 'online'
     },
     'agent-2': {
       id: 'agent-2',
       name: 'Kamal Silva',
       role: 'Business Registration Expert',
-      avatar: '/api/placeholder/64/64',
+      avatar: '/Agent.png',
       status: 'online'
     },
     'agent-3': {
       id: 'agent-3',
       name: 'Priya Fernando',
       role: 'Legal Documentation Officer',
-      avatar: '/api/placeholder/64/64',
+      avatar: '/Agent.png',
       status: 'online'
     }
   };
@@ -227,276 +273,392 @@ const getAgentById = (agentId: string): SupportAgent => {
   return agents[agentId] || agents['agent-1'];
 };
 
-// --- PREMIUM HEADER COMPONENT ---
-const ChatHeader = ({ agent, onBack, t }: { agent: SupportAgent; onBack: () => void; t: typeof chatTranslations.en }) => (
-  <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md border-b border-border/50 p-4 modern-card">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center space-x-4">
-        <button 
-          onClick={onBack}
-          className="p-2 hover:bg-card/50 rounded-xl transition-all duration-300 hover:scale-105 text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeftIcon className="w-5 h-5" />
-        </button>
-        
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Image
-              src={agent.avatar} 
-              alt={agent.name}
-              width={48}
-              height={48}
-              className="w-12 h-12 rounded-full object-cover border-2 border-[#FFC72C]/30 shadow-lg"
-            />
-            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background shadow-lg ${
-              agent.status === 'online' ? 'bg-[#008060]' : 
-              agent.status === 'typing' ? 'bg-[#FFC72C]' : 'bg-muted-foreground'
-            }`}></div>
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-foreground">{agent.name}</h1>
-            <p className="text-sm text-muted-foreground">{agent.role}</p>
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${
-                agent.status === 'online' ? 'bg-[#008060]' : 
-                agent.status === 'typing' ? 'bg-[#FFC72C]' : 'bg-muted-foreground'
-              }`}></div>
-              <span className="text-xs text-muted-foreground">
-                {agent.status === 'online' ? t.online : 
-                 agent.status === 'typing' ? t.typing : t.away}
-              </span>
+// Chat Layout Component - EXACT SAME structure as Agent Chat Layout
+const ChatLayout: React.FC<{
+  children: React.ReactNode;
+  language?: Language;
+  onLanguageChange?: (language: Language) => void;
+}> = ({ 
+  children, 
+  language = 'en',
+  onLanguageChange
+}) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const t = chatTranslations[language];
+
+  const handleLanguageChange = (newLanguage: Language) => {
+    if (onLanguageChange) {
+      onLanguageChange(newLanguage);
+    }
+    setIsDropdownOpen(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden theme-transition-slow">
+      {/* EXACT SAME Sri Lankan Background as Agent Chat */}
+      <SriLankanBackground />
+      
+      {/* Header - EXACT SAME styling as Agent Dashboard but for citizen */}
+      <header className="sticky top-0 z-50 w-full bg-background/98 dark:bg-card backdrop-blur-md border-b border-border/30 dark:border-border/50 shadow-sm dark:shadow-lg">
+        <nav className="container mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
+          <div className="flex items-center space-x-3 group">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#FFC72C]/10 to-[#FF5722]/10 rounded-xl p-0.5 flex items-center justify-center border border-[#FFC72C]/20 relative overflow-visible backdrop-blur-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
+              <LotusIcon className="w-11 h-11 absolute transition-transform duration-300 group-hover:rotate-12" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl md:text-2xl font-bold text-gradient leading-none">GovLink</span>
+              <span className="text-xs text-muted-foreground/70 font-medium leading-none">{t.citizenPortal}</span>
             </div>
           </div>
-        </div>
-      </div>
-      
-      <div className="flex items-center gap-2">
-        <button className="p-2 bg-card/50 hover:bg-[#FFC72C]/10 rounded-xl transition-all duration-300 hover:scale-105 group modern-card">
-          <PhoneIcon className="text-muted-foreground group-hover:text-[#FFC72C]" />
-        </button>
-        <button className="p-2 bg-card/50 hover:bg-[#FFC72C]/10 rounded-xl transition-all duration-300 hover:scale-105 group modern-card">
-          <VideoIcon className="text-muted-foreground group-hover:text-[#FFC72C]" />
-        </button>
-        <button className="p-2 bg-card/50 hover:bg-[#FFC72C]/10 rounded-xl transition-all duration-300 hover:scale-105 group modern-card">
-          <MoreVerticalIcon className="text-muted-foreground group-hover:text-[#FFC72C]" />
-        </button>
-      </div>
+
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Back to Dashboard Link */}
+            <Link 
+              href="/User/Dashboard" 
+              className="hidden md:flex text-sm text-muted-foreground hover:text-foreground transition-colors duration-300 hover:scale-105 font-medium"
+            >
+              {t.backToDashboard}
+            </Link>
+
+            {/* Language Dropdown - EXACT SAME as Agent Chat */}
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 hover:border-[#FFC72C]/60 text-sm font-medium text-foreground hover:bg-card/80 dark:hover:bg-card/90 transition-all duration-300 shadow-md hover:shadow-lg modern-card"
+                aria-label={`Current language: ${languageOptions.find(lang => lang.code === language)?.nativeLabel}`}
+              >
+                <span className="text-xs sm:text-sm">{languageOptions.find(lang => lang.code === language)?.nativeLabel}</span>
+                <svg className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+
+              {isDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsDropdownOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-36 sm:w-40 glass-morphism border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-50">
+                    {languageOptions.map((lang) => (
+                      <button
+                        key={lang.code}
+                        onClick={() => handleLanguageChange(lang.code as Language)}
+                        className={`w-full text-left px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm font-medium transition-all duration-200 hover:bg-card/30 ${
+                          language === lang.code 
+                            ? 'bg-[#FFC72C]/10 text-[#FFC72C] border-l-2 border-l-[#FFC72C]' 
+                            : 'text-foreground'
+                        }`}
+                      >
+                        <div>
+                          <div className="font-medium">{lang.nativeLabel}</div>
+                          <div className="text-xs text-muted-foreground">{lang.label}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            
+            <div className="w-px h-6 bg-border/50"></div>
+            <ThemeToggle />
+          </div>
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <main className="relative z-10 h-[calc(100vh-80px)]">
+        {children}
+      </main>
     </div>
-  </div>
-);
-
-// --- MESSAGE COMPONENTS ---
-const TimeAgo = ({ timestamp, t }: { timestamp: Date; t: typeof chatTranslations.en }) => {
-  const [timeAgo, setTimeAgo] = useState('');
-
-  useEffect(() => {
-    const updateTimeAgo = () => {
-      const now = new Date();
-      const diff = Math.floor((now.getTime() - timestamp.getTime()) / 1000);
-
-      if (diff < 60) {
-        setTimeAgo(t.now);
-      } else if (diff < 3600) {
-        const minutes = Math.floor(diff / 60);
-        setTimeAgo(`${minutes} ${t.minutesAgo}`);
-      } else if (diff < 86400) {
-        const hours = Math.floor(diff / 3600);
-        setTimeAgo(`${hours} ${t.hoursAgo}`);
-      } else {
-        const days = Math.floor(diff / 86400);
-        setTimeAgo(`${days} ${t.daysAgo}`);
-      }
-    };
-
-    updateTimeAgo();
-    const interval = setInterval(updateTimeAgo, 60000); // Update every minute
-
-    return () => clearInterval(interval);
-  }, [timestamp, t]);
-
-  return <span className="text-xs text-muted-foreground">{timeAgo}</span>;
+  );
 };
 
-const UserMessage = ({ message, t }: { message: ChatMessage; t: typeof chatTranslations.en }) => (
-  <div className="flex justify-end my-4 animate-fade-in-up">
-    <div className="max-w-2xl">
-      <div className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white p-4 rounded-2xl rounded-br-lg shadow-glow">
-        {message.type === 'file' ? (
-          <div className="flex items-center gap-3">
-            <FileIcon className="w-5 h-5" />
-            <div>
-              <p className="font-medium">{message.fileName}</p>
-              <p className="text-sm opacity-80">File attachment</p>
-            </div>
-          </div>
-        ) : (
-          <p className="leading-relaxed">{message.content}</p>
-        )}
-      </div>
-      <div className="flex items-center justify-end gap-2 mt-1">
-        <TimeAgo timestamp={message.timestamp} t={t} />
-        <div className="flex items-center">
-          {message.status === 'sent' && <CheckIcon className="text-muted-foreground" />}
-          {message.status === 'delivered' && <CheckCheck className="text-muted-foreground" />}
-          {message.status === 'read' && <CheckCheck className="text-[#FFC72C]" />}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const AgentMessage = ({ message, agent, t }: { message: ChatMessage; agent: SupportAgent; t: typeof chatTranslations.en }) => (
-  <div className="flex justify-start my-4 animate-fade-in-up">
-    <div className="flex gap-3 max-w-4xl">
-      <div className="flex-shrink-0">
-        <Image
-          src={agent.avatar} 
-          alt={agent.name}
-          width={40}
-          height={40}
-          className="w-10 h-10 rounded-full object-cover border-2 border-[#FFC72C]/20"
-        />
-      </div>
-      <div className="flex-1">
-        <div className="glass-morphism backdrop-blur-xl p-4 rounded-2xl rounded-bl-lg shadow-xl border border-border/50">
-          {message.type === 'file' ? (
-            <div className="flex items-center gap-3">
-              <FileIcon className="w-5 h-5 text-[#FFC72C]" />
-              <div>
-                <p className="font-medium text-foreground">{message.fileName}</p>
-                <p className="text-sm text-muted-foreground">File attachment</p>
-              </div>
-            </div>
-          ) : message.type === 'system' ? (
-            <p className="text-sm text-muted-foreground italic">{message.content}</p>
-          ) : (
-            <p className="leading-relaxed text-foreground">{message.content}</p>
-          )}
-        </div>
-        <div className="text-xs text-muted-foreground mt-1">
-          {agent.name} • <TimeAgo timestamp={message.timestamp} t={t} />
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// --- TYPING INDICATOR ---
-const TypingIndicator = ({ agent }: { agent: SupportAgent }) => (
-  <div className="flex justify-start my-4 animate-fade-in-up">
-    <div className="flex gap-3 max-w-4xl">
-      <div className="flex-shrink-0">
-        <Image
-          src={agent.avatar} 
-          alt={agent.name}
-          width={40}
-          height={40}
-          className="w-10 h-10 rounded-full object-cover border-2 border-[#FFC72C]/20"
-        />
-      </div>
-      <div className="flex-1">
-        <div className="glass-morphism backdrop-blur-xl p-4 rounded-2xl rounded-bl-lg shadow-xl border border-border/50">
-          <div className="flex items-center space-x-1 text-muted-foreground">
-            <span className="animate-pulse">•</span>
-            <span className="animate-pulse" style={{animationDelay: '0.2s'}}>•</span>
-            <span className="animate-pulse" style={{animationDelay: '0.4s'}}>•</span>
-            <span className="ml-2 text-sm">Generating response...</span>
-          </div>
-        </div>
-        <div className="text-xs text-muted-foreground mt-1">
-          {agent.name} is preparing your response
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-// --- CHAT INPUT ---
-const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string, type?: 'text' | 'file') => void }) => {
+// Chat Session Component - Redesigned to match Agent Chat style
+const ChatSession: React.FC<{
+  agent: SupportAgent;
+  messages: ChatMessage[];
+  onSendMessage: (content: string, type?: 'text' | 'file', fileName?: string, fileUrl?: string) => void;
+  isTyping: boolean;
+  language?: Language;
+}> = ({
+  agent,
+  messages,
+  onSendMessage,
+  isTyping,
+  language = 'en'
+}) => {
   const [message, setMessage] = useState('');
-  const [isFocused, setIsFocused] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSend = () => {
+  const t = chatTranslations[language];
+
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isTyping]);
+
+  const handleSendMessage = () => {
     if (message.trim()) {
       onSendMessage(message.trim());
       setMessage('');
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSend();
+      handleSendMessage();
     }
   };
 
-  const handleFileUpload = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        onSendMessage(file.name, 'file');
-      }
-    };
-    input.click();
+  const handleFileUpload = (file: File) => {
+    // Mock file upload - in real app would upload to server
+    const fileUrl = URL.createObjectURL(file);
+    onSendMessage(`${t.fileSent}: ${file.name}`, 'file', file.name, fileUrl);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFileUpload(files[0]);
+    }
+  };
+
+  const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
   };
 
   return (
-    <div className="glass-morphism backdrop-blur-xl border-t border-border/50 p-6">
-      <div className="container mx-auto">
-        <div className={`relative transition-all duration-300 ${isFocused ? 'scale-105' : ''}`}>
-          <div className="relative glass-morphism rounded-2xl p-2 shadow-glow hover:shadow-2xl transition-all duration-500">
-            <button 
-              onClick={handleFileUpload}
-              className="absolute left-3 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-[#FFC72C] transition-colors duration-300 z-10"
-              title="Attach file"
-            >
-              <PaperclipIcon />
-            </button>
+    <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow h-full flex flex-col animate-fade-in-up modern-card">
+      {/* Chat Header - SAME as Agent but from citizen perspective */}
+      <div className="p-4 border-b border-border/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* Agent Avatar */}
+            <div className="relative">
+              <div className="w-12 h-12 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center text-white font-semibold shadow-lg overflow-hidden">
+                <Image
+                  src={agent.avatar}
+                  alt={agent.name}
+                  width={48}
+                  height={48}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background shadow-lg ${
+                agent.status === 'online' ? 'bg-[#008060]' : 
+                agent.status === 'typing' ? 'bg-[#FFC72C]' : 'bg-muted-foreground'
+              } animate-pulse`}></div>
+            </div>
             
+            {/* Agent Info */}
+            <div>
+              <h3 className="font-semibold text-foreground text-sm">
+                {t.connectedTo} {agent.name}
+              </h3>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse"></div>
+                <span className="text-xs text-[#008060] font-medium">{t.online}</span>
+                <span className="text-xs text-muted-foreground">•</span>
+                <span className="text-xs text-muted-foreground">{agent.role}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Session Actions */}
+          <div className="flex items-center gap-2">
+            <div className="px-3 py-1.5 bg-[#008060]/10 text-[#008060] rounded-lg text-xs font-medium border border-[#008060]/20">
+              Active Session
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages Area - SAME structure as Agent Chat */}
+      <div 
+        className="flex-1 p-4 overflow-y-auto space-y-3 relative"
+        onDrop={handleDrop}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+      >
+        {/* Drag overlay */}
+        {dragOver && (
+          <div className="absolute inset-4 bg-[#FFC72C]/10 border-2 border-dashed border-[#FFC72C] rounded-xl flex items-center justify-center z-10">
+            <div className="text-center">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFC72C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <p className="text-sm font-medium text-[#FFC72C]">Drop file to share</p>
+            </div>
+          </div>
+        )}
+
+        {/* Messages */}
+        {messages.map((msg) => (
+          <div 
+            key={msg.id} 
+            className={`flex ${msg.sender === 'citizen' ? 'justify-end' : msg.sender === 'system' ? 'justify-center' : 'justify-start'}`}
+          >
+            {msg.type === 'system' ? (
+              /* System Message */
+              <div className="max-w-xs px-3 py-2 bg-muted/30 rounded-full text-xs text-muted-foreground text-center">
+                {msg.content}
+              </div>
+            ) : msg.sender === 'citizen' ? (
+              /* Citizen Message - RIGHT SIDE like Agent's messages */
+              <div className="max-w-xs lg:max-w-md ml-12">
+                <div className="p-3 rounded-2xl shadow-md bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white">
+                  {msg.type === 'file' ? (
+                    <div className="flex items-center gap-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                      </svg>
+                      <span className="text-sm">{msg.fileName || msg.content}</span>
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                  )}
+                </div>
+                
+                {/* Message info */}
+                <div className="flex items-center gap-2 mt-1 px-1 justify-end">
+                  <span className="text-xs text-muted-foreground">{t.you}</span>
+                  <span className="text-xs text-muted-foreground">•</span>
+                  <span className="text-xs text-muted-foreground">{formatTime(msg.timestamp)}</span>
+                </div>
+              </div>
+            ) : (
+              /* Agent Message - LEFT SIDE */
+              <div className="max-w-xs lg:max-w-md mr-12">
+                <div className="p-3 rounded-2xl shadow-md bg-card/80 text-foreground border border-border/30 backdrop-blur-sm">
+                  {msg.type === 'file' ? (
+                    <div className="flex items-center gap-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                      </svg>
+                      <span className="text-sm">{msg.fileName || msg.content}</span>
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                  )}
+                </div>
+                
+                {/* Message info */}
+                <div className="flex items-center gap-2 mt-1 px-1 justify-start">
+                  <span className="text-xs text-muted-foreground">{agent.name}</span>
+                  <span className="text-xs text-muted-foreground">•</span>
+                  <span className="text-xs text-muted-foreground">{formatTime(msg.timestamp)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* Typing Indicator - SAME as Agent Chat */}
+        {isTyping && (
+          <div className="flex justify-start">
+            <div className="max-w-xs mr-12">
+              <div className="p-3 bg-card/80 border border-border/30 rounded-2xl backdrop-blur-sm shadow-md">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm text-muted-foreground">{agent.name} {t.typing}</span>
+                  <div className="flex gap-1">
+                    <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '0ms'}}></div>
+                    <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '150ms'}}></div>
+                    <div className="w-1 h-1 bg-muted-foreground rounded-full animate-bounce" style={{animationDelay: '300ms'}}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Input Area - SAME as Agent Chat */}
+      <div className="p-4 border-t border-border/30">
+        {/* Quick Replies */}
+        <div className="mb-4 flex flex-wrap gap-2">
+          {Object.values(t.quickReplies).map((suggestion, index) => (
+            <button
+              key={index}
+              onClick={() => setMessage(suggestion)}
+              className="px-3 py-1.5 bg-card/50 hover:bg-card border border-border/50 hover:border-[#FFC72C] rounded-full text-xs font-medium transition-all duration-300 hover:scale-105 text-muted-foreground hover:text-foreground"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-3">
+          {/* File Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file);
+            }}
+          />
+          
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="p-2.5 bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card/80 dark:hover:bg-card/90 hover:border-[#FFC72C] transition-all duration-300 flex-shrink-0 shadow-md hover:shadow-lg modern-card"
+            title={t.attachFile}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+
+          {/* Message Input */}
+          <div className="flex-1 relative">
             <textarea
+              ref={textareaRef}
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onKeyPress={handleKeyPress}
-              className="w-full bg-transparent text-foreground placeholder-muted-foreground p-4 pl-12 pr-16 rounded-xl resize-none focus:outline-none leading-relaxed border-none"
-              placeholder="Type your message..."
-              rows={1}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = `${Math.max(target.scrollHeight, 60)}px`;
+              onChange={(e) => {
+                setMessage(e.target.value);
+                adjustTextareaHeight(e.target);
               }}
+              onKeyPress={handleKeyPress}
+              placeholder={t.typeMessage}
+              className="w-full bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 rounded-lg px-4 py-3 pr-12 text-foreground placeholder-muted-foreground focus:outline-none focus:border-[#FFC72C] transition-all duration-300 resize-none overflow-hidden min-h-[48px] max-h-[120px] shadow-md modern-card"
+              rows={1}
             />
             
-            <button 
-              onClick={handleSend}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 hover:scale-110 shadow-glow group disabled:opacity-50"
+            {/* Send Button */}
+            <button
+              onClick={handleSendMessage}
               disabled={!message.trim()}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white rounded-lg hover:from-[#FF5722] hover:to-[#8D153A] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-[#FFC72C] disabled:hover:to-[#FF5722] shadow-lg hover:shadow-xl"
+              title={t.sendMessage}
             >
-              <SendIcon className="h-5 w-5 text-white group-hover:translate-x-0.5 transition-transform duration-300" />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
             </button>
-          </div>
-          
-          {/* Quick Actions */}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {[
-              "I need help with passport renewal",
-              "Can you guide me through the process?",
-              "What documents do I need?",
-              "Thank you for your help"
-            ].map((suggestion, index) => (
-              <button
-                key={index}
-                onClick={() => setMessage(suggestion)}
-                className="px-3 py-1.5 bg-card/50 hover:bg-card border border-border hover:border-[#FFC72C] rounded-full text-xs font-medium transition-all duration-300 hover:scale-105"
-              >
-                {suggestion}
-              </button>
-            ))}
           </div>
         </div>
       </div>
@@ -504,79 +666,61 @@ const ChatInput = ({ onSendMessage }: { onSendMessage: (message: string, type?: 
   );
 };
 
-// --- MAIN CHAT COMPONENT ---
+// Main Chat Component
 function HumanChatContent({ agentId }: { agentId: string }) {
-  const router = useRouter();
-  const [language] = useState<Language>('en');
-  const t = chatTranslations[language];
-  
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   const [agent] = useState<SupportAgent>(getAgentById(agentId));
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
-      senderId: agent.id,
-      senderType: 'agent',
-      content: `Hello! I'm ${agent.name}, your ${agent.role}. I'm here to help you with your government service needs. How can I assist you today?`,
-      timestamp: new Date(),
-      status: 'read',
+      sender: 'system',
+      content: `Connected to ${agent.name} - ${agent.role}`,
+      timestamp: new Date().toISOString(),
       type: 'system'
+    },
+    {
+      id: '2',
+      sender: 'agent',
+      content: `Hello! I'm ${agent.name}, your ${agent.role}. I'm here to help you with your government service needs. How can I assist you today?`,
+      timestamp: new Date().toISOString(),
+      type: 'text'
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
 
-  const handleBack = () => {
-    router.push('/User/Dashboard');
+  const handleLanguageChange = (newLanguage: Language) => {
+    setCurrentLanguage(newLanguage);
   };
 
-  const handleSendMessage = (content: string, type: 'text' | 'file' = 'text') => {
+  const handleSendMessage = (content: string, type: 'text' | 'file' = 'text', fileName?: string, fileUrl?: string) => {
     const newMessage: ChatMessage = {
       id: Date.now().toString(),
-      senderId: 'user',
-      senderType: 'user',
+      sender: 'citizen',
       content,
-      timestamp: new Date(),
-      status: 'sent',
+      timestamp: new Date().toISOString(),
       type,
-      ...(type === 'file' && { fileName: content })
+      fileName,
+      fileUrl
     };
 
     setMessages(prev => [...prev, newMessage]);
 
-    // Show typing indicator immediately and start generating response
+    // Show typing indicator and simulate agent response
     setIsTyping(true);
-    
-    // Simulate response generation time (1.5-3 seconds)
-    const responseTime = Math.random() * 1500 + 1500; // 1.5-3 seconds
     
     setTimeout(() => {
       setIsTyping(false);
       
       const agentResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        senderId: agent.id,
-        senderType: 'agent',
+        sender: 'agent',
         content: getAgentResponse(content, type),
-        timestamp: new Date(),
-        status: 'read',
+        timestamp: new Date().toISOString(),
         type: 'text'
       };
       
-      // Add the complete response all at once
       setMessages(prev => [...prev, agentResponse]);
-    }, responseTime);
-
-    // Update user message status progression
-    setTimeout(() => {
-      setMessages(prev => prev.map(msg => 
-        msg.id === newMessage.id ? { ...msg, status: 'delivered' } : msg
-      ));
-    }, 800);
-
-    setTimeout(() => {
-      setMessages(prev => prev.map(msg => 
-        msg.id === newMessage.id ? { ...msg, status: 'read' } : msg
-      ));
-    }, 1200);
+    }, Math.random() * 1500 + 1500); // 1.5-3 seconds
   };
 
   const getAgentResponse = (userMessage: string, type: string) => {
@@ -602,59 +746,38 @@ function HumanChatContent({ agentId }: { agentId: string }) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 gradient-mesh opacity-30"></div>
-      <div className="absolute top-10 right-10 w-32 h-32 bg-[#FFC72C]/5 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-20 left-10 w-40 h-40 bg-[#FF5722]/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
-      
-      <div className="relative z-10 flex flex-col h-full">
-        <ChatHeader agent={agent} onBack={handleBack} t={t} />
-
-        {/* Chat Messages Area */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto px-6 py-8">
-            <div className="max-w-4xl mx-auto space-y-2">
-              {/* Connection Notice */}
-              <div className="text-center py-8 mb-8">
-                <div className="inline-flex items-center gap-3 glass-morphism px-6 py-3 rounded-full">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-muted-foreground">
-                    Connected to {agent.name}
-                  </span>
-                </div>
-              </div>
-
-              {/* Messages */}
-              {messages.map((message) => (
-                message.senderType === 'user' ? (
-                  <UserMessage key={message.id} message={message} t={t} />
-                ) : (
-                  <AgentMessage key={message.id} message={message} agent={agent} t={t} />
-                )
-              ))}
-              
-              {/* Typing Indicator */}
-              {isTyping && <TypingIndicator agent={agent} />}
-            </div>
-          </div>
-        </main>
-
-        {/* Fixed Input Area */}
-        <ChatInput onSendMessage={handleSendMessage} />
+    <ChatLayout
+      language={currentLanguage}
+      onLanguageChange={handleLanguageChange}
+    >
+      {/* Main Chat Interface - Full height */}
+      <div className="h-full p-4">
+        <div className="max-w-6xl mx-auto h-full">
+          <ChatSession
+            agent={agent}
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            isTyping={isTyping}
+            language={currentLanguage}
+          />
+        </div>
       </div>
-    </div>
+    </ChatLayout>
   );
 }
 
 export default function HumanChatPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center h-screen">
-        <div className="glass-morphism p-6 rounded-2xl">
-          <div className="flex items-center gap-3">
-            <div className="w-6 h-6 border-2 border-[#FFC72C] border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-muted-foreground">Connecting to agent...</span>
+      <div className="flex items-center justify-center h-screen bg-background">
+        <SriLankanBackground />
+        <div className="relative z-10 bg-card/90 dark:bg-card/95 backdrop-blur-md p-8 rounded-2xl border border-border/50 shadow-glow modern-card">
+          <div className="flex items-center gap-4">
+            <div className="w-8 h-8 border-2 border-[#FFC72C] border-t-transparent rounded-full animate-spin"></div>
+            <div>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Connecting to Agent...</h3>
+              <p className="text-sm text-muted-foreground">Please wait while we connect you to a support specialist</p>
+            </div>
           </div>
         </div>
       </div>
@@ -667,15 +790,6 @@ export default function HumanChatPage() {
 function HumanChatWrapper() {
   const searchParams = useSearchParams();
   const agentId = searchParams.get('agent') || 'agent-1';
-
-  useEffect(() => {
-    // Simulate connection delay
-    const timer = setTimeout(() => {
-      // Connection established
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [agentId]);
 
   return <HumanChatContent agentId={agentId} />;
 }
