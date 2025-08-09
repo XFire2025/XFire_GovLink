@@ -35,7 +35,7 @@ const headerTranslations: Record<Language, HeaderTranslations> = {
     services: 'சேவைகள்',
     about: 'எங்களைப் பற்றி',
     contact: 'தொடர்பு',
-    startChat: 'அரட்டையைத் தொடங்கு'
+    startChat: 'தொடர்பாடலை தொடங்கவும்'
   }
 };
 
