@@ -133,10 +133,10 @@ export default function AdminSidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-background border border-border shadow-lg hover:bg-muted transition-colors"
+        className="fixed top-6 left-4 z-[110] lg:hidden p-2.5 rounded-xl bg-card/95 dark:bg-card/98 backdrop-blur-md border border-border/50 shadow-xl hover:bg-muted hover:shadow-2xl hover:scale-105 transition-all duration-300 modern-card"
         aria-label="Open admin menu"
       >
-        <Menu className="w-5 h-5" />
+        <Menu className="w-5 h-5 text-foreground" />
       </button>
 
       {/* Enhanced Sidebar */}
