@@ -74,7 +74,8 @@ export default function AdminNavbar() {
           }}
         ></div>
         {/* Gradient overlay for better readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/30 dark:via-transparent dark:to-background/40"></div>
+                {/* Background overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/70 dark:via-background/50 dark:to-background/80"></div>
       </div>
       
       <div className="z-10 px-4 lg:px-6 py-4">

@@ -160,7 +160,8 @@ export default function AdminSidebar() {
             }}
           ></div>
           {/* Gradient overlay for better readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/30 dark:via-transparent dark:to-background/40"></div>
+                    {/* Background overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/70 dark:via-background/50 dark:to-background/80"></div>
         </div>
         {/* Enhanced Header */}
         <div className="relative z-10 p-4 border-b border-border/30 bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5">
