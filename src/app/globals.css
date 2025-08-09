@@ -1,6 +1,10 @@
 /* globals.css */
 @import "tailwindcss";
 
+/* Enhanced font face definitions for better Figma compatibility */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @theme {
   /* Clean light-mode variables with better contrast and Sri Lankan colors */
   --color-background: oklch(0.99 0.002 85);
@@ -23,6 +27,7 @@
   --color-input: oklch(0.9 0.01 85);
   --color-ring: oklch(0.35 0.15 15);
   --radius: 0.75rem;
+  
   /* Legacy CSS variables for compatibility */
   --background: var(--color-background);
   --foreground: var(--color-foreground);
@@ -67,7 +72,8 @@
   --color-input: oklch(0.25 0.02 320);
   --color-ring: oklch(0.8 0.06 60);
 }
-/* Enhanced base layer styles with custom animations and effects */
+
+/* Enhanced base layer styles with better font stacking */
 @layer base {
   * {
     @apply border-border;
@@ -75,17 +81,83 @@
   
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 5rem; /* Account for fixed header */
+    scroll-padding-top: 5rem;
+    /* Better font rendering for all browsers */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
   body {
     @apply bg-background text-foreground;
-    /* THIS IS THE ONLY ADDED LINE - IT CREATES THE FONT STACK */
-    font-family: var(--font-noto-sinhala), var(--font-noto-tamil), var(--font-noto-sans), sans-serif;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    
+    /* IMPROVED FONT STACK - Better Figma compatibility */
+    font-family: 
+      var(--font-noto-sinhala), 
+      'Noto Sans Sinhala',
+      'Iskoola Pota',
+      'DL-Expresso',
+      'Malithi Web',
+      var(--font-noto-tamil), 
+      'Noto Sans Tamil',
+      var(--font-inter), 
+      'Inter',
+      'Segoe UI',
+      'Roboto',
+      -apple-system,
+      BlinkMacSystemFont,
+      sans-serif;
+    
+    /* Enhanced font features for better Sinhala rendering */
+    font-feature-settings: 
+      "rlig" 1, 
+      "calt" 1, 
+      "kern" 1,
+      "liga" 1,
+      "clig" 1;
+    
+    font-variant-ligatures: common-ligatures;
+    text-rendering: optimizeLegibility;
     overflow-x: hidden;
+    
+    /* Better transitions */
     transition: background-color 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
                 color 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  /* Specific font classes for different content types */
+  .font-sinhala {
+    font-family: 
+      var(--font-noto-sinhala), 
+      'Noto Sans Sinhala',
+      'Iskoola Pota',
+      'DL-Expresso',
+      'Malithi Web',
+      sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  
+  .font-sinhala-bold {
+    font-family: 
+      var(--font-noto-sinhala), 
+      'Noto Sans Sinhala',
+      'Iskoola Pota',
+      'DL-Expresso',
+      'Malithi Web',
+      sans-serif;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  
+  .font-english {
+    font-family: 
+      var(--font-inter), 
+      'Inter',
+      'Segoe UI',
+      'Roboto',
+      -apple-system,
+      BlinkMacSystemFont,
+      sans-serif;
   }
   
   /* Enhanced theme transition for all elements */
@@ -117,6 +189,45 @@
   
   ::-webkit-scrollbar-thumb:hover {
     background: var(--color-muted-foreground);
+  }
+}
+
+/* Better text rendering for Sinhala content */
+@layer components {
+  .sinhala-text {
+    font-family: 
+      var(--font-noto-sinhala), 
+      'Noto Sans Sinhala',
+      'Iskoola Pota',
+      'DL-Expresso',
+      'Malithi Web',
+      sans-serif;
+    
+    font-feature-settings: 
+      "rlig" 1, 
+      "calt" 1, 
+      "kern" 1,
+      "liga" 1;
+    
+    text-rendering: optimizeLegibility;
+    word-spacing: 0.05em;
+    letter-spacing: 0.01em;
+  }
+  
+  .sinhala-heading {
+    @apply sinhala-text;
+    font-weight: 600;
+    line-height: 1.3;
+    word-break: keep-all;
+    hyphens: none;
+  }
+  
+  .sinhala-body {
+    @apply sinhala-text;
+    font-weight: 400;
+    line-height: 1.6;
+    word-break: normal;
+    hyphens: auto;
   }
 }
 
@@ -269,11 +380,13 @@
   }
 }
 
+/* All the keyframes animations remain the same... */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   33% { transform: translateY(-10px); }
   66% { transform: translateY(5px); }
 }
+
 @keyframes drift {
   0% { transform: translate(0, 0) rotate(0deg); }
   25% { transform: translate(100px, -50px) rotate(90deg); }
@@ -319,6 +432,7 @@
   from { filter: brightness(1) saturate(1); }
   to { filter: brightness(1.2) saturate(1.3); }
 }
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
