@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { ArrowRight, FileText, Calendar, Info, Check, Phone, Mail, MapPin } from 'lucide-react';
 import { Header } from '@/components/Header';
+import { useTranslation } from '@/lib/i18n/hooks/useTranslation';
 
-// Types for translations
+// Types for translations (legacy compatibility)
 type Language = 'en' | 'si' | 'ta';
 
 interface HomeTranslations {
@@ -570,13 +571,6 @@ const translations: Record<Language, HomeTranslations> = {
   }
 };
 
-// Language options
-const languageOptions = [
-  { code: 'en', label: 'English', nativeLabel: 'English' },
-  { code: 'si', label: 'Sinhala', nativeLabel: 'සිංහල' },
-  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ்' }
-];
-
 // --- ELEGANT SRI LANKAN BACKGROUND COMPONENT ---
 const SriLankanBackground = () => {
   return (
@@ -666,11 +660,9 @@ const CheckIcon = Check;
 
 // --- MOBILE-OPTIMIZED HERO SECTION ---
 const Hero = ({ 
-  language, 
-  onLanguageChange 
+  language
 }: { 
   language: Language; 
-  onLanguageChange: (lang: Language) => void; 
 }) => {
   const [searchText, setSearchText] = useState('');
   const t = translations[language];
@@ -979,9 +971,11 @@ const About = ({ language }: { language: Language }) => {
         <div className="animate-fade-in-up flex flex-col min-h-[600px] lg:min-h-[700px]" style={{animationDelay: '0.2s'}}>
           {/* Hero Image - Increased height for balance */}
           <div className="mb-8 lg:mb-10 flex-1 flex items-center justify-center">
-            <img 
+            <Image 
               src="/4.png" 
               alt="GovLink Support Team" 
+              width={400}
+              height={400}
               className="w-full h-auto opacity-100 dark:opacity-60 max-w-md mx-auto lg:max-w-full block rounded-xl shadow-lg"
               style={{
                 filter: 'saturate(1.1) brightness(1.05)',
@@ -1328,11 +1322,7 @@ const Footer = ({ language }: { language: Language }) => {
 
 // --- MAIN PAGE COMPONENT ---
 export default function Home() {
-  const [language, setLanguage] = useState<Language>('en');
-
-  const handleLanguageChange = (newLanguage: Language) => {
-    setLanguage(newLanguage);
-  };
+  const { currentLanguage } = useTranslation('home');
 
   return (
     <div className="bg-background text-foreground min-h-screen relative theme-transition-slow">
@@ -1341,14 +1331,14 @@ export default function Home() {
       
       {/* Content */}
       <div className="relative z-10 theme-transition-fast">
-        <Header language={language} onLanguageChange={handleLanguageChange} />
+        <Header />
         <main className="theme-transition-fast">
-          <Hero language={language} onLanguageChange={handleLanguageChange} />
-          <Features language={language} />
-          <About language={language} />
-          <Contact language={language} />
+          <Hero language={currentLanguage as Language} />
+          <Features language={currentLanguage as Language} />
+          <About language={currentLanguage as Language} />
+          <Contact language={currentLanguage as Language} />
         </main>
-        <Footer language={language} />
+        <Footer language={currentLanguage as Language} />
       </div>
     </div>
   );

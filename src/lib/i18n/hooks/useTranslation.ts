@@ -1,47 +1,43 @@
 import { useTranslation as useI18nTranslation } from 'react-i18next';
-import { Language, changeLanguage, getCurrentLanguage } from '../config';
+import { useLanguage as useLanguageProvider } from '@/components/TranslationProvider';
 
 // Enhanced useTranslation hook with type safety
 export function useTranslation(namespace?: string) {
   const { t, i18n } = useI18nTranslation(namespace);
+  const { language, setLanguage, isLoading } = useLanguageProvider();
   
   return {
     t,
     i18n,
-    currentLanguage: getCurrentLanguage(),
-    changeLanguage,
-    isLoading: !i18n.isInitialized
+    currentLanguage: language,
+    setLanguage,
+    isChanging: false,
+    isLoading: isLoading || !i18n.isInitialized
   };
 }
 
 // Hook specifically for language management
 export function useLanguage() {
-  const { i18n } = useI18nTranslation();
-  
-  const setLanguage = async (language: Language) => {
-    await changeLanguage(language);
-    // Trigger a re-render after language change
-    window.location.reload();
-  };
+  const { language, setLanguage, isLoading } = useLanguageProvider();
   
   return {
-    currentLanguage: getCurrentLanguage(),
+    currentLanguage: language,
     setLanguage,
-    isChanging: i18n.isInitialized && i18n.isInitialized
+    isChanging: isLoading
   };
 }
 
 // Hook for formatting utilities
 export function useFormatting() {
-  const currentLanguage = getCurrentLanguage();
+  const { language } = useLanguageProvider();
   
   const formatNumber = (number: number): string => {
-    const locale = currentLanguage === 'si' ? 'si-LK' : currentLanguage === 'ta' ? 'ta-LK' : 'en-LK';
+    const locale = language === 'si' ? 'si-LK' : language === 'ta' ? 'ta-LK' : 'en-LK';
     return new Intl.NumberFormat(locale).format(number);
   };
   
   const formatDate = (date: Date, options?: Intl.DateTimeFormatOptions): string => {
-    const locale = currentLanguage === 'si' ? 'si-LK' : currentLanguage === 'ta' ? 'ta-LK' : 'en-LK';
+    const locale = language === 'si' ? 'si-LK' : language === 'ta' ? 'ta-LK' : 'en-LK';
     const defaultOptions: Intl.DateTimeFormatOptions = {
       year: 'numeric',
       month: 'long',
@@ -51,7 +47,7 @@ export function useFormatting() {
   };
   
   const formatCurrency = (amount: number): string => {
-    const locale = currentLanguage === 'si' ? 'si-LK' : currentLanguage === 'ta' ? 'ta-LK' : 'en-LK';
+    const locale = language === 'si' ? 'si-LK' : language === 'ta' ? 'ta-LK' : 'en-LK';
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'LKR'
@@ -59,7 +55,7 @@ export function useFormatting() {
   };
   
   const formatTime = (date: Date): string => {
-    const locale = currentLanguage === 'si' ? 'si-LK' : currentLanguage === 'ta' ? 'ta-LK' : 'en-LK';
+    const locale = language === 'si' ? 'si-LK' : language === 'ta' ? 'ta-LK' : 'en-LK';
     return new Intl.DateTimeFormat(locale, {
       hour: '2-digit',
       minute: '2-digit'
@@ -71,6 +67,6 @@ export function useFormatting() {
     formatDate,
     formatCurrency,
     formatTime,
-    currentLanguage
+    currentLanguage: language
   };
 }
