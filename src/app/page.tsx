@@ -2,6 +2,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { ArrowRight, FileText, Calendar, Info, Check, Phone, Mail, MapPin } from 'lucide-react';
 import { Header } from '@/components/Header';
 
 // Types for translations
@@ -652,45 +653,15 @@ const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 // --- OTHER ICON COMPONENTS ---
-const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M12 5L19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-);
+const ArrowRightIcon = ArrowRight;
 
-const DocumentIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-    <polyline points="14 2 14 8 20 8"/>
-    <line x1="16" y1="13" x2="8" y2="13"/>
-    <line x1="16" y1="17" x2="8" y2="17"/>
-    <polyline points="10 9 9 9 8 9"/>
-  </svg>
-);
+const DocumentIcon = FileText;
 
-const CalendarIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-    <line x1="16" y1="2" x2="16" y2="6"/>
-    <line x1="8" y1="2" x2="8" y2="6"/>
-    <line x1="3" y1="10" x2="21" y2="10"/>
-  </svg>
-);
+const CalendarIcon = Calendar;
 
-const InfoIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/>
-    <line x1="12" y1="16" x2="12" y2="12"/>
-    <line x1="12" y1="8" x2="12.01" y2="8"/>
-  </svg>
-);
+const InfoIcon = Info;
 
-const CheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-);
+const CheckIcon = Check;
 
 
 // --- MOBILE-OPTIMIZED HERO SECTION ---
@@ -736,11 +707,6 @@ const Hero = ({
         <div className="max-w-5xl mx-auto text-center">
           {/* Compact Hero Content */}
           <div className="mb-4 sm:mb-6 lg:mb-8 animate-fade-in-up">
-            <div className="flex flex-col items-center mb-1 sm:mb-2 lg:mb-3">
-              <div className="relative mb-1 sm:mb-1 lg:mb-2">
-                <LotusIcon className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24" />
-              </div>
-            </div>
             <h1 className={`${language === 'en' ? 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl' : language === 'si' ? 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl' : 'text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl'} font-bold leading-tight mb-3 sm:mb-4 lg:mb-6`}>
               <span className="block text-foreground mb-1 sm:mb-2">{t.heroTitle1}</span>
               <span className="block text-gradient animate-title-wave">{t.heroTitle2}</span>
@@ -1092,9 +1058,7 @@ const Contact = ({ language }: { language: Language }) => {
           {/* Phone */}
           <div className="group text-center p-6 sm:p-8 bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-xl border border-border/50 hover:border-[#FFC72C]/70 hover:shadow-2xl transition-all duration-500 modern-card hover-lift">
             <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-[#FFC72C] via-[#FF5722] to-[#8D153A] rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-lg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-6 sm:h-6">
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-              </svg>
+              <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <h3 className="font-semibold mb-2 group-hover:text-[#FFC72C] transition-colors duration-300">{t.contactMethods.phone.title}</h3>
             <p className="text-muted-foreground mb-2 font-mono text-sm sm:text-base">{t.contactMethods.phone.number}</p>
@@ -1104,10 +1068,7 @@ const Contact = ({ language }: { language: Language }) => {
           {/* Email */}
           <div className="group text-center p-6 sm:p-8 bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-xl border border-border/50 hover:border-[#008060]/70 hover:shadow-2xl transition-all duration-500 modern-card hover-lift">
             <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-[#008060] via-[#FFC72C] to-[#FF5722] rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-lg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-6 sm:h-6">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                <polyline points="22,6 12,13 2,6"/>
-              </svg>
+              <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <h3 className="font-semibold mb-2 group-hover:text-[#008060] transition-colors duration-300">{t.contactMethods.email.title}</h3>
             <p className="text-muted-foreground mb-2 font-mono text-sm sm:text-base">{t.contactMethods.email.address}</p>
@@ -1117,10 +1078,7 @@ const Contact = ({ language }: { language: Language }) => {
           {/* Location */}
           <div className="group text-center p-6 sm:p-8 bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-xl border border-border/50 hover:border-[#FF5722]/70 hover:shadow-2xl transition-all duration-500 modern-card hover-lift">
             <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-[#FF5722] via-[#8D153A] to-[#FFC72C] rounded-xl flex items-center justify-center mx-auto mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 shadow-lg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-6 sm:h-6">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
+              <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
             <h3 className="font-semibold mb-2 group-hover:text-[#FF5722] transition-colors duration-300">{t.contactMethods.location.title}</h3>
             <p className="text-muted-foreground mb-2 text-sm sm:text-base">{t.contactMethods.location.address}</p>

@@ -144,7 +144,7 @@ export default function AdminSidebar() {
         className={`
         fixed lg:sticky top-0 h-screen bg-gradient-to-b from-card/95 via-card/90 to-card/80 dark:from-card/98 dark:via-card/95 dark:to-card/90
         border-r border-border/50 backdrop-blur-md flex flex-col transition-all duration-300 ease-in-out
-        shadow-2xl modern-card z-40 relative overflow-hidden
+        shadow-2xl modern-card z-40 overflow-hidden
         ${isCollapsed ? "w-16" : "w-64"}
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}
@@ -170,7 +170,7 @@ export default function AdminSidebar() {
                 <div className="w-8 h-8 bg-gradient-to-r from-[#8D153A]/20 to-[#FF5722]/20 rounded-lg flex items-center justify-center border border-[#8D153A]/30 shadow-md">
                   <Settings className="w-4 h-4 text-[#8D153A]" />
                 </div>
-                <span className="font-bold text-foreground bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
+                <span className="font-bold bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
                   Admin Panel
                 </span>
               </div>

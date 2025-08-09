@@ -255,7 +255,7 @@ const UserAuthLayout: React.FC<UserAuthLayoutProps> = ({
           <div className="text-center mt-6 sm:mt-8 animate-fade-in-up" style={{animationDelay: '0.4s'}}>
             <p className="text-xs sm:text-sm text-muted-foreground">
               {t.technicalAssistance}{' '}
-              <button className="text-[#FFC72C] hover:text-[#FF5722] transition-colors duration-300 underline font-medium hover:scale-105 transition-transform">
+              <button className="text-[#FFC72C] hover:text-[#FF5722] transition-all duration-300 underline font-medium hover:scale-105">
                 {t.contactSupport}
               </button>
             </p>

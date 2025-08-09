@@ -196,7 +196,7 @@ export default function AdminLogin() {
               <span className="text-xs sm:text-sm font-medium text-foreground">Government Access</span>
             </div>
             
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 leading-tight animate-title-wave">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 leading-tight">
               <span className="text-foreground">Admin</span>{' '}
               <span className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">Portal</span>
             </h2>

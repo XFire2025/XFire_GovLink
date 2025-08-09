@@ -62,7 +62,7 @@ export default function AdminNavbar() {
   const unreadNotifications = notifications.filter(n => !n.read).length;
 
   return (
-    <header className="sticky top-0 z-[100] bg-gradient-to-b from-card/95 via-card/90 to-card/80 dark:from-card/98 dark:via-card/95 dark:to-card/90 backdrop-blur-md border-b border-border/50 shadow-sm modern-card relative overflow-visible">
+    <header className="sticky top-0 z-[100] bg-gradient-to-b from-card/95 via-card/90 to-card/80 dark:from-card/98 dark:via-card/95 dark:to-card/90 backdrop-blur-md border-b border-border/50 shadow-sm modern-card overflow-visible">
       {/* Background Image */}
       <div className="absolute inset-0 pointer-events-none">
         <div 
@@ -77,7 +77,7 @@ export default function AdminNavbar() {
         <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/30 dark:via-transparent dark:to-background/40"></div>
       </div>
       
-      <div className="relative z-10 px-4 lg:px-6 py-4">
+      <div className="z-10 px-4 lg:px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Enhanced Left Section - Breadcrumb/Title */}
           <div className="flex items-center gap-4 ml-12 lg:ml-0">
@@ -129,7 +129,7 @@ export default function AdminNavbar() {
               {showNotifications && (
                 <div className="absolute right-0 top-full mt-2 w-80 bg-card/95 dark:bg-card/98 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl z-[110] modern-card">
                   <div className="p-4 border-b border-border/30 bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5">
-                    <h3 className="font-bold text-foreground bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
+                    <h3 className="font-bold bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
                       Notifications
                     </h3>
                   </div>
@@ -188,7 +188,7 @@ export default function AdminNavbar() {
                       <span className="text-sm font-medium text-[#8D153A]">A</span>
                     </div>
                     <div>
-                      <h3 className="font-medium text-foreground bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">Administrator</h3>
+                      <h3 className="font-medium bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">Administrator</h3>
                       <p className="text-sm text-muted-foreground">admin@govlink.lk</p>
                     </div>
                   </div>

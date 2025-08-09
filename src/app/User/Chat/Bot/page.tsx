@@ -1,6 +1,7 @@
 // src/app/User/Chat/Bot/page.tsx
 "use client";
 import React, { Suspense, useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 import ReactMarkdown from 'react-markdown';
@@ -26,6 +27,7 @@ const chatTranslations: Record<Language, {
     relatedServices: string;
     howToApply: string;
     contactInfo: string;
+    waitForAgent: string;
   };
 }> = {
   en: {
@@ -40,7 +42,8 @@ const chatTranslations: Record<Language, {
       moreDetails: 'More details',
       relatedServices: 'Related services',
       howToApply: 'How to apply',
-      contactInfo: 'Contact info'
+      contactInfo: 'Contact info',
+      waitForAgent: 'Wait for Agent'
     }
   },
   si: {
@@ -55,7 +58,8 @@ const chatTranslations: Record<Language, {
       moreDetails: 'වැඩි විස්තර',
       relatedServices: 'සම්බන්ධිත සේවා',
       howToApply: 'අයදුම් කරන ආකාරය',
-      contactInfo: 'සම්බන්ධතා තොරතුරු'
+      contactInfo: 'සම්බන්ධතා තොරතුරු',
+      waitForAgent: 'නියෝජිතයක් සඳහා රැඳී සිටින්න'
     }
   },
   ta: {
@@ -70,7 +74,8 @@ const chatTranslations: Record<Language, {
       moreDetails: 'மேலும் விவரங்கள்',
       relatedServices: 'தொடர்புடைய சேவைகள்',
       howToApply: 'எப்படி விண்ணபிப்பது',
-      contactInfo: 'தொடர்பு தகவல்'
+      contactInfo: 'தொடர்பு தகவல்',
+      waitForAgent: 'முகவர்க்காக காத்திருங்கள்'
     }
   }
 };
@@ -353,7 +358,7 @@ const ChatInput = ({ onSendMessage, language = 'en' }: { onSendMessage: (message
           </div>
           
           {/* Suggestions */}
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2 items-center">
             {[
               t.suggestions.moreDetails, 
               t.suggestions.relatedServices, 
@@ -368,6 +373,14 @@ const ChatInput = ({ onSendMessage, language = 'en' }: { onSendMessage: (message
                 {suggestion}
               </button>
             ))}
+            
+            {/* Wait for Agent Button */}
+            <Link 
+              href="/User/Chat/Wait"
+              className="px-4 py-2 bg-gradient-to-r from-[#008060] to-[#FFC72C] hover:from-[#FFC72C] hover:to-[#FF5722] text-white rounded-full text-xs font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
+            >
+              {t.suggestions.waitForAgent}
+            </Link>
           </div>
         </div>
       </div>
