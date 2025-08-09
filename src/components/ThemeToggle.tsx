@@ -2,6 +2,7 @@
 "use client";
 
 import * as React from "react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 const createThemeRipple = (event: React.MouseEvent<HTMLButtonElement>, isDark: boolean) => {
@@ -195,15 +196,15 @@ export function ThemeToggle() {
         padding: '8px sm:10px',
         background: isDark 
           ? 'linear-gradient(135deg, rgba(255, 199, 44, 0.1) 0%, rgba(255, 87, 34, 0.05) 100%)' 
-          : 'linear-gradient(135deg, rgba(30, 64, 175, 0.1) 0%, rgba(30, 58, 138, 0.05) 100%)',
+          : 'linear-gradient(135deg, rgba(255, 87, 34, 0.1) 0%, rgba(141, 21, 58, 0.05) 100%)',
         backdropFilter: 'blur(20px)',
         border: `2px solid ${isDark 
           ? 'rgba(255, 199, 44, 0.3)' 
-          : 'rgba(30, 64, 175, 0.3)'
+          : 'rgba(255, 87, 34, 0.3)'
         }`,
         boxShadow: isDark 
           ? '0 6px 24px rgba(255, 199, 44, 0.15), 0 0 16px rgba(255, 199, 44, 0.08)' 
-          : '0 6px 24px rgba(30, 64, 175, 0.15), 0 0 16px rgba(30, 64, 175, 0.08)',
+          : '0 6px 24px rgba(255, 87, 34, 0.15), 0 0 16px rgba(255, 87, 34, 0.08)',
         animation: isAnimating ? "buttonPulse 0.8s cubic-bezier(0.23, 1, 0.32, 1)" : "none",
       }}
     >
@@ -212,11 +213,11 @@ export function ThemeToggle() {
         style={{
           background: isDark 
             ? 'linear-gradient(135deg, #FFC72C 0%, #FF5722 100%)' 
-            : 'linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)',
+            : 'linear-gradient(135deg, #FF5722 0%, #8D153A 100%)',
           animation: isAnimating ? "iconSpin 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)" : "none",
           boxShadow: isDark
             ? '0 3px 16px rgba(255, 199, 44, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.15)'
-            : '0 3px 16px rgba(30, 64, 175, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.2)',
+            : '0 3px 16px rgba(255, 87, 34, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.2)',
         }}
       >
         {isDark ? (
@@ -265,7 +266,7 @@ export function ThemeToggle() {
         style={{
           background: isDark 
             ? 'radial-gradient(circle, rgba(255, 199, 44, 0.4) 0%, rgba(255, 87, 34, 0.2) 40%, transparent 70%)'
-            : 'radial-gradient(circle, rgba(30, 64, 175, 0.4) 0%, rgba(30, 58, 138, 0.2) 40%, transparent 70%)',
+            : 'radial-gradient(circle, rgba(255, 87, 34, 0.4) 0%, rgba(141, 21, 58, 0.2) 40%, transparent 70%)',
           filter: 'blur(12px)',
           animation: isAnimating ? "buttonPulse 1.2s ease-in-out" : "none",
         }}

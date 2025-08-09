@@ -2,27 +2,27 @@
 @import "tailwindcss";
 
 @theme {
-  /* Enhanced light-mode variables with higher contrast */
-  --color-background: oklch(0.98 0.005 85);
-  --color-foreground: oklch(0.08 0.02 320);
-  --color-card: oklch(0.97 0.01 85);
-  --color-card-foreground: oklch(0.08 0.02 320);
-  --color-popover: oklch(0.97 0.01 85);
-  --color-popover-foreground: oklch(0.08 0.02 320);
-  --color-primary: oklch(0.28 0.18 15);
-  --color-primary-foreground: oklch(0.98 0.01 85);
-  --color-secondary: oklch(0.92 0.03 85);
-  --color-secondary-foreground: oklch(0.18 0.12 15);
-  --color-muted: oklch(0.93 0.02 85);
-  --color-muted-foreground: oklch(0.42 0.08 15);
-  --color-accent: oklch(0.90 0.04 85);
-  --color-accent-foreground: oklch(0.18 0.12 15);
+  /* Clean light-mode variables with better contrast and Sri Lankan colors */
+  --color-background: oklch(0.99 0.002 85);
+  --color-foreground: oklch(0.12 0.015 320);
+  --color-card: oklch(0.98 0.005 85);
+  --color-card-foreground: oklch(0.12 0.015 320);
+  --color-popover: oklch(0.98 0.005 85);
+  --color-popover-foreground: oklch(0.12 0.015 320);
+  --color-primary: oklch(0.35 0.15 15);
+  --color-primary-foreground: oklch(0.98 0.005 85);
+  --color-secondary: oklch(0.95 0.015 85);
+  --color-secondary-foreground: oklch(0.25 0.1 15);
+  --color-muted: oklch(0.94 0.01 85);
+  --color-muted-foreground: oklch(0.45 0.06 15);
+  --color-accent: oklch(0.92 0.02 85);
+  --color-accent-foreground: oklch(0.25 0.1 15);
   --color-destructive: oklch(0.577 0.245 27.325);
   --color-destructive-foreground: oklch(0.985 0 0);
-  --color-border: oklch(0.85 0.03 85);
-  --color-input: oklch(0.88 0.02 85);
-  --color-ring: oklch(0.28 0.18 15);
-  --radius: 1rem;  
+  --color-border: oklch(0.88 0.015 85);
+  --color-input: oklch(0.9 0.01 85);
+  --color-ring: oklch(0.35 0.15 15);
+  --radius: 0.75rem;  
   /* Legacy CSS variables for compatibility */
   --background: var(--color-background);
   --foreground: var(--color-foreground);
@@ -45,27 +45,27 @@
   --ring: var(--color-ring);
 }
 
-/* Enhanced dark mode with richer, more sophisticated colors */
+/* Clean dark mode with better contrast and Sri Lankan colors */
 :root.dark {
-  --color-background: oklch(0.08 0.015 320);
-  --color-foreground: oklch(0.95 0.01 85);
-  --color-card: oklch(0.12 0.02 320);
-  --color-card-foreground: oklch(0.95 0.01 85);
-  --color-popover: oklch(0.12 0.02 320);
-  --color-popover-foreground: oklch(0.95 0.01 85);
-  --color-primary: oklch(0.85 0.08 60);
-  --color-primary-foreground: oklch(0.15 0.02 320);
-  --color-secondary: oklch(0.18 0.025 320);
-  --color-secondary-foreground: oklch(0.9 0.02 85);
-  --color-muted: oklch(0.16 0.02 320);
-  --color-muted-foreground: oklch(0.7 0.03 85);
-  --color-accent: oklch(0.2 0.03 320);
-  --color-accent-foreground: oklch(0.9 0.02 85);
+  --color-background: oklch(0.09 0.01 320);
+  --color-foreground: oklch(0.96 0.005 85);
+  --color-card: oklch(0.14 0.015 320);
+  --color-card-foreground: oklch(0.96 0.005 85);
+  --color-popover: oklch(0.14 0.015 320);
+  --color-popover-foreground: oklch(0.96 0.005 85);
+  --color-primary: oklch(0.8 0.06 60);
+  --color-primary-foreground: oklch(0.2 0.015 320);
+  --color-secondary: oklch(0.2 0.02 320);
+  --color-secondary-foreground: oklch(0.9 0.01 85);
+  --color-muted: oklch(0.18 0.015 320);
+  --color-muted-foreground: oklch(0.72 0.025 85);
+  --color-accent: oklch(0.22 0.025 320);
+  --color-accent-foreground: oklch(0.9 0.01 85);
   --color-destructive: oklch(0.704 0.191 22.216);
   --color-destructive-foreground: oklch(0.145 0 0);
-  --color-border: oklch(0.25 0.03 320);
-  --color-input: oklch(0.22 0.025 320);
-  --color-ring: oklch(0.85 0.08 60);
+  --color-border: oklch(0.28 0.025 320);
+  --color-input: oklch(0.25 0.02 320);
+  --color-ring: oklch(0.8 0.06 60);
 }
 /* Enhanced base layer styles with custom animations and effects */
 @layer base {
@@ -121,7 +121,7 @@
 /* Custom animations and effects - Mobile Responsive */
 @layer utilities {
   .animate-float {
-    animation: none;
+    animation: float 6s ease-in-out infinite;
   }
   
   .animate-drift {
@@ -157,109 +157,72 @@
   
   /* Wave buoyancy animations - synchronized with flag wave motion */
   .animate-wave-buoyancy-1 {
-    animation: none;
+    animation: waveBuoyancy1 4s ease-in-out infinite;
   }
   
   .animate-wave-buoyancy-2 {
-    animation: none;
+    animation: waveBuoyancy2 4s ease-in-out infinite;
   }
   
   .animate-wave-buoyancy-3 {
-    animation: none;
+    animation: waveBuoyancy3 4s ease-in-out infinite;
   }
   
   .animate-wave-float-left {
-    animation: none;
+    animation: waveFloatLeft 5s ease-in-out infinite;
   }
   
   .animate-wave-float-right {
-    animation: none;
+    animation: waveFloatRight 5s ease-in-out infinite;
   }
   
   .animate-wave-float-center {
-    animation: none;
+    animation: waveFloatCenter 4.5s ease-in-out infinite;
   }
   
   .animate-title-wave {
-    animation: none;
+    animation: titleWave 6s ease-in-out infinite;
   }
   
   .animate-subtitle-wave {
-    animation: none;
+    animation: subtitleWave 6s ease-in-out infinite;
   }
   
-  .gradient-mesh {
-    background: 
-      radial-gradient(circle at 20% 80%, rgba(141, 21, 58, 0.25) 0%, transparent 40%),
-      radial-gradient(circle at 80% 20%, rgba(255, 199, 44, 0.22) 0%, transparent 40%),
-      radial-gradient(circle at 40% 40%, rgba(255, 87, 34, 0.20) 0%, transparent 40%),
-      radial-gradient(circle at 60% 60%, rgba(0, 128, 96, 0.18) 0%, transparent 40%);
-    mix-blend-mode: multiply;
+  .clean-accent {
+    background: linear-gradient(135deg, rgba(255, 199, 44, 0.08) 0%, rgba(255, 87, 34, 0.06) 50%, rgba(141, 21, 58, 0.08) 100%);
   }
   
-  /* Enhanced gradient mesh for larger screens */
-  @media (min-width: 640px) {
-    .gradient-mesh {
-      background: 
-        radial-gradient(circle at 20% 80%, rgba(141, 21, 58, 0.32) 0%, transparent 45%),
-        radial-gradient(circle at 80% 20%, rgba(255, 199, 44, 0.28) 0%, transparent 45%),
-        radial-gradient(circle at 40% 40%, rgba(255, 87, 34, 0.26) 0%, transparent 45%),
-        radial-gradient(circle at 60% 60%, rgba(0, 128, 96, 0.22) 0%, transparent 45%);
-    }
-  }
-  
-  @media (min-width: 768px) {
-    .gradient-mesh {
-      background: 
-        radial-gradient(circle at 20% 80%, rgba(141, 21, 58, 0.4) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 199, 44, 0.35) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(255, 87, 34, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 60% 60%, rgba(0, 128, 96, 0.25) 0%, transparent 50%);
-    }
-  }
-  
-  .dark .gradient-mesh {
-    background: 
-      radial-gradient(circle at 20% 80%, rgba(141, 21, 58, 0.08) 0%, transparent 35%),
-      radial-gradient(circle at 80% 20%, rgba(255, 199, 44, 0.08) 0%, transparent 35%),
-      radial-gradient(circle at 40% 40%, rgba(255, 87, 34, 0.06) 0%, transparent 35%),
-      radial-gradient(circle at 60% 60%, rgba(0, 128, 96, 0.06) 0%, transparent 35%);
-    mix-blend-mode: normal;
-  }
-  
-  /* Enhanced dark mode gradient mesh for larger screens */
-  @media (min-width: 640px) {
-    .dark .gradient-mesh {
-      background: 
-        radial-gradient(circle at 20% 80%, rgba(141, 21, 58, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 80% 20%, rgba(255, 199, 44, 0.12) 0%, transparent 40%),
-        radial-gradient(circle at 40% 40%, rgba(255, 87, 34, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 60% 60%, rgba(0, 128, 96, 0.08) 0%, transparent 40%);
-    }
-  }
-  
-  @media (min-width: 768px) {
-    .dark .gradient-mesh {
-      background: 
-        radial-gradient(circle at 20% 80%, rgba(141, 21, 58, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 199, 44, 0.15) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(255, 87, 34, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 60% 60%, rgba(0, 128, 96, 0.1) 0%, transparent 50%);
-    }
+  .dark .clean-accent {
+    background: linear-gradient(135deg, rgba(255, 199, 44, 0.04) 0%, rgba(255, 87, 34, 0.03) 50%, rgba(141, 21, 58, 0.04) 100%);
   }
   
   .text-gradient {
-    background: linear-gradient(135deg, #FFC72C 0%, #FF5722 50%, #8D153A 100%);
+    background: linear-gradient(120deg, #FFC72C 0%, #FF5722 40%, #8D153A 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    background-size: 200% auto;
+    animation: gradient-shift 8s ease-in-out infinite;
+  }
+  
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% center;
+    }
+    50% {
+      background-position: 100% center;
+    }
   }
   
   .shadow-glow {
-    box-shadow: 0 0 20px rgba(255, 199, 44, 0.3),
-                0 0 40px rgba(255, 199, 44, 0.1),
-                0 8px 32px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 4px 16px rgba(255, 199, 44, 0.15),
+                0 8px 32px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .dark .shadow-glow {
+    box-shadow: 0 4px 16px rgba(255, 199, 44, 0.1),
+                0 8px 32px rgba(0, 0, 0, 0.3);
   }
   
   .hover-lift {
@@ -279,32 +242,28 @@
     transition: all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
   }
   
-  /* Glass morphism with enhanced theme transitions and mobile responsiveness */
-  .glass-morphism {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(15px);
+  /* Clean modern card styling */
+  .modern-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+  }
+  
+  .dark .modern-card {
+    background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-    transition: 
-      background 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-      backdrop-filter 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-      border 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-      box-shadow 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
   
-  /* Mobile-first responsive glass morphism */
-  @media (min-width: 640px) {
-    .glass-morphism {
-      backdrop-filter: blur(18px);
-      box-shadow: 0 7px 28px rgba(0, 0, 0, 0.09);
-    }
+  .modern-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   }
   
-  @media (min-width: 768px) {
-    .glass-morphism {
-      backdrop-filter: blur(20px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
+  .dark .modern-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -598,21 +557,6 @@
     perspective: 1000px;
   }
   
-  /* Hide cursor on small screens, show on large screens */
-  @media (max-width: 1023px) {
-    *, *:hover, *:focus, *:active {
-      cursor: none !important;
-    }
-    
-    body {
-      cursor: none !important;
-    }
-    
-    html {
-      cursor: none !important;
-    }
-  }
-  
   /* Reduced motion for mobile accessibility */
   @media (prefers-reduced-motion: reduce) {
     .animate-float,
@@ -646,265 +590,4 @@
       border: 2px solid rgba(255, 255, 255, 0.3);
     }
   }
-  
-  /* Custom scrollbar styles for admin sidebar */
-  .scrollbar-thin {
-    scrollbar-width: thin;
-  }
-  
-  .scrollbar-thumb-muted {
-    scrollbar-color: var(--muted) transparent;
-  }
-  
-  .scrollbar-track-transparent {
-    scrollbar-track-color: transparent;
-  }
-  
-  /* Webkit scrollbar styles */
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 4px;
-  }
-  
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: var(--muted);
-    border-radius: 2px;
-  }
-  
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: var(--muted-foreground);
-  }
-}
-
-/* Custom markdown styling for chat messages */
-.markdown-content,
-.prose {
-  color: inherit;
-  line-height: 1.6;
-}
-
-.markdown-content h1,
-.markdown-content h2,
-.markdown-content h3,
-.markdown-content h4,
-.markdown-content h5,
-.markdown-content h6,
-.prose h1,
-.prose h2,
-.prose h3,
-.prose h4,
-.prose h5,
-.prose h6 {
-  margin-top: 1.5rem !important;
-  margin-bottom: 0.75rem !important;
-  font-weight: 600 !important;
-}
-
-.markdown-content h1,
-.prose h1 {
-  font-size: 1.5rem !important;
-  color: #FFC72C !important;
-  border-bottom: 2px solid #FFC72C !important;
-  padding-bottom: 0.5rem !important;
-}
-
-.markdown-content h2,
-.prose h2 {
-  font-size: 1.25rem !important;
-  color: #FFC72C !important;
-}
-
-.markdown-content h3,
-.prose h3 {
-  font-size: 1.125rem !important;
-  color: #FF5722 !important;
-}
-
-.markdown-content p,
-.prose p {
-  margin-bottom: 1rem !important;
-  color: inherit !important;
-}
-
-.markdown-content ul,
-.markdown-content ol,
-.prose ul,
-.prose ol {
-  margin-bottom: 1rem !important;
-  padding-left: 1.5rem !important;
-}
-
-.markdown-content li,
-.prose li {
-  margin-bottom: 0.25rem !important;
-  color: inherit !important;
-}
-
-.markdown-content blockquote,
-.prose blockquote {
-  border-left: 4px solid #FFC72C !important;
-  padding-left: 1rem !important;
-  margin: 1rem 0 !important;
-  font-style: italic !important;
-  background: rgba(255, 199, 44, 0.05) !important;
-  border-radius: 0 0.5rem 0.5rem 0 !important;
-  padding: 0.75rem 1rem !important;
-  color: inherit !important;
-}
-
-.markdown-content code,
-.prose code {
-  background: rgba(255, 255, 255, 0.1) !important;
-  padding: 0.125rem 0.375rem !important;
-  border-radius: 0.25rem !important;
-  font-family: 'Courier New', monospace !important;
-  font-size: 0.875rem !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: inherit !important;
-}
-
-.markdown-content pre,
-.prose pre {
-  background: rgba(0, 0, 0, 0.3) !important;
-  padding: 1rem !important;
-  border-radius: 0.5rem !important;
-  overflow-x: auto !important;
-  margin: 1rem 0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-.markdown-content pre code,
-.prose pre code {
-  background: transparent !important;
-  padding: 0 !important;
-  border: none !important;
-}
-
-.markdown-content table,
-.prose table {
-  width: 100% !important;
-  border-collapse: collapse !important;
-  margin: 1rem 0 !important;
-  border-radius: 0.5rem !important;
-  overflow: hidden !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-.markdown-content th,
-.markdown-content td,
-.prose th,
-.prose td {
-  padding: 0.75rem !important;
-  text-align: left !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: inherit !important;
-}
-
-.markdown-content th,
-.prose th {
-  background: rgba(255, 199, 44, 0.1) !important;
-  font-weight: 600 !important;
-  color: #FFC72C !important;
-}
-
-.markdown-content tr:nth-child(even),
-.prose tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.02) !important;
-}
-
-.markdown-content a,
-.prose a {
-  color: #FFC72C !important;
-  text-decoration: underline !important;
-  transition: color 0.2s ease !important;
-}
-
-.markdown-content a:hover,
-.prose a:hover {
-  color: #FF5722 !important;
-}
-
-.markdown-content strong,
-.prose strong {
-  font-weight: 600 !important;
-  color: #FFC72C !important;
-}
-
-.markdown-content em,
-.prose em {
-  font-style: italic !important;
-  opacity: 0.8 !important;
-}
-
-/* Enhanced markdown code syntax highlighting */
-.markdown-content pre[class*="language-"],
-.prose pre[class*="language-"] {
-  background: rgba(0, 0, 0, 0.4) !important;
-  border: 1px solid rgba(255, 199, 44, 0.2) !important;
-}
-
-/* Improved list styling */
-.markdown-content ul > li::marker,
-.prose ul > li::marker {
-  color: #FFC72C !important;
-}
-
-.markdown-content ol > li::marker,
-.prose ol > li::marker {
-  color: #FFC72C !important;
-  font-weight: 600 !important;
-}
-
-/* Better spacing for nested lists */
-.markdown-content ul ul,
-.markdown-content ol ol,
-.markdown-content ul ol,
-.markdown-content ol ul,
-.prose ul ul,
-.prose ol ol,
-.prose ul ol,
-.prose ol ul {
-  margin-top: 0.5rem !important;
-  margin-bottom: 0.5rem !important;
-}
-
-/* Improved code block styling */
-.markdown-content .hljs,
-.prose .hljs {
-  background: rgba(0, 0, 0, 0.3) !important;
-  color: #f8f8f2 !important;
-}
-
-/* Line numbers for code blocks */
-.markdown-content pre code,
-.prose pre code {
-  display: block !important;
-  white-space: pre !important;
-  word-wrap: normal !important;
-}
-
-/* Better table responsiveness */
-@media (max-width: 768px) {
-  .markdown-content table,
-  .prose table {
-    font-size: 0.875rem !important;
-  }
-  
-  .markdown-content th,
-  .markdown-content td,
-  .prose th,
-  .prose td {
-    padding: 0.5rem !important;
-  }
-}
-
-/* Ensure proper text rendering */
-.markdown-content *,
-.prose * {
-  text-rendering: optimizeLegibility !important;
-  -webkit-font-smoothing: antialiased !important;
-  -moz-osx-font-smoothing: grayscale !important;
 }

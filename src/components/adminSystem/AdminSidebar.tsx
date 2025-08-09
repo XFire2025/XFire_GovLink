@@ -56,7 +56,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: "customer-agent",
-    label: "Customer/Agent Management",
+    label: "Customer & Agent",
     icon: UserCog,
     href: "/admin/customer-agent",
   },
@@ -133,38 +133,52 @@ export default function AdminSidebar() {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 lg:hidden p-2 rounded-lg bg-background border border-border shadow-lg hover:bg-muted transition-colors"
+        className="fixed top-6 left-4 z-[110] lg:hidden p-2.5 rounded-xl bg-card/95 dark:bg-card/98 backdrop-blur-md border border-border/50 shadow-xl hover:bg-muted hover:shadow-2xl hover:scale-105 transition-all duration-300 modern-card"
         aria-label="Open admin menu"
       >
-        <Menu className="w-5 h-5" />
+        <Menu className="w-5 h-5 text-foreground" />
       </button>
 
-      {/* Sidebar */}
+      {/* Enhanced Sidebar */}
       <div
         className={`
-        fixed lg:sticky top-0 h-screen bg-gradient-to-b from-background via-background to-muted/10 
-        border-r border-border backdrop-blur-sm flex flex-col transition-all duration-300 ease-in-out
-        shadow-lg z-40
+        fixed lg:sticky top-0 h-screen bg-gradient-to-b from-card/95 via-card/90 to-card/80 dark:from-card/98 dark:via-card/95 dark:to-card/90
+        border-r border-border/50 backdrop-blur-md flex flex-col transition-all duration-300 ease-in-out
+        shadow-2xl modern-card z-40 overflow-hidden
         ${isCollapsed ? "w-16" : "w-64"}
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}
       >
-        {/* Header with toggle button */}
-        <div className="p-4 border-b border-border/50">
+        {/* Background Image */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div 
+            className="absolute inset-0 opacity-25 dark:opacity-15 bg-center bg-no-repeat bg-cover transition-opacity duration-1000"
+            style={{
+              backgroundImage: 'url("/2.png")',
+              backgroundPosition: 'center center',
+              filter: 'saturate(1.1) brightness(1.05)',
+            }}
+          ></div>
+          {/* Gradient overlay for better readability */}
+                    {/* Background overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/70 dark:via-background/50 dark:to-background/80"></div>
+        </div>
+        {/* Enhanced Header */}
+        <div className="relative z-10 p-4 border-b border-border/30 bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5">
           <div className="flex items-center justify-between">
             {!isCollapsed && (
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-primary/20 to-primary/30 rounded-lg flex items-center justify-center">
-                  <Settings className="w-4 h-4 text-primary" />
+                <div className="w-8 h-8 bg-gradient-to-r from-[#8D153A]/20 to-[#FF5722]/20 rounded-lg flex items-center justify-center border border-[#8D153A]/30 shadow-md">
+                  <Settings className="w-4 h-4 text-[#8D153A]" />
                 </div>
-                <span className="font-semibold text-foreground">
+                <span className="font-bold bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
                   Admin Panel
                 </span>
               </div>
             )}
             <button
               onClick={toggleSidebar}
-              className="p-2 rounded-lg hover:bg-muted transition-colors duration-200 text-muted-foreground hover:text-foreground"
+              className="p-2 rounded-lg hover:bg-[#8D153A]/10 transition-all duration-300 text-muted-foreground hover:text-[#8D153A] hover:scale-105"
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               <Menu className="w-5 h-5" />
@@ -172,9 +186,9 @@ export default function AdminSidebar() {
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-2 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-          <ul className="space-y-1 px-3">
+        {/* Enhanced Navigation */}
+        <nav className="relative z-10 flex-1 overflow-y-auto py-3 scrollbar-thin scrollbar-thumb-[#8D153A]/30 scrollbar-track-transparent">
+          <ul className="space-y-2 px-3">
             {menuItems.map((item) => {
               const IconComponent = item.icon;
               const hasSubmenu = item.submenu && item.submenu.length > 0;
@@ -188,11 +202,11 @@ export default function AdminSidebar() {
                     <button
                       onClick={() => handleItemClick(hasSubmenu, item.id)}
                       className={`
-                      relative w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-200
-                      hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20
+                      relative w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-300 group/btn
+                      hover:bg-card/60 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#8D153A]/20
                       ${
                         isActive
-                          ? "bg-primary/10 border border-primary/20 text-primary shadow-sm"
+                          ? "bg-gradient-to-r from-[#8D153A]/10 to-[#FF5722]/5 border border-[#8D153A]/30 text-[#8D153A] shadow-md modern-card"
                           : "text-muted-foreground hover:text-foreground"
                       }
                       ${isCollapsed ? "justify-center" : "justify-start"}
@@ -201,18 +215,20 @@ export default function AdminSidebar() {
                       <div className="flex items-center flex-1">
                         <div
                           className={`
-                        p-1.5 rounded-lg transition-all duration-200
+                        p-2 rounded-lg transition-all duration-300 group-hover/btn:scale-110
                         ${
                           isActive
-                            ? "bg-primary/20"
-                            : "bg-transparent group-hover:bg-muted"
+                            ? "bg-gradient-to-r from-[#8D153A]/20 to-[#FF5722]/10 shadow-md"
+                            : "bg-transparent group-hover/btn:bg-muted/60"
                         }
                       `}
                         >
-                          <IconComponent className="w-4 h-4" />
+                          <IconComponent className={`w-5 h-5 transition-all duration-300 ${
+                            isActive ? "text-[#8D153A]" : ""
+                          }`} />
                         </div>
                         {!isCollapsed && (
-                          <span className="text-sm font-medium ml-3 whitespace-nowrap">
+                          <span className="text-sm font-medium ml-3 whitespace-nowrap transition-colors duration-300">
                             {item.label}
                           </span>
                         )}
@@ -228,9 +244,9 @@ export default function AdminSidebar() {
                         />
                       )}
 
-                      {/* Active indicator */}
+                      {/* Enhanced Active indicator */}
                       {isActive && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-[#8D153A] to-[#FF5722] rounded-r-full shadow-md" />
                       )}
                     </button>
                   ) : (
@@ -251,26 +267,28 @@ export default function AdminSidebar() {
                       <div className="flex items-center flex-1">
                         <div
                           className={`
-                        p-1.5 rounded-lg transition-all duration-200
+                        p-2 rounded-lg transition-all duration-300 group-hover/btn:scale-110
                         ${
                           isActive
-                            ? "bg-primary/20"
-                            : "bg-transparent group-hover:bg-muted"
+                            ? "bg-gradient-to-r from-[#8D153A]/20 to-[#FF5722]/10 shadow-md"
+                            : "bg-transparent group-hover/btn:bg-muted/60"
                         }
                       `}
                         >
-                          <IconComponent className="w-4 h-4" />
+                          <IconComponent className={`w-5 h-5 transition-all duration-300 ${
+                            isActive ? "text-[#8D153A]" : ""
+                          }`} />
                         </div>
                         {!isCollapsed && (
-                          <span className="text-sm font-medium ml-3 whitespace-nowrap">
+                          <span className="text-sm font-medium ml-3 whitespace-nowrap transition-colors duration-300">
                             {item.label}
                           </span>
                         )}
                       </div>
 
-                      {/* Active indicator */}
+                      {/* Enhanced Active indicator */}
                       {isActive && (
-                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-[#8D153A] to-[#FF5722] rounded-r-full shadow-md" />
                       )}
                     </Link>
                   )}
@@ -323,24 +341,24 @@ export default function AdminSidebar() {
           </ul>
         </nav>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-border/50 bg-muted/20">
+        {/* Enhanced Footer */}
+        <div className="relative z-10 p-4 border-t border-border/30 bg-gradient-to-r from-[#008060]/5 to-[#FFC72C]/5">
           {!isCollapsed ? (
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-green-500/20 to-green-600/30 rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <div className="w-8 h-8 bg-gradient-to-r from-[#008060]/20 to-[#008060]/30 rounded-full flex items-center justify-center border border-[#008060]/30 shadow-md">
+                <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse" />
               </div>
               <div>
-                <div className="text-xs font-medium text-foreground">
+                <div className="text-xs font-semibold text-foreground">
                   System Online
                 </div>
-                <div className="text-xs text-muted-foreground">v1.0.0</div>
+                <div className="text-xs text-[#008060] font-medium">v1.0.0</div>
               </div>
             </div>
           ) : (
             <div className="flex justify-center">
-              <div className="w-6 h-6 bg-gradient-to-r from-green-500/20 to-green-600/30 rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <div className="w-6 h-6 bg-gradient-to-r from-[#008060]/20 to-[#008060]/30 rounded-full flex items-center justify-center border border-[#008060]/30 shadow-md">
+                <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse" />
               </div>
             </div>
           )}

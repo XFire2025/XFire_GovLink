@@ -1,0 +1,413 @@
+// src/components/agent/appointments/AppointmentCard.tsx
+"use client";
+import React, { useState } from 'react';
+
+// Types
+type Language = 'en' | 'si' | 'ta';
+type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+type ServiceType = 'passport' | 'license' | 'certificate' | 'registration' | 'visa';
+
+interface Appointment {
+  id: string;
+  citizenName: string;
+  citizenId: string;
+  serviceType: ServiceType;
+  date: string;
+  time: string;
+  status: AppointmentStatus;
+  priority: 'normal' | 'urgent';
+  notes?: string;
+  contactEmail: string;
+  contactPhone: string;
+  submittedDate: string;
+}
+
+interface AppointmentCardProps {
+  appointment: Appointment;
+  language?: Language;
+  onClick: () => void;
+  onStatusUpdate: (appointmentId: string, newStatus: AppointmentStatus) => void;
+}
+
+// Card translations
+const cardTranslations: Record<Language, {
+  time: string;
+  citizenId: string;
+  submitted: string;
+  urgentPriority: string;
+  viewDetails: string;
+  quickActions: string;
+  confirm: string;
+  cancel: string;
+  complete: string;
+  sendReminder: string;
+  statuses: Record<AppointmentStatus, string>;
+  services: Record<ServiceType, string>;
+}> = {
+  en: {
+    time: 'Time',
+    citizenId: 'Citizen ID',
+    submitted: 'Submitted',
+    urgentPriority: 'Urgent',
+    viewDetails: 'View Details',
+    quickActions: 'Quick Actions',
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    complete: 'Complete',
+    sendReminder: 'Send Reminder',
+    statuses: {
+      pending: 'Pending Review',
+      confirmed: 'Confirmed',
+      cancelled: 'Cancelled',
+      completed: 'Completed'
+    },
+    services: {
+      passport: 'Passport Application',
+      license: 'Driving License',
+      certificate: 'Birth Certificate',
+      registration: 'Business Registration',
+      visa: 'Visa Application'
+    }
+  },
+  si: {
+    time: 'වේලාව',
+    citizenId: 'පුරවැසි හැඳුනුම්පත',
+    submitted: 'ගොනු කරන ලදී',
+    urgentPriority: 'ගඩු',
+    viewDetails: 'විස්තර බලන්න',
+    quickActions: 'ඉක්මන් ක්‍රියා',
+    confirm: 'තහවුරු කරන්න',
+    cancel: 'අවලංගු කරන්න',
+    complete: 'සම්පූර්ණ කරන්න',
+    sendReminder: 'මතක් කිරීම යවන්න',
+    statuses: {
+      pending: 'සමාලෝචනය අපේක්ෂිත',
+      confirmed: 'තහවුරු කළ',
+      cancelled: 'අවලංගු කළ',
+      completed: 'සම්පූර්ණ කළ'
+    },
+    services: {
+      passport: 'ගමන් බලපත්‍ර අයදුම්පත',
+      license: 'රියදුරු බලපත්‍රය',
+      certificate: 'උප්පැන්න සහතිකය',
+      registration: 'ව්‍යාපාර ලියාපදිංචිය',
+      visa: 'වීසා අයදුම්පත'
+    }
+  },
+  ta: {
+    time: 'நேரம்',
+    citizenId: 'குடிமக்கள் அடையாள எண்',
+    submitted: 'சமர்ப்பிக்கப்பட்டது',
+    urgentPriority: 'அவசர',
+    viewDetails: 'விவரங்களைப் பார்க்கவும்',
+    quickActions: 'விரைவு நடவடிக்கைகள்',
+    confirm: 'உறுதிப்படுத்து',
+    cancel: 'ரத்துசெய்',
+    complete: 'முடிக்கவும்',
+    sendReminder: 'நினைவூட்டல் அனுப்பவும்',
+    statuses: {
+      pending: 'மதிப்பாய்வு நிலுவையில்',
+      confirmed: 'உறுதிப்படுத்தப்பட்டது',
+      cancelled: 'ரத்துசெய்யப்பட்டது',
+      completed: 'முடிக்கப்பட்டது'
+    },
+    services: {
+      passport: 'பாஸ்போர்ட் விண்ணப்பம்',
+      license: 'ஓட்டுநர் உரிமம்',
+      certificate: 'பிறப்பு சான்றிதழ்',
+      registration: 'வணிக பதிவு',
+      visa: 'விசா விண்ணப்பம்'
+    }
+  }
+};
+
+const AppointmentCard: React.FC<AppointmentCardProps> = ({
+  appointment,
+  language = 'en',
+  onClick,
+  onStatusUpdate
+}) => {
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const t = cardTranslations[language];
+
+  const getStatusColor = (status: AppointmentStatus) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-[#FFC72C]/20 text-[#FFC72C] border-[#FFC72C]/30';
+      case 'confirmed':
+        return 'bg-[#008060]/20 text-[#008060] border-[#008060]/30';
+      case 'cancelled':
+        return 'bg-[#FF5722]/20 text-[#FF5722] border-[#FF5722]/30';
+      case 'completed':
+        return 'bg-[#8D153A]/20 text-[#8D153A] border-[#8D153A]/30';
+      default:
+        return 'bg-muted/20 text-muted-foreground border-border/30';
+    }
+  };
+
+  const getServiceIcon = (serviceType: ServiceType) => {
+    switch (serviceType) {
+      case 'passport':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <path d="M16 2v4"/>
+            <path d="M8 2v4"/>
+            <path d="M3 10h18"/>
+          </svg>
+        );
+      case 'license':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="14" y="14" width="4" height="6" rx="2"/>
+            <rect x="6" y="4" width="4" height="6" rx="2"/>
+            <path d="M6 20h4"/>
+            <path d="M14 10h4"/>
+            <path d="M6 14h2m6 0h2"/>
+          </svg>
+        );
+      case 'certificate':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        );
+      case 'registration':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 21h18"/>
+            <path d="M5 21V7l8-4v18"/>
+            <path d="M19 21V11l-6-4"/>
+          </svg>
+        );
+      case 'visa':
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+        );
+      default:
+        return (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          </svg>
+        );
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(language === 'en' ? 'en-US' : language === 'si' ? 'si-LK' : 'ta-LK', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatTime = (timeString: string) => {
+    const [hours, minutes] = timeString.split(':');
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes));
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const handleStatusUpdate = (newStatus: AppointmentStatus) => {
+    onStatusUpdate(appointment.id, newStatus);
+    setIsActionMenuOpen(false);
+  };
+
+  const handleSendReminder = () => {
+    // Mock send reminder functionality
+    console.log(`Sending reminder to ${appointment.contactEmail}`);
+    setIsActionMenuOpen(false);
+  };
+
+  return (
+    <div className="group bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:border-[#FFC72C]/70 animate-fade-in-up modern-card relative overflow-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+        {/* Left Section - Main Info */}
+        <div className="flex-1">
+          <div className="flex items-start gap-4">
+            {/* Service Icon - Enhanced with Dashboard Styling */}
+            <div className="relative p-3 rounded-2xl transition-all duration-500 flex-shrink-0"
+                 style={{
+                   background: 'linear-gradient(135deg, rgba(255, 199, 44, 0.1) 0%, rgba(255, 87, 34, 0.05) 50%, rgba(141, 21, 58, 0.08) 100%)',
+                   border: '2px solid rgba(255, 199, 44, 0.3)',
+                 }}>
+              <div className="text-[#FFC72C] group-hover:text-[#FF5722] group-hover:scale-110 transition-all duration-500">
+                {getServiceIcon(appointment.serviceType)}
+              </div>
+              
+              {/* Success Badge for hover state */}
+              <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 shadow-lg">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+
+              {/* Glow Effect */}
+              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FFC72C]/15 via-transparent to-[#FF5722]/15 rounded-2xl blur-xl"></div>
+              </div>
+            </div>
+
+            {/* Appointment Details */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground group-hover:text-[#FFC72C] transition-colors duration-300">
+                    {appointment.citizenName}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t.citizenId}: {appointment.citizenId}
+                  </p>
+                </div>
+
+                {/* Priority Badge */}
+                {appointment.priority === 'urgent' && (
+                  <span className="inline-flex items-center px-3 py-1 bg-[#FF5722]/20 text-[#FF5722] border border-[#FF5722]/30 rounded-full text-xs font-semibold backdrop-blur-md animate-pulse">
+                    {t.urgentPriority}
+                  </span>
+                )}
+              </div>
+
+              {/* Service Type */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-sm font-medium text-foreground group-hover:text-[#FFC72C] transition-colors duration-300">
+                  {t.services[appointment.serviceType]}
+                </span>
+              </div>
+
+              {/* Date and Time */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Date: </span>
+                  <span className="font-medium text-foreground">{formatDate(appointment.date)}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t.time}: </span>
+                  <span className="font-medium text-foreground">{formatTime(appointment.time)}</span>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {appointment.notes && (
+                <div className="mt-3 p-3 bg-card/30 rounded-lg border border-border/30">
+                  <p className="text-sm text-muted-foreground italic">&quot;{appointment.notes}&quot;</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Section - Status & Actions */}
+        <div className="flex flex-col lg:items-end gap-3 lg:min-w-[200px]">
+          {/* Status Badge */}
+          <span className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-semibold border backdrop-blur-md ${getStatusColor(appointment.status)}`}>
+            {t.statuses[appointment.status]}
+          </span>
+
+          {/* Submitted Date */}
+          <p className="text-xs text-muted-foreground">
+            {t.submitted}: {formatDate(appointment.submittedDate)}
+          </p>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={onClick}
+              className="px-4 py-2 bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 rounded-xl text-sm font-medium text-foreground hover:bg-card/80 dark:hover:bg-card/90 hover:border-[#FFC72C]/60 transition-all duration-300 hover:scale-105 modern-card"
+            >
+              {t.viewDetails}
+            </button>
+
+            {/* Quick Actions Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
+                className="px-4 py-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white rounded-xl text-sm font-medium hover:from-[#FF5722] hover:to-[#8D153A] transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
+              >
+                {t.quickActions}
+                <svg className={`w-4 h-4 transition-transform duration-200 ${isActionMenuOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+
+              {isActionMenuOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-0" 
+                    onClick={() => setIsActionMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-48 glass-morphism border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-10">
+                    {appointment.status === 'pending' && (
+                      <button
+                        onClick={() => handleStatusUpdate('confirmed')}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        {t.confirm}
+                      </button>
+                    )}
+                    
+                    {appointment.status === 'confirmed' && (
+                      <button
+                        onClick={() => handleStatusUpdate('completed')}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                          <polyline points="22 4 12 14.01 9 11.01" />
+                        </svg>
+                        {t.complete}
+                      </button>
+                    )}
+
+                    {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
+                      <button
+                        onClick={() => handleStatusUpdate('cancelled')}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-[#FF5722] hover:bg-[#FF5722]/10 transition-all duration-200 flex items-center gap-3"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="15" y1="9" x2="9" y2="15" />
+                          <line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
+                        {t.cancel}
+                      </button>
+                    )}
+
+                    <button
+                      onClick={handleSendReminder}
+                      className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                        <polyline points="22 6 12 13 2 6" />
+                      </svg>
+                      {t.sendReminder}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Hover Effect Gradient - EXACT SAME as Dashboard Cards */}
+      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FFC72C]/5 via-transparent to-[#FF5722]/5 rounded-2xl"></div>
+      </div>
+      
+      {/* Animated border glow */}
+      <div className="absolute inset-0 rounded-2xl transition-all duration-500 pointer-events-none group-hover:shadow-[0_0_30px_rgba(255,199,44,0.3)]"></div>
+    </div>
+  );
+};
+
+export default AppointmentCard;

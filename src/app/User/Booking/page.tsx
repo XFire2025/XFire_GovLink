@@ -1,61 +1,89 @@
-// e.g., app/user/booking/page.tsx
+// src/app/User/Booking/page.tsx
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { Header } from '@/components/Header'; // Assuming Header is in a shared components directory
+import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 
-// --- SHARED COMPONENTS (Copied from verification/page.tsx for consistency) ---
+// Types
+type Language = 'en' | 'si' | 'ta';
 
-const GlobalParticleBackground = () => (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Light Mode Enhanced Flag Background */}
-        <div className="absolute inset-0 opacity-[0.25] sm:opacity-[0.30] md:opacity-[0.35] dark:opacity-0">
-            <Image src="/flag-of-sri-lanka-1.gif" alt="Sri Lankan Flag Background" fill className="object-cover object-center scale-110 sm:scale-105 md:scale-100" style={{ filter: 'contrast(2.2) brightness(0.45) saturate(2.2) sepia(0.25) hue-rotate(8deg)', mixBlendMode: 'multiply' }} unoptimized={true} priority={false} />
-        </div>
-        {/* Dark Mode Flag Background */}
-        <div className="absolute inset-0 opacity-0 dark:opacity-[0.02]">
-            <Image src="/flag-of-sri-lanka-1.gif" alt="Sri Lankan Flag Background" fill className="object-cover object-center scale-110 sm:scale-105 md:scale-100" unoptimized={true} priority={false} />
-        </div>
-        {/* Subtle static accents */}
-        <div className="absolute top-20 left-10 w-24 h-24 bg-[#8D153A]/10 dark:bg-[#FFC72C]/6 rounded-full blur-xl"></div>
-        <div className="absolute top-40 right-20 w-20 h-20 bg-[#FF5722]/12 dark:bg-[#FF5722]/6 rounded-full blur-xl"></div>
-        <div className="absolute bottom-20 left-8 h-36 w-36 rounded-full bg-[#008060]/10 dark:bg-[#008060]/6 blur-2xl" />
-        <div className="absolute bottom-6 right-10 h-24 w-24 rounded-full bg-[#FFC72C]/15 dark:bg-[#FFC72C]/8 blur-xl" />
-    </div>
-);
+// Booking translations
+const bookingTranslations: Record<Language, {
+  title: string;
+  subtitle: string;
+  backToDashboard: string;
+  createNew: string;
+  upcoming: string;
+  history: string;
+  upcomingSubtitle: string;
+  historySubtitle: string;
+  noBookings: string;
+  noBookingsDesc: string;
+  createBooking: string;
+  view: string;
+  cancel: string;
+  cancelling: string;
+  viewDetails: string;
+}> = {
+  en: {
+    title: 'Your Bookings',
+    subtitle: 'Manage upcoming appointments and review your history',
+    backToDashboard: 'Back to Dashboard',
+    createNew: 'Create New Booking',
+    upcoming: 'Upcoming',
+    history: 'History',
+    upcomingSubtitle: 'Your scheduled appointments. You will be notified before your turn.',
+    historySubtitle: 'Your past completed and cancelled appointments.',
+    noBookings: 'No Bookings Yet',
+    noBookingsDesc: 'Create your first appointment to get started.',
+    createBooking: 'Create Booking',
+    view: 'View',
+    cancel: 'Cancel',
+    cancelling: 'Cancelling...',
+    viewDetails: 'View Details'
+  },
+  si: {
+    title: 'ඔබගේ වෙන්කිරීම්',
+    subtitle: 'ඉදිරි නියමයන් කළමනාකරණය කරන්න සහ ඔබගේ ඉතිහාසය සමාලෝචනය කරන්න',
+    backToDashboard: 'පාලනයට ආපසු',
+    createNew: 'නව වෙන්කිරීමක් සාදන්න',
+    upcoming: 'ඉදිරි',
+    history: 'ඉතිහාසය',
+    upcomingSubtitle: 'ඔබගේ නියම කරන ලද නියමයන්. ඔබගේ වාරය පැමිණීමට පෙර ඔබට දැනුම් දෙනු ඇත.',
+    historySubtitle: 'ඔබගේ අතීත සම්පූර්ණ සහ අවලංගු කරන ලද නියමයන්.',
+    noBookings: 'තවම වෙන්කිරීම් නැත',
+    noBookingsDesc: 'ආරම්භ කිරීමට ඔබගේ පළමු නියමය සාදන්න.',
+    createBooking: 'වෙන්කිරීම සාදන්න',
+    view: 'බලන්න',
+    cancel: 'අවලංගු කරන්න',
+    cancelling: 'අවලංගු කරමින්...',
+    viewDetails: 'විස්තර බලන්න'
+  },
+  ta: {
+    title: 'உங்கள் முன்பதிவுகள்',
+    subtitle: 'வரவிருக்கும் சந்திப்புகளை நிர்வகிக்கவும் மற்றும் உங்கள் வரலாற்றை மதிப்பாய்வு செய்யவும்',
+    backToDashboard: 'டாஷ்போர்டுக்கு திரும்பவும்',
+    createNew: 'புதிய முன்பதிவு உருவாக்கவும்',
+    upcoming: 'வரவிருக்கும்',
+    history: 'வரலாறு',
+    upcomingSubtitle: 'உங்கள் திட்டமிடப்பட்ட சந்திப்புகள். உங்கள் முறைக்கு முன் நீங்கள் அறிவிக்கப்படுவீர்கள்.',
+    historySubtitle: 'உங்கள் கடந்த முடிக்கப்பட்ட மற்றும் ரத்து செய்யப்பட்ட சந்திப்புகள்.',
+    noBookings: 'இன்னும் முன்பதிவுகள் இல்லை',
+    noBookingsDesc: 'தொடங்க உங்கள் முதல் சந்திப்பை உருவாக்கவும்.',
+    createBooking: 'முன்பதிவு உருவாக்கவும்',
+    view: 'பார்க்கவும்',
+    cancel: 'ரத்து செய்',
+    cancelling: 'ரத்து செய்கிறது...',
+    viewDetails: 'விவரங்களைப் பார்க்கவும்'
+  }
+};
 
-const Footer = () => (
-    <footer className="relative py-16 mt-24">
-        <div className="container mx-auto px-6">
-            <div className="pt-8 border-t border-border text-center">
-                <p className="text-muted-foreground text-sm">
-                    &copy; {new Date().getFullYear()} GovLink Sri Lanka. An initiative to streamline public services.
-                </p>
-            </div>
-        </div>
-    </footer>
-);
-
-const SectionTitle = ({ title, subtitle }: { title: string; subtitle?: string }) => (
-    <div className="text-center mb-12 sm:mb-16">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">
-            <span className="text-gradient">{title}</span>
-        </h1>
-        {subtitle && (
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                {subtitle}
-            </p>
-        )}
-        <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-gradient-to-r from-[#FFC72C] to-[#FF5722]" />
-    </div>
-);
-
-
-// --- PAGE-SPECIFIC COMPONENTS & ICONS ---
 
 // Icons
+const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+);
 const PlusIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 );
@@ -99,6 +127,7 @@ const BookingStatusBadge = ({ status }: { status: Booking['status'] }) => {
 
 // The main component for the page
 export default function BookingListPage() {
+    const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
     const [bookings, setBookings] = useState<Booking[]>([
         { id: "bk-001", designation: "Senior Officer", agent: "N. Silva", date: new Date().toISOString().slice(0, 10), time: new Date(Date.now() + 10 * 60 * 1000).toTimeString().slice(0, 5), location: "GovLink Office - Counter 3", status: "upcoming" },
         { id: "bk-002", designation: "Officer", agent: "A. Perera", date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10), time: "10:30", location: "GovLink Office - Counter 1", status: "upcoming" },
@@ -107,6 +136,11 @@ export default function BookingListPage() {
     ]);
 
     const [cancellingId, setCancellingId] = useState<string | null>(null);
+    const t = bookingTranslations[currentLanguage];
+
+    const handleLanguageChange = (newLanguage: Language) => {
+        setCurrentLanguage(newLanguage);
+    };
 
     function cancelBooking(id: string) {
         setCancellingId(id);
@@ -131,125 +165,146 @@ export default function BookingListPage() {
     const pastBookings = sortedBookings.filter(b => b.status !== 'upcoming');
 
     return (
-        <div className="bg-background text-foreground min-h-screen relative">
-            <GlobalParticleBackground />
-            <div className="relative z-10">
-                <Header />
-                <main className="container mx-auto px-4 sm:px-6 py-32 sm:py-40">
-                    <SectionTitle
-                        title="Your Bookings"
-                        subtitle="Manage upcoming appointments and review your history."
-                    />
-
-                    <div className="text-center mb-16">
-                        <Link href="/User/Booking/New" className="btn-primary-premium inline-flex items-center">
-                            <PlusIcon className="w-5 h-5 mr-2" />
-                            Create New Booking
-                        </Link>
-                    </div>
-
-                    {sortedBookings.length === 0 ? (
-                        <div className="glass-morphism max-w-lg mx-auto p-8 rounded-3xl border border-border/50 flex flex-col items-center text-center">
-                            <EmptyCalendarIcon className="w-16 h-16 text-muted-foreground/50 mb-4" />
-                            <h3 className="text-xl font-bold mb-2">No Bookings Yet</h3>
-                            <p className="text-muted-foreground mb-6">Create your first appointment to get started.</p>
-                            <Link href="/User/Booking/New" className="btn-primary-premium inline-flex items-center">
-                                <PlusIcon className="w-5 h-5 mr-2" />
-                                Create Booking
-                            </Link>
-                        </div>
-                    ) : (
-                        <div className="space-y-16">
-                            {/* Upcoming Bookings */}
-                            {upcomingBookings.length > 0 && (
-                                <div>
-                                    <h2 className="text-2xl font-bold mb-2 text-gradient">Upcoming</h2>
-                                    <p className="text-muted-foreground mb-8">Your scheduled appointments. You will be notified before your turn.</p>
-                                    <ul className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        {upcomingBookings.map((b, idx) => (
-                                            <li key={b.id} className="relative group transition-all duration-300 hover:!border-[#FFC72C]/80 hover:shadow-2xl hover:-translate-y-1 glass-morphism p-6 rounded-3xl border border-border/50 flex flex-col">
-                                                {idx === 0 && (
-                                                    <>
-                                                        <div className="pointer-events-none absolute -inset-0.5 rounded-3xl ring-2 ring-red-400/60" aria-hidden />
-                                                        <div aria-hidden className="pointer-events-none absolute -inset-1 rounded-[26px] animate-[glow_2.4s_linear_infinite] bg-[conic-gradient(from_var(--angle),transparent_0%,rgba(239,68,68,0.45)_12%,transparent_22%,transparent_100%)] [--angle:0deg]" style={{ maskImage: "radial-gradient(closest-side, transparent 92%, black 96%)" }} />
-                                                    </>
-                                                )}
-                                                <div className="flex-grow">
-                                                    <div className="flex items-start justify-between gap-4 mb-4">
-                                                        <div>
-                                                            <p className="text-muted-foreground text-sm">{b.designation}</p>
-                                                            <h3 className="text-xl font-bold">{b.agent}</h3>
-                                                        </div>
-                                                        <BookingStatusBadge status={b.status} />
-                                                    </div>
-                                                    <div className="border-t border-border/50 my-4"></div>
-                                                    <div className="space-y-3 text-sm">
-                                                        <div className="flex items-center gap-3"><CalendarIcon className="w-5 h-5 text-[#FFC72C]" /><span>{new Date(b.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
-                                                        <div className="flex items-center gap-3"><ClockIcon className="w-5 h-5 text-[#FFC72C]" /><span>{b.time}</span></div>
-                                                        {b.location && <div className="flex items-center gap-3"><LocationPinIcon className="w-5 h-5 text-[#FFC72C]" /><span>{b.location}</span></div>}
-                                                    </div>
-                                                </div>
-                                                <div className="border-t border-border/50 mt-6 pt-4 flex items-center justify-between">
-                                                    <p className="text-xs text-muted-foreground">ID: {b.id}</p>
-                                                    <div className="flex gap-2">
-                                                        <button type="button" className="btn-secondary-premium !px-3 !py-1.5 text-sm">View</button>
-                                                        <button type="button" onClick={() => cancelBooking(b.id)} disabled={cancellingId === b.id} className="btn-danger-premium !px-3 !py-1.5 text-sm disabled:opacity-50 disabled:pointer-events-none">
-                                                            {cancellingId === b.id ? "Cancelling..." : "Cancel"}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-
-                            {/* Past Bookings */}
-                            {pastBookings.length > 0 && (
-                                <div>
-                                    <h2 className="text-2xl font-bold mb-2 text-gradient">History</h2>
-                                    <p className="text-muted-foreground mb-8">Your past completed and cancelled appointments.</p>
-                                    <ul className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                        {pastBookings.map((b) => (
-                                             <li key={b.id} className="transition-all duration-300 hover:border-foreground/20 hover:shadow-xl hover:-translate-y-1 glass-morphism p-6 rounded-3xl border border-border/50 flex flex-col opacity-80">
-                                                <div className="flex-grow">
-                                                    <div className="flex items-start justify-between gap-4 mb-4">
-                                                        <div>
-                                                            <p className="text-muted-foreground text-sm">{b.designation}</p>
-                                                            <h3 className="text-xl font-bold">{b.agent}</h3>
-                                                        </div>
-                                                        <BookingStatusBadge status={b.status} />
-                                                    </div>
-                                                     <div className="border-t border-border/50 my-4"></div>
-                                                    <div className="space-y-3 text-sm text-muted-foreground">
-                                                        <div className="flex items-center gap-3"><CalendarIcon className="w-5 h-5" /><span>{new Date(b.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} at {b.time}</span></div>
-                                                        {b.location && <div className="flex items-center gap-3"><LocationPinIcon className="w-5 h-5" /><span>{b.location}</span></div>}
-                                                    </div>
-                                                </div>
-                                                <div className="border-t border-border/50 mt-6 pt-4 flex items-center justify-between">
-                                                    <p className="text-xs text-muted-foreground">ID: {b.id}</p>
-                                                    <div className="flex gap-2">
-                                                        <button type="button" className="btn-secondary-premium !px-3 !py-1.5 text-sm">View Details</button>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </main>
-                <Footer />
+        <UserDashboardLayout
+            title={
+                <span className="animate-title-wave">
+                    <span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
+                    <span className="text-gradient">
+                        {t.title.split(' ')[1] || ''}
+                    </span>
+                </span>
+            }
+            subtitle={t.subtitle}
+            language={currentLanguage}
+            onLanguageChange={handleLanguageChange}
+        >
+            {/* Back Button and Create Button */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-16">
+                <Link 
+                    href="/User/Dashboard"
+                    className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
+                >
+                    <ArrowLeftIcon className="w-4 h-4" />
+                    {t.backToDashboard}
+                </Link>
+                <Link href="/User/Booking/New" className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-xl hover:from-[#FF5722] hover:to-[#8D153A] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl">
+                    <PlusIcon className="w-5 h-5" />
+                    {t.createNew}
+                </Link>
             </div>
 
-            {/* Keyframes for the animated glow */}
-            <style jsx>{`
-                @keyframes glow {
-                    0% { --angle: 0deg; }
-                    100% { --angle: 360deg; }
-                }
-            `}</style>
-        </div>
+            {sortedBookings.length === 0 ? (
+                <div className="max-w-lg mx-auto">
+                    <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-8 rounded-2xl border border-border/50 shadow-glow modern-card flex flex-col items-center text-center animate-fade-in-up">
+                        <EmptyCalendarIcon className="w-16 h-16 text-muted-foreground/50 mb-4" />
+                        <h3 className="text-xl font-bold mb-2 text-foreground">{t.noBookings}</h3>
+                        <p className="text-muted-foreground mb-6">{t.noBookingsDesc}</p>
+                        <Link href="/User/Booking/New" className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-xl hover:from-[#FF5722] hover:to-[#8D153A] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl">
+                            <PlusIcon className="w-5 h-5" />
+                            {t.createBooking}
+                        </Link>
+                    </div>
+                </div>
+            ) : (
+                <div className="space-y-16">
+                    {/* Upcoming Bookings */}
+                    {upcomingBookings.length > 0 && (
+                        <section>
+                            <div className="mb-8 animate-fade-in-up">
+                                <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 modern-card">
+                                    <div className="w-2 h-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full animate-pulse"></div>
+                                    <span className="text-xs sm:text-sm font-medium text-foreground">{t.upcoming}</span>
+                                </div>
+                                <p className="text-muted-foreground">{t.upcomingSubtitle}</p>
+                            </div>
+                            <ul className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {upcomingBookings.map((b, idx) => (
+                                    <li key={b.id} className="relative group transition-all duration-300 hover:border-[#FFC72C]/80 hover:shadow-2xl hover-lift animate-fade-in-up modern-card">
+                                        <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow flex flex-col h-full">
+                                            {idx === 0 && (
+                                                <>
+                                                    <div className="pointer-events-none absolute -inset-0.5 rounded-2xl ring-2 ring-[#FF5722]/60" aria-hidden />
+                                                    <div aria-hidden className="pointer-events-none absolute -inset-1 rounded-2xl animate-pulse bg-gradient-to-r from-[#FF5722]/20 to-transparent" />
+                                                </>
+                                            )}
+                                            <div className="flex-grow">
+                                                <div className="flex items-start justify-between gap-4 mb-4">
+                                                    <div>
+                                                        <p className="text-muted-foreground text-sm">{b.designation}</p>
+                                                        <h3 className="text-xl font-bold text-foreground group-hover:text-[#FFC72C] transition-colors duration-300">{b.agent}</h3>
+                                                    </div>
+                                                    <BookingStatusBadge status={b.status} />
+                                                </div>
+                                                <div className="border-t border-border/50 my-4"></div>
+                                                <div className="space-y-3 text-sm">
+                                                    <div className="flex items-center gap-3"><CalendarIcon className="w-5 h-5 text-[#FFC72C]" /><span className="text-foreground">{new Date(b.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
+                                                    <div className="flex items-center gap-3"><ClockIcon className="w-5 h-5 text-[#FFC72C]" /><span className="text-foreground">{b.time}</span></div>
+                                                    {b.location && <div className="flex items-center gap-3"><LocationPinIcon className="w-5 h-5 text-[#FFC72C]" /><span className="text-foreground">{b.location}</span></div>}
+                                                </div>
+                                            </div>
+                                            <div className="border-t border-border/50 mt-6 pt-4 flex items-center justify-between">
+                                                <p className="text-xs text-muted-foreground">ID: {b.id}</p>
+                                                <div className="flex gap-2">
+                                                    <button type="button" className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-lg transition-all duration-300 hover:border-[#FFC72C]/60">{t.view}</button>
+                                                    <button type="button" onClick={() => cancelBooking(b.id)} disabled={cancellingId === b.id} className="px-3 py-1.5 text-sm font-medium text-[#FF5722] hover:text-white bg-[#FF5722]/10 hover:bg-[#FF5722] border border-[#FF5722]/30 hover:border-[#FF5722] rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                                                        {cancellingId === b.id ? t.cancelling : t.cancel}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Hover Effect Gradient */}
+                                            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                                                <div className="absolute inset-0 bg-gradient-to-br from-[#FFC72C]/5 via-transparent to-[#FF5722]/5 rounded-2xl"></div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+
+                    {/* Past Bookings */}
+                    {pastBookings.length > 0 && (
+                        <section>
+                            <div className="mb-8 animate-fade-in-up">
+                                <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 modern-card">
+                                    <div className="w-2 h-2 bg-gradient-to-r from-[#8D153A] to-[#008060] rounded-full animate-pulse"></div>
+                                    <span className="text-xs sm:text-sm font-medium text-foreground">{t.history}</span>
+                                </div>
+                                <p className="text-muted-foreground">{t.historySubtitle}</p>
+                            </div>
+                            <ul className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {pastBookings.map((b) => (
+                                    <li key={b.id} className="group transition-all duration-300 hover:border-foreground/30 hover:shadow-xl hover-lift animate-fade-in-up modern-card opacity-80 hover:opacity-100">
+                                        <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow flex flex-col h-full">
+                                            <div className="flex-grow">
+                                                <div className="flex items-start justify-between gap-4 mb-4">
+                                                    <div>
+                                                        <p className="text-muted-foreground text-sm">{b.designation}</p>
+                                                        <h3 className="text-xl font-bold text-foreground">{b.agent}</h3>
+                                                    </div>
+                                                    <BookingStatusBadge status={b.status} />
+                                                </div>
+                                                <div className="border-t border-border/50 my-4"></div>
+                                                <div className="space-y-3 text-sm text-muted-foreground">
+                                                    <div className="flex items-center gap-3"><CalendarIcon className="w-5 h-5" /><span>{new Date(b.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} at {b.time}</span></div>
+                                                    {b.location && <div className="flex items-center gap-3"><LocationPinIcon className="w-5 h-5" /><span>{b.location}</span></div>}
+                                                </div>
+                                            </div>
+                                            <div className="border-t border-border/50 mt-6 pt-4 flex items-center justify-between">
+                                                <p className="text-xs text-muted-foreground">ID: {b.id}</p>
+                                                <div className="flex gap-2">
+                                                    <button type="button" className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-lg transition-all duration-300 hover:border-[#FFC72C]/60">{t.viewDetails}</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+                </div>
+            )}
+        </UserDashboardLayout>
     );
 }

@@ -21,6 +21,7 @@ import {
   Download
 } from 'lucide-react';
 
+
 interface SuspendedUser {
   id: string;
   name: string;
@@ -134,19 +135,19 @@ const AccountSuspension = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'suspended': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-400';
-      case 'appeal_pending': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'reactivated': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-400';
-      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/30 dark:text-gray-400';
+      case 'suspended': return 'text-[#FF5722] bg-[#FF5722]/10 border-[#FF5722]/20';
+      case 'appeal_pending': return 'text-[#FFC72C] bg-[#FFC72C]/10 border-[#FFC72C]/20';
+      case 'reactivated': return 'text-[#008060] bg-[#008060]/10 border-[#008060]/20';
+      default: return 'text-muted-foreground bg-muted/10 border-border/20';
     }
   };
 
   const getViolationColor = (level: string) => {
     switch (level) {
-      case 'minor': return 'text-yellow-600';
-      case 'major': return 'text-orange-600';
-      case 'severe': return 'text-red-600';
-      default: return 'text-gray-600';
+      case 'minor': return 'text-[#FFC72C]';
+      case 'major': return 'text-[#FF5722]';
+      case 'severe': return 'text-[#8D153A]';
+      default: return 'text-muted-foreground';
     }
   };
 
@@ -167,151 +168,202 @@ const AccountSuspension = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Account Suspension Management</h1>
-        <p className="text-muted-foreground">
-          Monitor suspended accounts, handle appeals, and manage reactivations.
-        </p>
-      </div>
+    <div className="relative min-h-full">
+      {/* Main content */}
+      <div className="space-y-6">
+        {/* Enhanced Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="animate-fade-in-up"
+        >
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            <span className="flex items-center gap-3">
+              <UserX className="w-8 h-8 text-[#FF5722]" />
+              <span className="text-foreground">Account Suspension</span>{' '}
+              <span className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
+                Management
+              </span>
+            </span>
+          </h1>
+          <p className="text-muted-foreground">
+            Monitor suspended accounts, handle appeals, and manage reactivations.
+          </p>
+        </motion.div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="glass-morphism p-6 rounded-2xl border border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-500/10 rounded-lg">
-              <UserX className="w-6 h-6 text-red-500" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold">
-                {suspendedUsers.filter(u => u.status === 'suspended').length}
-              </div>
-              <div className="text-sm text-muted-foreground">Active Suspensions</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="glass-morphism p-6 rounded-2xl border border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-yellow-500/10 rounded-lg">
-              <Clock className="w-6 h-6 text-yellow-500" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold">
-                {suspendedUsers.filter(u => u.appealStatus === 'pending').length}
-              </div>
-              <div className="text-sm text-muted-foreground">Pending Appeals</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="glass-morphism p-6 rounded-2xl border border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-500/10 rounded-lg">
-              <AlertTriangle className="w-6 h-6 text-orange-500" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold">
-                {suspendedUsers.filter(u => isExpired(u) && u.status === 'suspended').length}
-              </div>
-              <div className="text-sm text-muted-foreground">Expired Suspensions</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="glass-morphism p-6 rounded-2xl border border-border">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-500/10 rounded-lg">
-              <CheckCircle className="w-6 h-6 text-green-500" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold">
-                {suspendedUsers.filter(u => u.status === 'reactivated').length}
-              </div>
-              <div className="text-sm text-muted-foreground">Reactivated</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search suspended users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          />
-        </div>
-        <div className="flex gap-2">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          >
-            <option value="all">All Status</option>
-            <option value="suspended">Suspended</option>
-            <option value="appeal_pending">Appeal Pending</option>
-            <option value="reactivated">Reactivated</option>
-          </select>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          >
-            <option value="all">All Types</option>
-            <option value="temporary">Temporary</option>
-            <option value="permanent">Permanent</option>
-          </select>
-          <button className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-muted transition-colors">
-            <Filter className="w-4 h-4" />
-            Filter
-          </button>
-          <button className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg hover:bg-muted transition-colors">
-            <Download className="w-4 h-4" />
-            Export
-          </button>
-        </div>
-      </div>
-
-      {/* Suspended Users List */}
-      <div className="grid gap-6">
-        {filteredUsers.map((user) => (
-          <motion.div
-            key={user.id}
+        {/* Enhanced Stats Cards */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-4 gap-6"
+        >
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-morphism p-6 rounded-2xl border border-border hover:border-primary/20 transition-all duration-300"
+            transition={{ delay: 0.1 }}
+            className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card group"
           >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-r from-[#FF5722]/20 to-[#FF5722]/10 group-hover:scale-110 transition-transform duration-300">
+                <UserX className="w-6 h-6 text-[#FF5722]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-foreground">
+                  {suspendedUsers.filter(u => u.status === 'suspended').length}
+                </div>
+                <div className="text-sm text-muted-foreground">Active Suspensions</div>
+              </div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-r from-[#FFC72C]/20 to-[#FFC72C]/10 group-hover:scale-110 transition-transform duration-300">
+                <Clock className="w-6 h-6 text-[#FFC72C]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-foreground">
+                  {suspendedUsers.filter(u => u.appealStatus === 'pending').length}
+                </div>
+                <div className="text-sm text-muted-foreground">Pending Appeals</div>
+              </div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-r from-[#FF5722]/20 to-[#FFC72C]/10 group-hover:scale-110 transition-transform duration-300">
+                <AlertTriangle className="w-6 h-6 text-[#FF5722]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-foreground">
+                  {suspendedUsers.filter(u => isExpired(u) && u.status === 'suspended').length}
+                </div>
+                <div className="text-sm text-muted-foreground">Expired Suspensions</div>
+              </div>
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-r from-[#008060]/20 to-[#008060]/10 group-hover:scale-110 transition-transform duration-300">
+                <CheckCircle className="w-6 h-6 text-[#008060]" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-foreground">
+                  {suspendedUsers.filter(u => u.status === 'reactivated').length}
+                </div>
+                <div className="text-sm text-muted-foreground">Reactivated</div>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Enhanced Search and Filters */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.3 }}
+          className="flex flex-col sm:flex-row gap-4"
+        >
+          <div className="relative flex-1 group">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-[#FF5722] transition-colors duration-300" />
+            <input
+              type="text"
+              placeholder="Search suspended users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FF5722]/20 focus:border-[#FF5722]/50 transition-all duration-300 modern-card hover:shadow-md"
+            />
+          </div>
+          <div className="flex gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FF5722]/20 focus:border-[#FF5722]/50 transition-all duration-300 modern-card hover:shadow-md"
+            >
+              <option value="all">All Status</option>
+              <option value="suspended">Suspended</option>
+              <option value="appeal_pending">Appeal Pending</option>
+              <option value="reactivated">Reactivated</option>
+            </select>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FF5722]/20 focus:border-[#FF5722]/50 transition-all duration-300 modern-card hover:shadow-md"
+            >
+              <option value="all">All Types</option>
+              <option value="temporary">Temporary</option>
+              <option value="permanent">Permanent</option>
+            </select>
+            <button className="flex items-center gap-2 px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl hover:bg-card/80 hover:border-[#FFC72C]/50 transition-all duration-300 modern-card hover:shadow-md">
+              <Filter className="w-4 h-4 text-[#FFC72C]" />
+              Filter
+            </button>
+            <button className="flex items-center gap-2 px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl hover:bg-card/80 hover:border-[#008060]/50 transition-all duration-300 modern-card hover:shadow-md">
+              <Download className="w-4 h-4 text-[#008060]" />
+              Export
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Enhanced Suspended Users List */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.3 }}
+          className="grid gap-6"
+        >
+          {filteredUsers.map((user, index) => (
+            <motion.div
+              key={user.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * index, duration: 0.3 }}
+              className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl hover:border-[#FF5722]/30 transition-all duration-500 modern-card group"
+            >
             <div className="flex flex-col lg:flex-row gap-6">
               {/* User Information */}
               <div className="flex-1">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-red-500/20 to-red-600/30 rounded-full flex items-center justify-center">
-                      <UserX className="w-6 h-6 text-red-500" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground">{user.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)} • ID: {user.id}
-                      </p>
-                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-[#FF5722]/20 to-[#FF5722]/30 rounded-full flex items-center justify-center border-2 border-[#FF5722]/30 shadow-md transition-all duration-300 group-hover:scale-110">
+                        <UserX className="w-6 h-6 text-[#FF5722]" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-foreground group-hover:text-[#FF5722] transition-colors duration-300">{user.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {user.role.charAt(0).toUpperCase() + user.role.slice(1)} • ID: {user.id}
+                        </p>
+                      </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                      {user.status.replace('_', ' ').toUpperCase()}
-                    </span>
-                    {isExpired(user) && user.status === 'suspended' && (
-                      <span className="px-2 py-1 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded text-xs">
-                        EXPIRED
+                    <div className="flex flex-col items-end gap-2">
+                      <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${getStatusColor(user.status)}`}>
+                        {user.status.replace('_', ' ').toUpperCase()}
                       </span>
-                    )}
-                  </div>
+                      {isExpired(user) && user.status === 'suspended' && (
+                        <span className="px-2 py-1 bg-[#FFC72C]/10 text-[#FFC72C] border border-[#FFC72C]/20 rounded text-xs font-semibold transition-all duration-300 hover:scale-105">
+                          EXPIRED
+                        </span>
+                      )}
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -336,13 +388,13 @@ const AccountSuspension = () => {
                 <div className="mb-4">
                   <div className="flex items-center gap-4 mb-2">
                     <span className="text-sm font-medium">Suspension Type:</span>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      user.suspensionType === 'temporary' 
-                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                    }`}>
-                      {user.suspensionType.toUpperCase()}
-                    </span>
+                      <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${
+                        user.suspensionType === 'temporary' 
+                          ? 'bg-[#FFC72C]/10 text-[#FFC72C] border-[#FFC72C]/20'
+                          : 'bg-[#FF5722]/10 text-[#FF5722] border-[#FF5722]/20'
+                      }`}>
+                        {user.suspensionType.toUpperCase()}
+                      </span>
                     <span className="text-sm font-medium">Violation Level:</span>
                     <span className={`text-sm font-medium ${getViolationColor(user.violationLevel)}`}>
                       {user.violationLevel.toUpperCase()}
@@ -360,119 +412,134 @@ const AccountSuspension = () => {
                   )}
                 </div>
 
-                <div className="mb-4">
-                  <h4 className="text-sm font-medium text-foreground mb-2">Suspension Reason:</h4>
-                  <div className="p-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-lg">
-                    <p className="text-sm">{user.suspensionReason}</p>
+                  <div className="mb-4">
+                    <h4 className="text-sm font-medium text-foreground mb-2">Suspension Reason:</h4>
+                    <div className="p-3 bg-[#FF5722]/5 border border-[#FF5722]/20 rounded-lg backdrop-blur-sm">
+                      <p className="text-sm text-foreground">{user.suspensionReason}</p>
+                    </div>
                   </div>
-                </div>
 
                 {user.appealStatus !== 'none' && (
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <h4 className="text-sm font-medium text-foreground">Appeal Status:</h4>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        user.appealStatus === 'pending' 
-                          ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                          : user.appealStatus === 'approved'
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                      }`}>
-                        {user.appealStatus.toUpperCase()}
-                      </span>
+                        <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${
+                          user.appealStatus === 'pending' 
+                            ? 'bg-[#FFC72C]/10 text-[#FFC72C] border-[#FFC72C]/20'
+                            : user.appealStatus === 'approved'
+                            ? 'bg-[#008060]/10 text-[#008060] border-[#008060]/20'
+                            : 'bg-[#FF5722]/10 text-[#FF5722] border-[#FF5722]/20'
+                        }`}>
+                          {user.appealStatus.toUpperCase()}
+                        </span>
                     </div>
                     {user.appealDate && (
                       <div className="text-sm text-muted-foreground mb-2">
                         Appeal submitted: {formatDate(user.appealDate)}
                       </div>
                     )}
-                    {user.appealReason && (
-                      <div className="p-3 bg-muted/30 rounded-lg">
-                        <p className="text-sm">{user.appealReason}</p>
-                      </div>
-                    )}
+                      {user.appealReason && (
+                        <div className="p-3 bg-card/40 backdrop-blur-sm border border-border/30 rounded-lg">
+                          <p className="text-sm text-foreground">{user.appealReason}</p>
+                        </div>
+                      )}
                   </div>
                 )}
               </div>
 
-              {/* Actions */}
-              <div className="flex flex-row lg:flex-col gap-3 lg:min-w-[200px]">
-                <button
-                  onClick={() => setSelectedUser(user)}
-                  className="flex items-center justify-center gap-2 px-4 py-2 bg-background border border-border rounded-lg hover:bg-muted transition-colors"
-                >
-                  <Eye className="w-4 h-4" />
-                  View Details
-                </button>
-                
-                {user.appealStatus === 'pending' && (
-                  <>
-                    <button
-                      onClick={() => handleAppealDecision(user.id, 'approved')}
-                      className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      Approve Appeal
-                    </button>
-                    <button
-                      onClick={() => handleAppealDecision(user.id, 'rejected')}
-                      className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                    >
-                      <XCircle className="w-4 h-4" />
-                      Reject Appeal
-                    </button>
-                  </>
-                )}
-                
-                {(user.status === 'suspended' && (isExpired(user) || user.suspensionType === 'temporary')) && (
+                {/* Enhanced Actions */}
+                <div className="flex flex-row lg:flex-col gap-3 lg:min-w-[200px]">
                   <button
-                    onClick={() => handleReactivate(user.id)}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    onClick={() => setSelectedUser(user)}
+                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl hover:bg-card/80 hover:border-[#8D153A]/50 transition-all duration-300 hover:scale-105 modern-card"
                   >
-                    <RotateCcw className="w-4 h-4" />
-                    Reactivate
+                    <Eye className="w-4 h-4 text-[#8D153A]" />
+                    View Details
                   </button>
-                )}
-                
-                <button className="flex items-center justify-center gap-2 px-4 py-2 bg-background border border-border rounded-lg hover:bg-muted transition-colors">
-                  <MessageCircle className="w-4 h-4" />
-                  Contact User
-                </button>
+                  
+                  {user.appealStatus === 'pending' && (
+                    <>
+                      <button
+                        onClick={() => handleAppealDecision(user.id, 'approved')}
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#008060] to-[#008060]/90 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Approve Appeal
+                      </button>
+                      <button
+                        onClick={() => handleAppealDecision(user.id, 'rejected')}
+                        className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#FF5722] to-[#FF5722]/90 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
+                      >
+                        <XCircle className="w-4 h-4" />
+                        Reject Appeal
+                      </button>
+                    </>
+                  )}
+                  
+                  {(user.status === 'suspended' && (isExpired(user) || user.suspensionType === 'temporary')) && (
+                    <button
+                      onClick={() => handleReactivate(user.id)}
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8D153A] to-[#8D153A]/90 text-white rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Reactivate
+                    </button>
+                  )}
+                  
+                  <button className="flex items-center justify-center gap-2 px-4 py-2.5 bg-card/60 backdrop-blur-sm border border-border/50 rounded-xl hover:bg-card/80 hover:border-[#FFC72C]/50 transition-all duration-300 hover:scale-105 modern-card">
+                    <MessageCircle className="w-4 h-4 text-[#FFC72C]" />
+                    Contact User
+                  </button>
+                </div>
               </div>
-            </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {filteredUsers.length === 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
+            className="text-center py-12 bg-card/60 backdrop-blur-sm rounded-2xl border border-border/50 modern-card"
+          >
+            <User className="w-16 h-16 text-[#8D153A]/60 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No Suspended Users</h3>
+            <p className="text-muted-foreground">No suspended users match the selected filters.</p>
           </motion.div>
-        ))}
-      </div>
+        )}
 
-      {filteredUsers.length === 0 && (
-        <div className="text-center py-12">
-          <User className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">No Suspended Users</h3>
-          <p className="text-muted-foreground">No suspended users match the selected filters.</p>
-        </div>
-      )}
-
-      {/* Detail Modal */}
-      {selectedUser && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background border border-border rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-border">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Suspension Details</h2>
-                <button
-                  onClick={() => setSelectedUser(null)}
-                  className="p-2 hover:bg-muted rounded-lg"
-                >
-                  <XCircle className="w-5 h-5" />
-                </button>
+        {/* Enhanced Detail Modal */}
+        {selectedUser && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-card/95 dark:bg-card/98 backdrop-blur-md border border-border/50 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl modern-card"
+            >
+              <div className="p-6 border-b border-border/30 bg-gradient-to-r from-[#FF5722]/5 to-[#8D153A]/5">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-foreground flex items-center gap-3">
+                    <UserX className="w-6 h-6 text-[#FF5722]" />
+                    <span>Suspension Details</span>
+                  </h2>
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    className="p-2 hover:bg-[#FF5722]/10 rounded-lg transition-all duration-300 hover:scale-110 text-[#FF5722]"
+                  >
+                    <XCircle className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
-            </div>
-            <div className="p-6">
-              <p className="text-muted-foreground">Detailed suspension management interface would be implemented here with full user history, violation records, and administrative actions.</p>
-            </div>
+              <div className="p-6">
+                <div className="bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5 p-4 rounded-lg border border-border/30">
+                  <p className="text-muted-foreground text-center">Detailed suspension management interface would be implemented here with full user history, violation records, and administrative actions.</p>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

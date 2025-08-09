@@ -1,86 +1,81 @@
 "use client";
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import * as LucideIcons from 'lucide-react';
 
-// Sri Lankan Lotus Icon (Custom) - Enhanced for Admin
-const AdminLotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 100 100" fill="none">
-    <path d="M50 10C45 15 35 25 30 35C25 45 30 55 40 60C45 62 55 62 60 60C70 55 75 45 70 35C65 25 55 15 50 10Z" fill="url(#admin-lotus-gradient)"/>
-    <path d="M50 15C45 20 40 30 35 40C30 50 35 60 45 65C50 67 60 67 65 65C75 60 80 50 75 40C70 30 65 20 50 15Z" fill="url(#admin-lotus-gradient-inner)"/>
-    <circle cx="50" cy="45" r="8" fill="url(#admin-lotus-center)" opacity="0.8"/>
-    <defs>
-      <linearGradient id="admin-lotus-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor: '#FFC72C', stopOpacity: 1}} />
-        <stop offset="50%" style={{stopColor: '#FF5722', stopOpacity: 1}} />
-        <stop offset="100%" style={{stopColor: '#8D153A', stopOpacity: 1}} />
-      </linearGradient>
-      <linearGradient id="admin-lotus-gradient-inner" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" style={{stopColor: '#FFC72C', stopOpacity: 0.8}} />
-        <stop offset="100%" style={{stopColor: '#FF5722', stopOpacity: 0.8}} />
-      </linearGradient>
-      <radialGradient id="admin-lotus-center" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" style={{stopColor: '#FFFFFF', stopOpacity: 0.9}} />
-        <stop offset="100%" style={{stopColor: '#FFC72C', stopOpacity: 0.7}} />
-      </radialGradient>
-    </defs>
+// EXACT SAME Lotus Icon as Agent Login with Sri Lankan Colors
+const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} viewBox="0 0 100 100">
+    {/* Outer layer petals */}
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(36 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(72 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(108 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(144 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(180 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(216 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(252 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(288 50 50)"/>
+    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(324 50 50)"/>
+
+    {/* Middle layer petals */}
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(18 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(54 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(90 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(126 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(162 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(198 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(234 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(270 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(306 50 50)"/>
+    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(342 50 50)"/>
+
+    {/* Inner petals */}
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(45 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(90 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(135 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(180 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(225 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(270 50 50)"/>
+    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(315 50 50)"/>
+
+    {/* Center */}
+    <circle cx="50" cy="50" r="7" fill="#FFC72C"/>
+    <circle cx="50" cy="50" r="3" fill="#FF8F00"/>
   </svg>
 );
 
-// --- ADMIN BACKGROUND COMPONENT ---
+// Sri Lankan Background Component - Same as Agent Login
 const AdminBackground = () => {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {/* Light Mode Enhanced Flag Background - Subtle for Admin */}
-      <div className="absolute inset-0 opacity-[0.15] sm:opacity-[0.18] md:opacity-[0.20] dark:opacity-0">
-        <Image 
-          src="/flag-of-sri-lanka-1.gif" 
-          alt="Sri Lankan Flag Background" 
-          fill
-          className="object-cover object-center animate-pulse-move scale-110 sm:scale-105 md:scale-100"
+      {/* Main background image */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-background/95">
+        <div 
+          className="absolute inset-0 opacity-75 dark:opacity-20 bg-center bg-no-repeat bg-cover transition-opacity duration-1000"
           style={{
-            animationDelay: '0s',
-            filter: 'contrast(1.8) brightness(0.6) saturate(1.8) sepia(0.15) hue-rotate(5deg)',
-            mixBlendMode: 'multiply'
+            backgroundImage: 'url("/Admin.png")',
+            backgroundPosition: 'center 20%',
+            filter: 'saturate(1.2) brightness(1.1)',
           }}
-          unoptimized={true}
-          priority={false}
-        />
+        ></div>
+        {/* Overlay gradients for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/40 dark:from-background/40 dark:via-transparent dark:to-background/60"></div>
       </div>
       
-      {/* Dark Mode Flag Background */}
-      <div className="absolute inset-0 opacity-0 dark:opacity-[0.01] sm:dark:opacity-[0.015] md:dark:opacity-[0.02]">
-        <Image 
-          src="/flag-of-sri-lanka-1.gif" 
-          alt="Sri Lankan Flag Background" 
-          fill
-          className="object-cover object-center animate-pulse-move scale-110 sm:scale-105 md:scale-100"
-          style={{
-            animationDelay: '0s'
-          }}
-          unoptimized={true}
-          priority={false}
-        />
+      {/* Enhanced admin-inspired accent patterns */}
+      <div className="absolute top-0 left-0 w-full h-full">
+        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-[#8D153A]/8 dark:bg-[#8D153A]/4 rounded-full blur-3xl animate-pulse" style={{animationDuration: '8s'}}></div>
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-[#FF5722]/8 dark:bg-[#FF5722]/4 rounded-full blur-3xl animate-pulse" style={{animationDuration: '12s', animationDelay: '4s'}}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#FFC72C]/6 dark:bg-[#FFC72C]/3 rounded-full blur-3xl animate-pulse" style={{animationDuration: '10s', animationDelay: '2s'}}></div>
+        {/* Additional subtle accents */}
+        <div className="absolute top-3/4 right-1/3 w-48 h-48 bg-[#008060]/6 dark:bg-[#008060]/3 rounded-full blur-2xl animate-pulse" style={{animationDuration: '14s', animationDelay: '1s'}}></div>
+        <div className="absolute top-1/6 left-1/5 w-56 h-56 bg-[#8D153A]/5 dark:bg-[#8D153A]/2 rounded-full blur-3xl animate-pulse" style={{animationDuration: '16s', animationDelay: '6s'}}></div>
       </div>
-
-      {/* Admin-specific Gradient Overlays */}
-      <div className="absolute inset-0 opacity-[0.05] sm:opacity-[0.08] md:opacity-[0.10] dark:opacity-0">
-        <div className="w-full h-full bg-gradient-to-br from-[#8D153A]/20 via-transparent to-[#FFC72C]/20 animate-pulse-move"></div>
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#FF5722]/15 via-transparent to-[#008060]/15 animate-float"></div>
-      </div>
-
-      {/* Subtle Admin Particles - Less Dense than Main Page */}
-      <div className="absolute top-20 left-10 w-24 h-24 bg-[#8D153A]/10 dark:bg-[#FFC72C]/5 rounded-full blur-xl animate-drift"></div>
-      <div className="absolute top-40 right-16 w-16 h-16 bg-[#FF5722]/15 dark:bg-[#FF5722]/5 rounded-full blur-lg animate-drift-reverse"></div>
-      <div className="absolute bottom-32 left-20 w-20 h-20 bg-[#008060]/12 dark:bg-[#008060]/6 rounded-full blur-lg animate-orbit"></div>
-      <div className="absolute bottom-20 right-10 w-18 h-18 bg-[#FFC72C]/18 dark:bg-[#FFC72C]/8 rounded-full blur-md animate-float"></div>
-      
-      {/* Center Particles for Focus */}
-      <div className="absolute top-1/3 left-1/4 w-32 h-32 bg-[#8D153A]/8 dark:bg-[#8D153A]/4 rounded-full blur-2xl animate-pulse-move"></div>
-      <div className="absolute bottom-1/3 right-1/4 w-28 h-28 bg-[#FFC72C]/10 dark:bg-[#FFC72C]/5 rounded-full blur-xl animate-spiral"></div>
     </div>
   );
 };
@@ -127,7 +122,7 @@ export default function AdminLogin() {
       
       // For demo purposes - replace with actual authentication
       if (formData.username === 'admin' && formData.password === 'admin123') {
-        router.push('/admin');
+        router.push('/admin/dashboard');
       } else {
         setErrors({ 
           password: 'Invalid username or password' 
@@ -163,139 +158,158 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden theme-transition-slow">
       {/* Admin Background */}
       <AdminBackground />
-      
-      {/* Unified Gradient Mesh Overlay */}
-      <div className="fixed inset-0 gradient-mesh opacity-20 pointer-events-none z-[5]"></div>
-      
-      {/* Main Content */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {/* Back to Home Link */}
-          <div className="mb-6">
+
+      {/* Header - Fixed positioning */}
+      <header className="fixed top-0 left-0 right-0 z-50 w-full bg-background/98 dark:bg-card backdrop-blur-md border-b border-border/30 dark:border-border/50 shadow-sm dark:shadow-lg">
+        <nav className="container mx-auto flex items-center justify-between px-4 py-3 md:px-6 md:py-4">
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="w-9 h-9 bg-gradient-to-br from-[#8D153A]/10 to-[#FF5722]/10 rounded-xl p-0.5 flex items-center justify-center border border-[#8D153A]/20 relative overflow-visible backdrop-blur-sm transition-all duration-300 group-hover:shadow-lg group-hover:scale-105">
+              <LotusIcon className="w-11 h-11 absolute transition-transform duration-300 group-hover:rotate-12" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent leading-none">GovLink</span>
+              <span className="text-xs text-muted-foreground/70 font-medium leading-none">Admin Portal</span>
+            </div>
+          </Link>
+
+          <div className="flex items-center gap-3 sm:gap-4">
             <Link 
               href="/" 
-              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-300 group"
+              className="text-sm sm:text-base text-muted-foreground hover:text-foreground transition-colors duration-300 hover:scale-105 font-medium"
             >
-              <LucideIcons.ChevronLeft className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" />
-              Back to Home
+              ← Back to Home
             </Link>
+            
+            <div className="w-px h-6 bg-border/50"></div>
+            <ThemeToggle />
+          </div>
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 flex items-center justify-center px-4 sm:px-6 py-12 sm:py-16 md:py-20 pt-20 sm:pt-24 md:pt-28 relative z-10">
+        <div className="w-full max-w-md">
+          {/* Title Section - Same as Agent Login */}
+          <div className="text-center mb-8 sm:mb-10 animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 sm:mb-6 modern-card">
+              <div className="w-2 h-2 bg-gradient-to-r from-[#8D153A] to-[#FF5722] rounded-full animate-pulse"></div>
+              <span className="text-xs sm:text-sm font-medium text-foreground">Government Access</span>
+            </div>
+            
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 leading-tight">
+              <span className="text-foreground">Admin</span>{' '}
+              <span className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">Portal</span>
+            </h2>
+            
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
+              Secure access for authorized government administrators
+            </p>
           </div>
 
-          {/* Login Card */}
-          <div className="glass-morphism rounded-3xl p-6 sm:p-8 shadow-glow">
-            {/* Header */}
-            <div className="text-center mb-6">
-              <div className="flex justify-center mb-4">
-                <AdminLotusIcon />
-              </div>
-              
-              <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-                Admin Portal
-              </h1>
-              
-              <p className="text-muted-foreground">
-                Secure access to government administration
-              </p>
-            </div>
-
+          {/* Form Container - Same as Agent Login cards */}
+          <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 hover:border-[#8D153A]/70 hover:shadow-2xl transition-all duration-500 animate-fade-in-up modern-card p-6 sm:p-8 shadow-glow" style={{animationDelay: '0.2s'}}>
             {/* Security Badge */}
-            <div className="flex items-center justify-center gap-2 mb-6 p-3 bg-gradient-to-r from-[#008060]/10 to-[#FFC72C]/10 border border-[#008060]/20 rounded-xl">
-              <LucideIcons.Shield className="text-[#008060] w-5 h-5" />
-              <span className="text-sm font-medium text-[#008060] dark:text-[#FFC72C]">
+            <div className="flex items-center justify-center gap-2 mb-6 p-3 bg-gradient-to-r from-[#8D153A]/10 to-[#FF5722]/10 border border-[#8D153A]/20 rounded-xl">
+              <LucideIcons.Shield className="text-[#8D153A] w-5 h-5" />
+              <span className="text-sm font-medium text-[#8D153A] dark:text-[#FF5722]">
                 Encrypted & Secure Connection
               </span>
             </div>
 
-            {/* Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Username Field */}
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium mb-2">
-                  Username
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <LucideIcons.User className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <input
-                    id="username"
-                    name="username"
-                    type="text"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-4 py-3 bg-card/50 backdrop-blur-sm border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 ${
-                      errors.username ? 'border-destructive' : 'border-border'
-                    }`}
-                    placeholder="Enter your username"
-                    disabled={isLoading}
-                  />
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Username Field */}
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium mb-2">
+                Username
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  <LucideIcons.User className="h-5 w-5 text-muted-foreground/80 hover:text-[#8D153A] transition-colors" />
                 </div>
-                {errors.username && (
-                  <p className="mt-2 text-sm text-destructive">
-                    {errors.username}
-                  </p>
-                )}
-              </div>
-
-              {/* Password Field */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <LucideIcons.Lock className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className={`w-full pl-10 pr-12 py-3 bg-card/50 backdrop-blur-sm border rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 ${
-                      errors.password ? 'border-destructive' : 'border-border'
-                    }`}
-                    placeholder="Enter your password"
-                    disabled={isLoading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-foreground transition-colors duration-300"
-                    disabled={isLoading}
-                  >
-                    {showPassword ? (
-                      <LucideIcons.EyeOff className="h-5 w-5 text-muted-foreground" />
-                    ) : (
-                      <LucideIcons.Eye className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="mt-2 text-sm text-destructive">
-                    {errors.password}
-                  </p>
-                )}
-              </div>
-
-              {/* Login Button */}
-              <div>
-                <button
-                  type="submit"
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  className={`w-full pl-10 pr-4 py-3 bg-card/60 dark:bg-card/40 backdrop-blur-sm border rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card ${
+                    errors.username ? 'border-destructive' : 'border-border/50'
+                  }`}
+                  placeholder="Enter your username"
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-[#8D153A] via-[#FF5722] to-[#FFC72C] text-white font-semibold py-3 px-6 rounded-xl shadow-glow transition-all duration-500 hover:scale-[1.02] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                />
+              </div>
+              {errors.username && (
+                <p className="mt-2 text-sm text-destructive">
+                  {errors.username}
+                </p>
+              )}
+            </div>
+
+            {/* Password Field */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  <LucideIcons.Lock className="h-5 w-5 text-muted-foreground/80 hover:text-[#8D153A] transition-colors" />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className={`w-full pl-10 pr-12 py-3 bg-card/60 dark:bg-card/40 backdrop-blur-sm border rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card ${
+                    errors.password ? 'border-destructive' : 'border-border/50'
+                  }`}
+                  placeholder="Enter your password"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-[#8D153A] transition-colors duration-300 z-10"
+                  disabled={isLoading}
                 >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Signing In...
-                    </div>
+                  {showPassword ? (
+                    <LucideIcons.EyeOff className="h-5 w-5 text-muted-foreground/80 hover:text-[#8D153A] transition-colors" />
                   ) : (
-                    'Sign In to Admin Portal'
+                    <LucideIcons.Eye className="h-5 w-5 text-muted-foreground/80 hover:text-[#8D153A] transition-colors" />
                   )}
                 </button>
               </div>
-            </form>
+              {errors.password && (
+                <p className="mt-2 text-sm text-destructive">
+                  {errors.password}
+                </p>
+              )}
+            </div>
+
+            {/* Login Button */}
+            <div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-[#8D153A] via-[#FF5722] to-[#FFC72C] hover:from-[#FF5722] hover:via-[#8D153A] hover:to-[#FFC72C] text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 border-2 border-[#8D153A]/20 hover:border-[#8D153A]/40"
+                style={{
+                  boxShadow: '0 4px 14px 0 rgba(141, 21, 58, 0.3), 0 8px 32px rgba(255, 87, 34, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+                }}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Signing In...
+                  </div>
+                ) : (
+                  'Sign In to Admin Portal'
+                )}
+              </button>
+            </div>
+          </form>
 
             {/* Footer */}
             <div className="mt-6 text-center">
@@ -305,14 +319,36 @@ export default function AdminLogin() {
             </div>
           </div>
 
-          {/* Additional Security Notice */}
-          <div className="mt-4 text-center">
-            <p className="text-xs text-muted-foreground">
+          {/* Additional Security Notice - Outside the card */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-muted-foreground bg-card/50 backdrop-blur-sm px-4 py-2 rounded-xl border border-border/30">
               This is a secure government portal. All activities are monitored and logged.
             </p>
           </div>
         </div>
-      </div>
+      </main>
+
+      {/* Footer Section - Same as Agent Login */}
+      <footer className="relative z-10 py-8 border-t border-border/30 bg-background/95 dark:bg-card/95 backdrop-blur-md">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <p className="text-xs text-muted-foreground">
+                © 2025 Government of Sri Lanka • Authorized Personnel Only
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-muted-foreground">Need technical assistance?</span>
+              <Link 
+                href="/contact" 
+                className="text-xs text-[#8D153A] hover:text-[#8D153A]/80 transition-colors font-medium"
+              >
+                Contact IT Support
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
