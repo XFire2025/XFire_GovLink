@@ -1,49 +1,102 @@
-// app/profile/page.tsx
+// src/app/User/Profile/page.tsx
 "use client";
 
 import React, { useState, useMemo, useRef, ChangeEvent, FormEvent } from 'react';
 import Image from 'next/image';
-import { Header } from '@/components/Header';
+import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 
-// --- GLOBAL PARTICLE BACKGROUND COMPONENT (Static, no animations) ---
-const GlobalParticleBackground = () => {
-  return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {/* Light Mode Enhanced Flag Background - Mobile First Responsive */}
-      <div className="absolute inset-0 opacity-[0.25] sm:opacity-[0.30] md:opacity-[0.35] dark:opacity-0">
-        <Image 
-          src="/flag-of-sri-lanka-1.gif" 
-          alt="Sri Lankan Flag Background" 
-          fill
-          className="object-cover object-center scale-110 sm:scale-105 md:scale-100"
-          style={{
-            filter: 'contrast(2.2) brightness(0.45) saturate(2.2) sepia(0.25) hue-rotate(8deg)',
-            mixBlendMode: 'multiply'
-          }}
-          unoptimized={true}
-          priority={false}
-        />
-      </div>
-      
-      {/* Dark Mode Flag Background - Mobile First Responsive */}
-      <div className="absolute inset-0 opacity-0 dark:opacity-[0.02]">
-        <Image 
-          src="/flag-of-sri-lanka-1.gif" 
-          alt="Sri Lankan Flag Background" 
-          fill
-          className="object-cover object-center scale-110 sm:scale-105 md:scale-100"
-          unoptimized={true}
-          priority={false}
-        />
-      </div>
-      
-      {/* Subtle static accents (no movement) */}
-      <div className="absolute top-20 left-10 w-24 h-24 bg-[#8D153A]/10 dark:bg-[#FFC72C]/6 rounded-full blur-xl"></div>
-      <div className="absolute top-40 right-20 w-20 h-20 bg-[#FF5722]/12 dark:bg-[#FF5722]/6 rounded-full blur-xl"></div>
-      <div className="absolute bottom-20 left-8 h-36 w-36 rounded-full bg-[#008060]/10 dark:bg-[#008060]/6 blur-2xl" />
-      <div className="absolute bottom-6 right-10 h-24 w-24 rounded-full bg-[#FFC72C]/15 dark:bg-[#FFC72C]/8 blur-xl" />
-    </div>
-  );
+// Types
+type Language = 'en' | 'si' | 'ta';
+
+// Profile translations
+const profileTranslations: Record<Language, {
+  title: string;
+  subtitle: string;
+  personalDetails: string;
+  personalDetailsDesc: string;
+  myDocuments: string;
+  myDocumentsDesc: string;
+  profileCompleteness: string;
+  completeProfileHelp: string;
+  fullName: string;
+  nationalId: string;
+  dateOfBirth: string;
+  emailAddress: string;
+  phoneNumber: string;
+  residentialAddress: string;
+  discard: string;
+  saveChanges: string;
+  saving: string;
+  saved: string;
+  noDocuments: string;
+  noDocumentsDesc: string;
+}> = {
+  en: {
+    title: 'Profile Settings',
+    subtitle: 'Manage your personal information and account settings',
+    personalDetails: 'Personal Details',
+    personalDetailsDesc: 'Manage your personal information, address, and contact details.',
+    myDocuments: 'My Documents',
+    myDocumentsDesc: 'Access your saved documents, applications, and official records.',
+    profileCompleteness: 'Profile Completeness',
+    completeProfileHelp: 'A complete profile helps us serve you better.',
+    fullName: 'Full Name',
+    nationalId: 'National ID (NIC)',
+    dateOfBirth: 'Date of Birth',
+    emailAddress: 'Email Address',
+    phoneNumber: 'Phone Number',
+    residentialAddress: 'Residential Address',
+    discard: 'Discard',
+    saveChanges: 'Save Changes',
+    saving: 'Saving...',
+    saved: 'Saved',
+    noDocuments: 'No Documents Found',
+    noDocumentsDesc: 'Your uploaded documents and completed forms will appear here for easy access.'
+  },
+  si: {
+    title: 'පැතිකඩ සැකසුම්',
+    subtitle: 'ඔබගේ පුද්ගලික තොරතුරු සහ ගිණුම් සැකසුම් කළමනාකරණය කරන්න',
+    personalDetails: 'පුද්ගලික විස්තර',
+    personalDetailsDesc: 'ඔබගේ පුද්ගලික තොරතුරු, ලිපිනය සහ සම්බන්ධතා විස්තර කළමනාකරණය කරන්න.',
+    myDocuments: 'මගේ ලේඛන',
+    myDocumentsDesc: 'ඔබගේ සුරකින ලද ලේඛන, අයදුම්පත් සහ නිල වාර්තා වෙත ප්‍රවේශ වන්න.',
+    profileCompleteness: 'පැතිකඩ සම්පූර්ණත්වය',
+    completeProfileHelp: 'සම්පූර්ණ පැතිකඩක් අපට ඔබට වඩා හොඳින් සේවය කිරීමට උපකාර කරයි.',
+    fullName: 'සම්පූර්ණ නම',
+    nationalId: 'ජාතික හැඳුනුම්පත (NIC)',
+    dateOfBirth: 'උපන් දිනය',
+    emailAddress: 'විද්‍යුත් තැපැල් ලිපිනය',
+    phoneNumber: 'දුරකථන අංකය',
+    residentialAddress: 'පදිංචි ලිපිනය',
+    discard: 'ඉවතලන්න',
+    saveChanges: 'වෙනස්කම් සුරකින්න',
+    saving: 'සුරකිමින්...',
+    saved: 'සුරකින ලදී',
+    noDocuments: 'ලේඛන හමු නොවීය',
+    noDocumentsDesc: 'ඔබ උඩුගත කළ ලේඛන සහ සම්පූර්ණ කළ ආකෘති පහසු ප්‍රවේශය සඳහා මෙහි දිස්වනු ඇත.'
+  },
+  ta: {
+    title: 'சுயவிவர அமைப்புகள்',
+    subtitle: 'உங்கள் தனிப்பட்ட தகவல்கள் மற்றும் கணக்கு அமைப்புகளை நிர்வகிக்கவும்',
+    personalDetails: 'தனிப்பட்ட விவரங்கள்',
+    personalDetailsDesc: 'உங்கள் தனிப்பட்ட தகவல், முகவரி மற்றும் தொடர்பு விவரங்களை நிர்வகிக்கவும்.',
+    myDocuments: 'எனது ஆவணங்கள்',
+    myDocumentsDesc: 'உங்கள் சேமித்த ஆவணங்கள், விண்ணப்பங்கள் மற்றும் அதிகாரபூர்வ பதிவுகளை அணுகவும்.',
+    profileCompleteness: 'சுயவிவர முழுமை',
+    completeProfileHelp: 'ஒரு முழுமையான சுயவிவரம் எங்களுக்கு உங்களுக்கு சிறந்த சேவை செய்ய உதவுகிறது.',
+    fullName: 'முழு பெயர்',
+    nationalId: 'தேசிய அடையாள அட்டை (NIC)',
+    dateOfBirth: 'பிறந்த தேதி',
+    emailAddress: 'மின்னஞ்சல் முகவரி',
+    phoneNumber: 'தொலைபேசி எண்',
+    residentialAddress: 'குடியிருப்பு முகவரி',
+    discard: 'நிராகரிக்கவும்',
+    saveChanges: 'மாற்றங்களைச் சேமிக்கவும்',
+    saving: 'சேமிக்கிறது...',
+    saved: 'சேமிக்கப்பட்டது',
+    noDocuments: 'ஆவணங்கள் எதுவும் கிடைக்கவில்லை',
+    noDocumentsDesc: 'உங்கள் பதிவேற்றிய ஆவணங்கள் மற்றும் நிறைவு செய்யப்பட்ட படிவங்கள் எளிதான அணுகலுக்காக இங்கே தோன்றும்.'
+  }
 };
 
 // --- PREMIUM SVG ICON COMPONENTS ---
@@ -90,43 +143,8 @@ const DefaultAvatar = ({ className }: { className?: string }) => (
   </svg>
 );
 
-// --- FOOTER ---
-const Footer = () => (
-  <footer className="relative py-20 mt-32">
-    <div className="absolute inset-0 bg-gradient-to-t from-card/50 to-transparent"></div>
-    <div className="container mx-auto px-6 relative z-10">
-      <div className="pt-8 border-t border-border">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-muted-foreground text-sm">
-            &copy; {new Date().getFullYear()} GovLink Sri Lanka. An initiative to streamline public services.
-          </p>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Made with</span>
-            <span className="text-red-500">♥</span>
-            <span>for Sri Lanka</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </footer>
-);
 
 // --- REUSABLE UI COMPONENTS ---
-function SectionTitle({ title, subtitle }: { title: string; subtitle?: string }) {
-  return (
-    <div className="mb-12 sm:mb-16">
-      <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4">
-        <span className="text-gradient">{title}</span>
-      </h1>
-      {subtitle && (
-        <p className="text-base sm:text-lg text-muted-foreground max-w-3xl leading-relaxed">
-          {subtitle}
-        </p>
-      )}
-    </div>
-  );
-}
-
 function Label({ htmlFor, children }: { htmlFor: string; children: React.ReactNode }) {
   return (
     <label htmlFor={htmlFor} className="block text-sm font-medium text-muted-foreground mb-2">
@@ -146,12 +164,18 @@ const initialFormState = {
 
 // --- MAIN PROFILE PAGE COMPONENT ---
 export default function ProfilePage() {
+  const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   const [form, setForm] = useState(initialFormState);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const t = profileTranslations[currentLanguage];
+
+  const handleLanguageChange = (newLanguage: Language) => {
+    setCurrentLanguage(newLanguage);
+  };
 
   // Use undefined to indicate "no avatar"; only build object URL when a file exists
   const previewUrl = useMemo(() => (avatarFile ? URL.createObjectURL(avatarFile) : undefined), [avatarFile]);
@@ -186,152 +210,222 @@ export default function ProfilePage() {
   const completenessPct = Math.round((completeness / 6) * 100);
 
   const TABS = [
-    { id: 'details', label: 'Personal Details', icon: <UserIcon className="w-5 h-5 mr-3"/> },
-    { id: 'documents', label: 'My Documents', icon: <DocumentIcon className="w-5 h-5 mr-3"/> },
+    { id: 'details', label: t.personalDetails, icon: <UserIcon className="w-5 h-5 mr-3"/> },
+    { id: 'documents', label: t.myDocuments, icon: <DocumentIcon className="w-5 h-5 mr-3"/> },
   ];
 
   return (
-    <div className="bg-background text-foreground min-h-screen relative">
-      <GlobalParticleBackground />
-      <div className="relative z-10">
-        <Header />
-        <main className="container mx-auto px-4 sm:px-6 py-32 sm:py-40">
-          <div className="lg:grid lg:grid-cols-12 lg:gap-12">
-            {/* --- SIDEBAR --- */}
-            <aside className="lg:col-span-3 mb-12 lg:mb-0">
-              <div className="glass-morphism p-4 rounded-2xl border border-border/50 space-y-2">
-                {TABS.map(tab => (
-                  <button 
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.id 
-                      ? 'bg-card/80 text-foreground'
-                      : 'text-muted-foreground hover:bg-card/50 hover:text-foreground'
-                    }`}
-                  >
+    <UserDashboardLayout
+      title={
+        <span className="animate-title-wave">
+          <span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
+          <span className="text-gradient">
+            {t.title.split(' ')[1] || ''}
+          </span>
+        </span>
+      }
+      subtitle={t.subtitle}
+      language={currentLanguage}
+      onLanguageChange={handleLanguageChange}
+    >
+      <div className="max-w-6xl mx-auto">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-12">
+          {/* --- SIDEBAR --- */}
+          <aside className="lg:col-span-3 mb-12 lg:mb-0">
+            <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-4 rounded-2xl border border-border/50 shadow-glow modern-card space-y-2">
+              {TABS.map(tab => (
+                <button 
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-[1.02] ${
+                    activeTab === tab.id 
+                      ? 'bg-gradient-to-r from-[#FFC72C]/20 to-[#FF5722]/20 text-[#FFC72C] border border-[#FFC72C]/30 shadow-lg'
+                      : 'text-muted-foreground hover:bg-card/50 hover:text-foreground hover:border-border/60 border border-transparent'
+                  }`}
+                >
+                  <div className={`transition-colors duration-300 ${activeTab === tab.id ? 'text-[#FFC72C]' : 'text-muted-foreground'}`}>
                     {tab.icon}
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </aside>
+                  </div>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </aside>
 
-            {/* --- MAIN CONTENT --- */}
-            <div className="lg:col-span-9">
-              {activeTab === 'details' && (
-                <div>
-                  <SectionTitle 
-                    title="Personal Details" 
-                    subtitle="Manage your personal information, address, and contact details." 
-                  />
-                  <form onSubmit={onSubmit} >
-                    <div className="glass-morphism rounded-3xl p-6 sm:p-8 border border-border/50">
-                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-                        {/* Left: Avatar + Completeness */}
-                        <div className="lg:col-span-1 flex flex-col items-center">
-                          <div className="relative group w-48 h-48 sm:w-56 sm:h-56 mb-6">
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#FFC72C]/20 via-[#FF5722]/20 to-[#8D153A]/20 blur-lg"></div>
-                            {/* Avatar: show uploaded image if present, otherwise SVG */}
-                            {previewUrl ? (
-                              <Image 
-                                src={previewUrl} 
-                                alt="Profile Avatar"
-                                width={224}
-                                height={224}
-                                className="relative w-full h-full object-cover rounded-full border-4 border-card/80"
-                              />
-                            ) : (
-                              <DefaultAvatar className="relative w-full h-full rounded-full border-4 border-card/80" />
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => fileRef.current?.click()}
-                              className="absolute bottom-2 right-2 w-12 h-12 bg-card/80 backdrop-blur-sm rounded-full flex items-center justify-center border border-border hover:bg-card hover:border-[#FFC72C]"
-                              aria-label="Upload new profile picture"
-                            >
-                              <UploadIcon />
-                            </button>
-                            <input ref={fileRef} type="file" accept="image/*" onChange={onAvatarChange} className="hidden" />
-                          </div>
-
-                          <div className="w-full glass-morphism p-5 rounded-2xl border border-border/30">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-semibold">Profile Completeness</span>
-                              <span className="font-bold text-gradient">{completenessPct}%</span>
-                            </div>
-                            <div className="h-2.5 w-full bg-card/50 rounded-full overflow-hidden border border-border/30">
-                              <div className="h-full bg-gradient-to-r from-[#FFC72C] to-[#FF5722]" style={{ width: `${completenessPct}%` }}/>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-3 text-center">A complete profile helps us serve you better.</p>
-                          </div>
+          {/* --- MAIN CONTENT --- */}
+          <div className="lg:col-span-9">
+            {activeTab === 'details' && (
+              <div>
+                <div className="mb-8 animate-fade-in-up">
+                  <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 modern-card">
+                    <div className="w-2 h-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full animate-pulse"></div>
+                    <span className="text-xs sm:text-sm font-medium text-foreground">{t.personalDetails}</span>
+                  </div>
+                  <p className="text-muted-foreground">{t.personalDetailsDesc}</p>
+                </div>
+                <form onSubmit={onSubmit}>
+                  <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-border/50 shadow-glow modern-card hover:border-[#FFC72C]/30 transition-all duration-500">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+                      {/* Left: Avatar + Completeness */}
+                      <div className="lg:col-span-1 flex flex-col items-center">
+                        <div className="relative group w-48 h-48 sm:w-56 sm:h-56 mb-6">
+                          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#FFC72C]/20 via-[#FF5722]/20 to-[#8D153A]/20 blur-lg animate-pulse"></div>
+                          {/* Avatar: show uploaded image if present, otherwise SVG */}
+                          {previewUrl ? (
+                            <Image 
+                              src={previewUrl} 
+                              alt="Profile Avatar"
+                              width={224}
+                              height={224}
+                              className="relative w-full h-full object-cover rounded-full border-4 border-[#FFC72C]/30 shadow-xl transition-all duration-300 group-hover:border-[#FFC72C]/60 group-hover:scale-[1.02]"
+                            />
+                          ) : (
+                            <DefaultAvatar className="relative w-full h-full rounded-full border-4 border-[#FFC72C]/30 shadow-xl transition-all duration-300 group-hover:border-[#FFC72C]/60 group-hover:scale-[1.02]" />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => fileRef.current?.click()}
+                            className="absolute bottom-2 right-2 w-12 h-12 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center border border-border hover:from-[#FF5722] hover:to-[#8D153A] shadow-lg hover:shadow-2xl hover:scale-110 transition-all duration-300 group"
+                            aria-label="Upload new profile picture"
+                          >
+                            <UploadIcon className="text-white group-hover:scale-110 transition-transform duration-300" />
+                          </button>
+                          <input ref={fileRef} type="file" accept="image/*" onChange={onAvatarChange} className="hidden" />
                         </div>
 
-                        {/* Right: Form Fields */}
-                        <div className="lg:col-span-2 space-y-6">
-                          <div>
-                            <Label htmlFor="name">Full Name</Label>
-                            <input id="name" name="name" value={form.name} onChange={onChange} className="form-input-premium" placeholder="e.g. Sanduni Perera" />
+                        <div className="w-full bg-card/80 dark:bg-card/90 backdrop-blur-md p-5 rounded-2xl border border-border/30 shadow-glow modern-card hover:border-[#FFC72C]/40 transition-all duration-300">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-semibold text-foreground">{t.profileCompleteness}</span>
+                            <span className="font-bold text-gradient">{completenessPct}%</span>
                           </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div>
-                              <Label htmlFor="nic">National ID (NIC)</Label>
-                              <input id="nic" name="nic" value={form.nic} onChange={onChange} className="form-input-premium" placeholder="Enter your NIC number" />
-                            </div>
-                            <div>
-                              <Label htmlFor="dob">Date of Birth</Label>
-                              <input id="dob" name="dob" type="date" value={form.dob} onChange={onChange} className="form-input-premium" />
-                            </div>
+                          <div className="h-2.5 w-full bg-muted/30 rounded-full overflow-hidden border border-border/20">
+                            <div className="h-full bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full transition-all duration-700 ease-out shadow-sm" style={{ width: `${completenessPct}%` }}/>
                           </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div>
-                              <Label htmlFor="email">Email Address</Label>
-                              <input id="email" name="email" type="email" value={form.email} onChange={onChange} className="form-input-premium" placeholder="name@example.com" />
-                            </div>
-                            <div>
-                              <Label htmlFor="phone">Phone Number</Label>
-                              <input id="phone" name="phone" value={form.phone} onChange={onChange} className="form-input-premium" placeholder="+94 7X XXX XXXX" />
-                            </div>
-                          </div>
-
-                          <div>
-                            <Label htmlFor="address">Residential Address</Label>
-                            <textarea id="address" name="address" rows={4} value={form.address} onChange={onChange} className="form-input-premium" placeholder="No, Street, City" />
-                          </div>
+                          <p className="text-xs text-muted-foreground mt-3 text-center leading-relaxed">{t.completeProfileHelp}</p>
                         </div>
                       </div>
 
-                      <div className="mt-10 pt-6 border-t border-border/30 flex flex-col sm:flex-row justify-end items-center gap-4">
-                        <button type="button" onClick={onDiscard} className="btn-secondary-premium w-full sm:w-auto">
-                          Discard
-                        </button>
-                        <button type="submit" disabled={saving || saved} className="btn-primary-premium w-full sm:w-auto">
-                          {saving ? 'Saving...' : (saved ? <>Saved <CheckIcon className="w-4 h-4 ml-2" /></> : 'Save Changes')}
-                        </button>
+                      {/* Right: Form Fields */}
+                      <div className="lg:col-span-2 space-y-6">
+                        <div>
+                          <Label htmlFor="name">{t.fullName}</Label>
+                          <input 
+                            id="name" 
+                            name="name" 
+                            value={form.name} 
+                            onChange={onChange} 
+                            className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60" 
+                            placeholder="e.g. Sanduni Perera" 
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          <div>
+                            <Label htmlFor="nic">{t.nationalId}</Label>
+                            <input 
+                              id="nic" 
+                              name="nic" 
+                              value={form.nic} 
+                              onChange={onChange} 
+                              className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60" 
+                              placeholder="Enter your NIC number" 
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="dob">{t.dateOfBirth}</Label>
+                            <input 
+                              id="dob" 
+                              name="dob" 
+                              type="date" 
+                              value={form.dob} 
+                              onChange={onChange} 
+                              className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60" 
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                          <div>
+                            <Label htmlFor="email">{t.emailAddress}</Label>
+                            <input 
+                              id="email" 
+                              name="email" 
+                              type="email" 
+                              value={form.email} 
+                              onChange={onChange} 
+                              className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60" 
+                              placeholder="name@example.com" 
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="phone">{t.phoneNumber}</Label>
+                            <input 
+                              id="phone" 
+                              name="phone" 
+                              value={form.phone} 
+                              onChange={onChange} 
+                              className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60" 
+                              placeholder="+94 7X XXX XXXX" 
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="address">{t.residentialAddress}</Label>
+                          <textarea 
+                            id="address" 
+                            name="address" 
+                            rows={4} 
+                            value={form.address} 
+                            onChange={onChange} 
+                            className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60 resize-none" 
+                            placeholder="No, Street, City" 
+                          />
+                        </div>
                       </div>
                     </div>
-                  </form>
-                </div>
-              )}
-              {activeTab === 'documents' && (
-                <div>
-                  <SectionTitle 
-                    title="My Documents" 
-                    subtitle="Access your saved documents, applications, and official records." 
-                  />
-                  <div className="glass-morphism rounded-3xl p-6 sm:p-8 border border-border/50 text-center min-h-[400px] flex flex-col justify-center items-center">
-                    <DocumentIcon className="w-16 h-16 mx-auto text-muted-foreground/50 mb-6" />
-                    <h3 className="text-xl font-bold mb-2">No Documents Found</h3>
-                    <p className="text-muted-foreground max-w-md mx-auto">Your uploaded documents and completed forms will appear here for easy access.</p>
+
+                    <div className="mt-10 pt-6 border-t border-border/30 flex flex-col sm:flex-row justify-end items-center gap-4">
+                      <button 
+                        type="button" 
+                        onClick={onDiscard} 
+                        className="w-full sm:w-auto px-6 py-3 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
+                      >
+                        {t.discard}
+                      </button>
+                      <button 
+                        type="submit" 
+                        disabled={saving || saved} 
+                        className="w-full sm:w-auto px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-2xl flex items-center justify-center gap-2"
+                      >
+                        {saving ? t.saving : (saved ? <>{t.saved} <CheckIcon className="w-4 h-4" /></> : t.saveChanges)}
+                      </button>
+                    </div>
                   </div>
+                </form>
+              </div>
+            )}
+            {activeTab === 'documents' && (
+              <div>
+                <div className="mb-8 animate-fade-in-up">
+                  <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 modern-card">
+                    <div className="w-2 h-2 bg-gradient-to-r from-[#008060] to-[#FFC72C] rounded-full animate-pulse"></div>
+                    <span className="text-xs sm:text-sm font-medium text-foreground">{t.myDocuments}</span>
+                  </div>
+                  <p className="text-muted-foreground">{t.myDocumentsDesc}</p>
                 </div>
-              )}
-            </div>
+                <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-border/50 shadow-glow modern-card text-center min-h-[400px] flex flex-col justify-center items-center">
+                  <div className="w-20 h-20 bg-gradient-to-r from-[#FFC72C]/10 to-[#FF5722]/10 rounded-2xl flex items-center justify-center mb-6 border border-[#FFC72C]/20">
+                    <DocumentIcon className="w-10 h-10 text-muted-foreground/60" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2 text-foreground">{t.noDocuments}</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">{t.noDocumentsDesc}</p>
+                </div>
+              </div>
+            )}
           </div>
-        </main>
-        <Footer />
+        </div>
       </div>
-    </div>
+    </UserDashboardLayout>
   );
 }
