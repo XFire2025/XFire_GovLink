@@ -1,7 +1,7 @@
 // src/app/User/Profile/Verification/page.tsx
 "use client";
 
-import React, { useRef, useState, useCallback, useEffect } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from 'next/link';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
@@ -9,7 +9,6 @@ import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout
 // Types
 type Language = 'en' | 'si' | 'ta';
 type VerificationStep = 'upload' | 'review' | 'processing' | 'completed';
-type DocumentType = 'nic' | 'selfie';
 
 // Translations
 const verificationTranslations: Record<Language, {
@@ -226,7 +225,7 @@ const ShieldCheckIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const ProgressSteps = ({ currentStep, steps, t }: { 
   currentStep: VerificationStep; 
   steps: VerificationStep[]; 
-  t: any;
+  t: typeof verificationTranslations[Language];
 }) => {
   const getStepIndex = (step: VerificationStep) => steps.indexOf(step);
   const currentIndex = getStepIndex(currentStep);
@@ -304,7 +303,7 @@ interface DropzoneProps {
   icon: React.ElementType;
   required?: boolean;
   error?: string;
-  t: any;
+  t: typeof verificationTranslations[Language];
 }
 
 function EnhancedDropzone({
@@ -325,28 +324,24 @@ function EnhancedDropzone({
   
   const previewUrl = file ? URL.createObjectURL(file) : null;
   
-  const validateFile = (selectedFile: File): boolean => {
+  const handleFile = useCallback((selectedFile: File | undefined) => {
+    if (!selectedFile) return;
+    
     // File type validation
     if (!accept.includes(selectedFile.type)) {
       setValidationError(t.fileTypeError);
-      return false;
+      return;
     }
     
     // File size validation (5MB)
     if (selectedFile.size > 5 * 1024 * 1024) {
       setValidationError(t.fileSizeError);
-      return false;
+      return;
     }
     
     setValidationError("");
-    return true;
-  };
-
-  const handleFile = useCallback((selectedFile: File | undefined) => {
-    if (selectedFile && validateFile(selectedFile)) {
-      onFile(selectedFile);
-    }
-  }, [onFile, t]);
+    onFile(selectedFile);
+  }, [onFile, t, accept]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();

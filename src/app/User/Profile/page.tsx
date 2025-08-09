@@ -219,7 +219,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState('details');
-  const [isVerified, setIsVerified] = useState(false); // For demo - normally from API
+  const [isVerified] = useState(false); // For demo - normally from API
   const fileRef = useRef<HTMLInputElement | null>(null);
   const t = profileTranslations[currentLanguage];
 
