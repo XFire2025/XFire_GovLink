@@ -28,7 +28,7 @@ export function LanguageSwitcher({
   };
   
   const getCurrentLanguageName = () => {
-    return LANGUAGE_NAMES[currentLanguage].native;
+    return LANGUAGE_NAMES[currentLanguage as Language].native;
   };
   
   return (
@@ -50,7 +50,7 @@ export function LanguageSwitcher({
       >
         {showFlag && (
           <span className="text-lg">
-            {LanguageUtils.getLanguageFlag(currentLanguage)}
+            {LanguageUtils.getLanguageFlag(currentLanguage as Language)}
           </span>
         )}
         {variant === 'compact' ? (

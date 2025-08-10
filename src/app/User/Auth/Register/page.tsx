@@ -44,6 +44,8 @@ const registerTranslations: Record<Language, {
     invalidAge: string;
     mobileRequired: string;
     invalidMobile: string;
+    registrationFailed: string;
+    networkError: string;
   };
 }> = {
   en: {
@@ -79,7 +81,9 @@ const registerTranslations: Record<Language, {
       dobRequired: 'Date of birth is required',
       invalidAge: 'You must be at least 16 years old',
       mobileRequired: 'Mobile number is required',
-      invalidMobile: 'Please enter a valid Sri Lankan mobile number'
+      invalidMobile: 'Please enter a valid Sri Lankan mobile number',
+      registrationFailed: 'Registration failed. Please try again.',
+      networkError: 'Network error. Please check your connection.'
     }
   },
   si: {
@@ -115,7 +119,9 @@ const registerTranslations: Record<Language, {
       dobRequired: 'උපන් දිනය අවශ්‍ය වේ',
       invalidAge: 'ඔබගේ වයස අවම වශයෙන් අවුරුදු 16ක් විය යුතුය',
       mobileRequired: 'ජංගම දුරකථන අංකය අවශ්‍ය වේ',
-      invalidMobile: 'කරුණාකර වලංගු ශ්‍රී ලංකා ජංගම දුරකථන අංකයක් ඇතුළත් කරන්න'
+      invalidMobile: 'කරුණාකර වලංගු ශ්‍රී ලංකා ජංගම දුරකථන අංකයක් ඇතුළත් කරන්න',
+      registrationFailed: 'ලියාපදිංචිය අසාර්ථකයි. කරුණාකර නැවත උත්සාහ කරන්න.',
+      networkError: 'ජාල දෝෂයක්. කරුණාකර ඔබේ සම්බන්ධතාව පරීක්ෂා කරන්න.'
     }
   },
   ta: {
@@ -151,7 +157,9 @@ const registerTranslations: Record<Language, {
       dobRequired: 'பிறந்த தேதி தேவை',
       invalidAge: 'உங்களுக்கு குறைந்தது 16 வயது இருக்க வேண்டும்',
       mobileRequired: 'மொபைல் எண் தேவை',
-      invalidMobile: 'தயவுசெய்து சரியான இலங்கை மொபைல் எண்ணை உள்ளிடவும்'
+      invalidMobile: 'தயவுசெய்து சரியான இலங்கை மொபைல் எண்ணை உள்ளிடவும்',
+      registrationFailed: 'பதிவு தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்.',
+      networkError: 'நெட்வொர்க் பிழை. உங்கள் இணைப்பைச் சரிபார்க்கவும்.'
     }
   }
 };
@@ -329,16 +337,40 @@ export default function RegisterPage() {
 
     setSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setSubmitting(false);
-    setSuccess(true);
-    
-    // Redirect to login after success
-    setTimeout(() => {
-      router.push('/User/Auth/Login');
-    }, 1500);
+    try {
+      const response = await fetch('/api/auth/user/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: formData.name,
+          email: formData.email,
+          password: formData.password,
+          nicNumber: formData.nicNumber,
+          dateOfBirth: formData.dateOfBirth,
+          mobileNumber: formData.mobileNumber,
+          preferredLanguage: currentLanguage
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess(true);
+        // Redirect to login after success
+        setTimeout(() => {
+          router.push('/user/auth/login?registered=true');
+        }, 2000);
+      } else {
+        setError(data.message || 'Registration failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('Network error. Please check your connection.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -534,7 +566,7 @@ export default function RegisterPage() {
         <div className="text-center pt-6 border-t border-border/30">
           <p className="text-sm text-muted-foreground mb-2">{t.alreadyHaveAccount}</p>
           <Link 
-            href="/User/Auth/Login" 
+            href="/user/auth/login" 
             className="font-medium text-[#FFC72C] hover:text-[#FF5722] transition-colors duration-200 hover:underline"
           >
             {t.signIn}

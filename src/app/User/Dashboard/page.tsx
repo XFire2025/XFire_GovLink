@@ -1,7 +1,9 @@
-// src/app/User/Dashboard/page.tsx
+// src/app/user/dashboard/page.tsx
 "use client";
 import { useState } from 'react';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
+import { useAuth } from '@/lib/auth/AuthContext';
+import { CitizenProtectedRoute } from '@/lib/auth/ProtectedRoute';
 import Link from 'next/link';
 
 // Types
@@ -349,6 +351,7 @@ const ServiceCard = ({ title, description, href, icon, color, animationDelay }: 
 
 export default function UserDashboardPage() {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
+  const { user } = useAuth();
   
   const t = dashboardTranslations[currentLanguage];
 
@@ -357,20 +360,99 @@ export default function UserDashboardPage() {
   };
 
   return (
-    <UserDashboardLayout
-      title={
-        <span className="animate-title-wave">
-          <span className="text-foreground">{t.welcome.split(' ')[0]}</span>{' '}
-          <span className="text-gradient">
-            {t.welcome.split(' ')[1] || ''}
+    <CitizenProtectedRoute>
+      <UserDashboardLayout
+        title={
+          <span className="animate-title-wave">
+            <span className="text-foreground">{t.welcome.split(' ')[0]}</span>{' '}
+            <span className="text-gradient">
+              {user?.firstName || user?.email?.split('@')[0] || 'User'}
+            </span>
           </span>
-        </span>
-      }
-      subtitle={t.subtitle}
-      language={currentLanguage}
-      onLanguageChange={handleLanguageChange}
-    >
+        }
+        subtitle={`Welcome to GovLink, ${user?.firstName || 'Citizen'}! ${t.subtitle}`}
+        language={currentLanguage}
+        onLanguageChange={handleLanguageChange}
+      >
       <div className="space-y-12">
+        {/* Profile Completion Banner */}
+        {user && !user.isProfileComplete && (
+          <section className="animate-fade-in-up">
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-6 shadow-lg">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                    Complete Your Profile
+                  </h3>
+                  <p className="text-yellow-700 dark:text-yellow-300 mb-4">
+                    Complete your profile to access all government services. Your profile is {user.profileCompletionPercentage}% complete.
+                  </p>
+                  <div className="w-full bg-yellow-200 dark:bg-yellow-800 rounded-full h-2 mb-4">
+                    <div 
+                      className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${user.profileCompletionPercentage}%` }}
+                    ></div>
+                  </div>
+                  <Link 
+                    href="/user/profile?complete=true"
+                    className="inline-flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200"
+                  >
+                    Complete Profile
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Account Status Banner */}
+        {user && user.accountStatus !== 'active' && (
+          <section className="animate-fade-in-up">
+            <div className={`border rounded-2xl p-6 shadow-lg ${
+              user.accountStatus === 'pending' 
+                ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800'
+                : 'bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border-red-200 dark:border-red-800'
+            }`}>
+              <div className="flex items-start gap-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  user.accountStatus === 'pending' ? 'bg-blue-500' : 'bg-red-500'
+                }`}>
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h3 className={`text-lg font-semibold mb-2 ${
+                    user.accountStatus === 'pending' 
+                      ? 'text-blue-800 dark:text-blue-200' 
+                      : 'text-red-800 dark:text-red-200'
+                  }`}>
+                    Account {user.accountStatus === 'pending' ? 'Pending Verification' : 'Issue'}
+                  </h3>
+                  <p className={`${
+                    user.accountStatus === 'pending' 
+                      ? 'text-blue-700 dark:text-blue-300' 
+                      : 'text-red-700 dark:text-red-300'
+                  }`}>
+                    {user.accountStatus === 'pending' 
+                      ? 'Your account is pending verification. Some services may be limited until verification is complete.'
+                      : 'There is an issue with your account. Please contact support for assistance.'
+                    }
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Quick Stats Overview */}
         <section>
           <div className="mb-6 animate-fade-in-up">
@@ -497,5 +579,6 @@ export default function UserDashboardPage() {
         </section>
       </div>
     </UserDashboardLayout>
+    </CitizenProtectedRoute>
   );
 }

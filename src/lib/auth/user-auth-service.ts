@@ -202,15 +202,20 @@ export class UserAuthService {
       const isPasswordValid = await verifyPassword(password, user.password);
 
       if (!isPasswordValid) {
-        // Increment login attempts
-        user.loginAttempts = (user.loginAttempts || 0) + 1;
+        // Increment login attempts and lock account if needed
+        const updateData: {
+          loginAttempts: number;
+          accountLockedUntil?: Date;
+        } = {
+          loginAttempts: (user.loginAttempts || 0) + 1
+        };
         
         // Lock account after 5 failed attempts
-        if (user.loginAttempts >= 5) {
-          user.accountLockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+        if (updateData.loginAttempts >= 5) {
+          updateData.accountLockedUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
         }
         
-        await user.save();
+        await User.findByIdAndUpdate(user._id, updateData, { runValidators: false });
 
         return {
           success: false,
@@ -237,10 +242,15 @@ export class UserAuthService {
       }
 
       // Reset login attempts on successful login
-      user.loginAttempts = 0;
-      user.accountLockedUntil = undefined;
-      user.lastLoginAt = new Date();
-      await user.save();
+      await User.findByIdAndUpdate(
+        user._id,
+        {
+          loginAttempts: 0,
+          accountLockedUntil: undefined,
+          lastLoginAt: new Date()
+        },
+        { runValidators: false }
+      );
 
       // Generate tokens
       const tokens = generateTokenPair(user);
