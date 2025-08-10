@@ -134,3 +134,6 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## Project is connected with Jira from Atlassian
 ![Jira Integration](https://img.shields.io/badge/Jira-Atlassian-blue?style=flat-square&logo=jira&logoColor=white)
+
+## Contact
+For any questions or issues, please open an issue on GitHub or contact the maintainers.
