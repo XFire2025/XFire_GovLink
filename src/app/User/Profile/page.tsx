@@ -1,10 +1,11 @@
-// src/app/User/Profile/page.tsx
+// src/app/user/profile/page.tsx
 "use client";
 
-import React, { useState, useMemo, useRef, ChangeEvent, FormEvent } from 'react';
+import React, { useState, useMemo, useRef, ChangeEvent, FormEvent, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
+import { useAuth } from '@/lib/auth/AuthContext';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
@@ -201,27 +202,98 @@ function Label({ htmlFor, children }: { htmlFor: string; children: React.ReactNo
     </label>
   );
 }
+
+// User profile form state interface
+interface UserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  address: string;
+  profilePicture: string;
+  nationality: string;
+  dateOfBirth: string;
+  gender: string;
+  nic: string;
+}
   
-const initialFormState = {
-  name: "Sanduni Perera",
-  nic: "199512345678",
-  dob: "1995-08-15",
-  email: "sanduni.p@email.com",
-  phone: "+94 77 123 4567",
-  address: "123 Galle Road, Colombo 03",
+const initialFormState: UserProfile = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phoneNumber: "",
+  address: "",
+  profilePicture: "",
+  nationality: "Sri Lankan",
+  dateOfBirth: "",
+  gender: "",
+  nic: "",
 };
 
 // --- MAIN PROFILE PAGE COMPONENT ---
 export default function ProfilePage() {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
-  const [form, setForm] = useState(initialFormState);
+  const [form, setForm] = useState<UserProfile>(initialFormState);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
   const [isVerified] = useState(false); // For demo - normally from API
   const fileRef = useRef<HTMLInputElement | null>(null);
+  const { user } = useAuth();
   const t = profileTranslations[currentLanguage];
+
+  // Load user profile data
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        setLoading(true);
+        console.log('Loading profile for user:', user); // Debug log
+        
+        const response = await fetch('/api/auth/user/profile', {
+          credentials: 'include',
+        });
+
+        console.log('Profile API response status:', response.status); // Debug log
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('API Response:', result); // Debug log
+          
+          // The API returns user data under result.user
+          const userData = result.user || result;
+          console.log('User Data:', userData); // Debug log
+          
+          setForm({
+            firstName: userData.firstName || (userData.fullName ? userData.fullName.split(' ')[0] : ''),
+            lastName: userData.lastName || (userData.fullName ? userData.fullName.split(' ').slice(1).join(' ') : ''),
+            email: userData.email || '',
+            phoneNumber: userData.phoneNumber || userData.mobileNumber || '',
+            address: userData.address || '',
+            profilePicture: userData.profilePicture || '',
+            nationality: userData.nationality || 'Sri Lankan',
+            dateOfBirth: userData.dateOfBirth ? userData.dateOfBirth.split('T')[0] : '',
+            gender: userData.gender || '',
+            nic: userData.nic || userData.nicNumber || '',
+          });
+        } else {
+          console.error('Profile API error:', response.status, await response.text());
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) {
+      loadProfile();
+    } else {
+      console.log('No user authenticated, skipping profile load');
+      setLoading(false);
+    }
+  }, [user]);
 
   const handleLanguageChange = (newLanguage: Language) => {
     setCurrentLanguage(newLanguage);
@@ -230,17 +302,62 @@ export default function ProfilePage() {
   // Use undefined to indicate "no avatar"; only build object URL when a file exists
   const previewUrl = useMemo(() => (avatarFile ? URL.createObjectURL(avatarFile) : undefined), [avatarFile]);
 
+  // Debug log the current form state (only when it changes)
+  useEffect(() => {
+    if (form.firstName || form.profilePicture) { // Only log if we have some data
+      console.log('Profile form state updated:', form);
+      if (form.profilePicture) {
+        console.log('Profile picture URL:', form.profilePicture);
+      }
+    }
+  }, [form]);
+
   const onChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
   };
 
-  const onAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const onAvatarChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setAvatarFile(file);
+    if (!file) return;
+
+    // Upload the file first
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadResponse = await fetch('/api/file/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (uploadResponse.ok) {
+        const uploadResult = await uploadResponse.json();
+        
+        // Update profile with new picture URL
+        const profileResponse = await fetch('/api/auth/user/profile', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            profilePicture: uploadResult.url
+          }),
+          credentials: 'include',
+        });
+
+        if (profileResponse.ok) {
+          setForm(prev => ({ ...prev, profilePicture: uploadResult.url }));
+          setAvatarFile(file); // For preview
+        }
+      }
+    } catch (error) {
+      console.error('Failed to upload profile picture:', error);
+    }
   };
 
   const onDiscard = () => {
+    // Reset to the initial loaded state from API
     setForm(initialFormState);
     setAvatarFile(null);
   }
@@ -248,21 +365,55 @@ export default function ProfilePage() {
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (saving) return;
+    
     setSaving(true);
     setSaved(false);
-    await new Promise((r) => setTimeout(r, 1500)); 
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    
+    try {
+      const response = await fetch('/api/auth/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form),
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      }
+    } catch (error) {
+      console.error('Failed to save profile:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const completeness = Object.values(form).filter(Boolean).length;
-  const completenessPct = Math.round((completeness / 6) * 100);
+  // Calculate completeness based on filled fields
+  const requiredFields = ['firstName', 'lastName', 'email', 'phoneNumber', 'address', 'nic'];
+  const completeness = requiredFields.filter(field => form[field as keyof UserProfile]).length;
+  const completenessPct = Math.round((completeness / requiredFields.length) * 100);
 
   const TABS = [
     { id: 'details', label: t.personalDetails, icon: <UserIcon className="w-5 h-5 mr-3"/> },
     { id: 'documents', label: t.myDocuments, icon: <DocumentIcon className="w-5 h-5 mr-3"/> },
   ];
+
+  if (loading) {
+    return (
+      <UserDashboardLayout
+        title="Loading..."
+        subtitle="Please wait"
+        language={currentLanguage}
+        onLanguageChange={handleLanguageChange}
+      >
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFC72C]"></div>
+        </div>
+      </UserDashboardLayout>
+    );
+  }
 
   return (
     <UserDashboardLayout
@@ -331,7 +482,7 @@ export default function ProfilePage() {
                       <div className="lg:col-span-1 flex flex-col items-center">
                         <div className="relative group w-48 h-48 sm:w-56 sm:h-56 mb-6">
                           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#FFC72C]/20 via-[#FF5722]/20 to-[#8D153A]/20 blur-lg animate-pulse"></div>
-                          {/* Avatar: show uploaded image if present, otherwise SVG */}
+                          {/* Avatar: show uploaded preview, saved profile picture, or default */}
                           {previewUrl ? (
                             <Image 
                               src={previewUrl} 
@@ -339,6 +490,15 @@ export default function ProfilePage() {
                               width={224}
                               height={224}
                               className="relative w-full h-full object-cover rounded-full border-4 border-[#FFC72C]/30 shadow-xl transition-all duration-300 group-hover:border-[#FFC72C]/60 group-hover:scale-[1.02]"
+                            />
+                          ) : form.profilePicture ? (
+                            <Image 
+                              src={`/api/file/retrieve?url=${encodeURIComponent(form.profilePicture)}`}
+                              alt="Profile Avatar"
+                              width={224}
+                              height={224}
+                              className="relative w-full h-full object-cover rounded-full border-4 border-[#FFC72C]/30 shadow-xl transition-all duration-300 group-hover:border-[#FFC72C]/60 group-hover:scale-[1.02]"
+                              unoptimized
                             />
                           ) : (
                             <DefaultAvatar className="relative w-full h-full rounded-full border-4 border-[#FFC72C]/30 shadow-xl transition-all duration-300 group-hover:border-[#FFC72C]/60 group-hover:scale-[1.02]" />
@@ -419,15 +579,25 @@ export default function ProfilePage() {
                       {/* Right: Form Fields */}
                       <div className="lg:col-span-2 space-y-6">
                         <div>
-                          <Label htmlFor="name">{t.fullName}</Label>
-                          <input 
-                            id="name" 
-                            name="name" 
-                            value={form.name} 
-                            onChange={onChange} 
-                            className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60" 
-                            placeholder="e.g. Sanduni Perera" 
-                          />
+                          <Label htmlFor="firstName">{t.fullName}</Label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <input 
+                              id="firstName" 
+                              name="firstName" 
+                              value={form.firstName} 
+                              onChange={onChange} 
+                              className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60" 
+                              placeholder="First name" 
+                            />
+                            <input 
+                              id="lastName" 
+                              name="lastName" 
+                              value={form.lastName} 
+                              onChange={onChange} 
+                              className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60" 
+                              placeholder="Last name" 
+                            />
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -443,12 +613,12 @@ export default function ProfilePage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="dob">{t.dateOfBirth}</Label>
+                            <Label htmlFor="dateOfBirth">{t.dateOfBirth}</Label>
                             <input 
-                              id="dob" 
-                              name="dob" 
+                              id="dateOfBirth" 
+                              name="dateOfBirth" 
                               type="date" 
-                              value={form.dob} 
+                              value={form.dateOfBirth} 
                               onChange={onChange} 
                               className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60" 
                             />
@@ -469,11 +639,11 @@ export default function ProfilePage() {
                             />
                           </div>
                           <div>
-                            <Label htmlFor="phone">{t.phoneNumber}</Label>
+                            <Label htmlFor="phoneNumber">{t.phoneNumber}</Label>
                             <input 
-                              id="phone" 
-                              name="phone" 
-                              value={form.phone} 
+                              id="phoneNumber" 
+                              name="phoneNumber" 
+                              value={form.phoneNumber} 
                               onChange={onChange} 
                               className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-sm text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60" 
                               placeholder="+94 7X XXX XXXX" 

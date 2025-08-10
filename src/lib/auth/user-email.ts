@@ -297,6 +297,7 @@ export const sendEmailVerification = async (
   
   return await sendEmail({
     to: email,
+    subject: 'Email Verification - GovLink Sri Lanka',
     template: 'email-verification',
     data: {
       name,
@@ -317,6 +318,7 @@ export const sendPasswordResetEmail = async (
   
   return await sendEmail({
     to: email,
+    subject: 'Password Reset - GovLink Sri Lanka',
     template: 'password-reset',
     data: {
       name,

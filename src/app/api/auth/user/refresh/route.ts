@@ -60,13 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate new access token
-    const newAccessToken = generateAccessToken({
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
-      accountStatus: user.accountStatus,
-      profileStatus: user.profileStatus
-    });
+    const newAccessToken = generateAccessToken(user);
 
     // Update last login
     user.lastLoginAt = new Date();
