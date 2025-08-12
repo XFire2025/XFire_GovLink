@@ -10,14 +10,17 @@ import enHome from './resources/en/home.json';
 import enUser from './resources/en/user.json';
 import enAgent from './resources/en/agent.json';
 import enAdmin from './resources/en/admin.json';
+import enDepartment from './resources/en/department.json';
 
 import siCommon from './resources/si/common.json';
 import siAuth from './resources/si/auth.json';
 import siHome from './resources/si/home.json';
+// import siDepartment from './resources/si/department.json'; // Add when created
 
 import taCommon from './resources/ta/common.json';
 import taAuth from './resources/ta/auth.json';
 import taHome from './resources/ta/home.json';
+// import taDepartment from './resources/ta/department.json'; // Add when created
 
 // Language configuration
 export const SUPPORTED_LANGUAGES = ['en', 'si', 'ta'] as const;
@@ -37,7 +40,8 @@ const resources = {
     home: enHome,
     user: enUser,
     agent: enAgent,
-    admin: enAdmin
+    admin: enAdmin,
+    department: enDepartment
   },
   si: {
     common: siCommon,
@@ -45,7 +49,8 @@ const resources = {
     home: siHome,
     user: enUser, // Fallback to English for incomplete translations
     agent: enAgent,
-    admin: enAdmin
+    admin: enAdmin,
+    department: enDepartment // Fallback to English for now
   },
   ta: {
     common: taCommon,
@@ -53,7 +58,8 @@ const resources = {
     home: taHome,
     user: enUser, // Fallback to English for incomplete translations
     agent: enAgent,
-    admin: enAdmin
+    admin: enAdmin,
+    department: enDepartment // Fallback to English for now
   }
 };
 
@@ -101,7 +107,7 @@ const i18nConfig = {
   
   // Namespace settings
   defaultNS: 'common',
-  ns: ['common', 'auth', 'home', 'user', 'agent', 'admin'],
+  ns: ['common', 'auth', 'home', 'user', 'agent', 'admin', 'department'],
   
   // Backend settings for dynamic loading
   backend: {
