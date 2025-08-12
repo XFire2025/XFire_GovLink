@@ -22,8 +22,8 @@ const menuItems: MenuItem[] = [
   { id: "agents", labelKey: "agents", icon: Users, href: "/department/agents" },
   { id: "services", labelKey: "services", icon: Layers, href: "/department/services" }, // New menu item
   { id: "submissions", labelKey: "submissions", icon: FileText, href: "/department/submissions" },
-  { id: "reports", labelKey: "reports", icon: BarChart3, href: "/department/reports" },
-  { id: "settings", labelKey: "settings", icon: Settings, href: "/department/settings" },
+  { id: "reports", labelKey: "reports", icon: BarChart3, href: "/department/analytics" },
+  { id: "settings", labelKey: "settings", icon: Settings, href: "/department/config" },
 ];
 
 export default function DepartmentSidebar() {

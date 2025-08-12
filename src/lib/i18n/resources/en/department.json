@@ -68,5 +68,36 @@
     "saveChanges": "Save Configuration",
     "saving": "Saving...",
     "successMessage": "Configuration updated successfully!"
+  },
+  "analytics": {
+    "title": "Advanced Analytics",
+    "subtitle": "Analyze departmental performance, service metrics, and agent productivity.",
+    "overview": "Department Analytics Overview",
+    "performanceMetrics": "Overall Performance",
+    "serviceReports": "Service Reports",
+    "agentLeaderboard": "Agent Leaderboard",
+    "performanceDesc": "Track key performance indicators for the entire department.",
+    "reportDesc": "Generate detailed reports for specific services.",
+    "leaderboardDesc": "View rankings and productivity of all agents.",
+    "timeRanges": {
+      "today": "Today",
+      "week": "This Week",
+      "month": "This Month",
+      "quarter": "This Quarter"
+    },
+    "quickStats": "Department-wide Statistics",
+    "totalSubmissions": "Total Submissions",
+    "avgResolutionTime": "Avg. Resolution Time",
+    "approvalRate": "Approval Rate",
+    "citizenSatisfaction": "Citizen Satisfaction",
+    "refreshData": "Refresh Data",
+    "lastUpdated": "Last Updated",
+    "metrics": {
+      "submissionsTrend": "Submissions Trend",
+      "serviceBreakdown": "Submissions by Service",
+      "statusDistribution": "Status Distribution",
+      "peakHours": "Peak Activity Hours",
+      "topPerformingAgents": "Top Performing Agents"
+    }
   }
 }

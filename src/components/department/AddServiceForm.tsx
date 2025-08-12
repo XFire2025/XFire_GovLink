@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { Layers, FileText, Clock, DollarSign } from 'lucide-react';
 
-interface ServiceData {
+// This is the data for the form itself.
+export interface NewServiceData {
   name: string;
   description: string;
   fee: number;
@@ -11,20 +12,21 @@ interface ServiceData {
 }
 
 interface AddServiceFormProps {
-  onSave: (serviceData: ServiceData) => void;
+  onSave: (serviceData: NewServiceData) => void;
   onClose: () => void;
 }
 
+// This component is ONLY the form. It does not know if it is open or closed.
 export default function AddServiceForm({ onSave, onClose }: AddServiceFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [serviceData, setServiceData] = useState<ServiceData>({
+  const [serviceData, setServiceData] = useState<NewServiceData>({
     name: '',
     description: '',
     fee: 0,
     status: 'active',
   });
 
-  const handleInputChange = (field: keyof ServiceData, value: string | number) => {
+  const handleInputChange = (field: keyof NewServiceData, value: string | number) => {
     setServiceData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -57,7 +59,7 @@ export default function AddServiceForm({ onSave, onClose }: AddServiceFormProps)
         </div>
         <div>
           <label className={labelStyles}><Clock className="w-4 h-4" /> Initial Status</label>
-          <select value={serviceData.status} onChange={(e) => handleInputChange('status', e.target.value)} className={inputStyles}>
+          <select value={serviceData.status} onChange={(e) => handleInputChange('status', e.target.value as 'active' | 'inactive')} className={inputStyles}>
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
