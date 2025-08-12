@@ -3,6 +3,7 @@
     "title": "Department Portal",
     "dashboard": "Dashboard",
     "agents": "Manage Agents",
+    "services": "Manage Services",
     "submissions": "Review Submissions",
     "reports": "Generate Reports",
     "settings": "Settings"
