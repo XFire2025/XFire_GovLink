@@ -1,0 +1,45 @@
+{
+  "sidebar": {
+    "title": "Department Portal",
+    "dashboard": "Dashboard",
+    "agents": "Manage Agents",
+    "submissions": "Review Submissions",
+    "reports": "Generate Reports",
+    "settings": "Settings"
+  },
+  "navbar": {
+    "title": "Department",
+    "portal": "Portal",
+    "description": "Departmental Services Management",
+    "profile_label": "Department Account",
+    "profile_settings": "Profile Settings",
+    "sign_out": "Sign Out"
+  },
+  "login": {
+    "page_title": "Department Portal",
+    "header": "Departmental Access",
+    "title": "Department Portal",
+    "subtitle": "Secure access for authorized department personnel",
+    "form_title": "Secure Department Login",
+    "email_label": "Department Email",
+    "email_placeholder": "Enter your official department email",
+    "password_label": "Password",
+    "password_placeholder": "Enter your password",
+    "submit_button": "Sign In to Department Portal",
+    "back_to_home": "← Back to Home"
+  },
+  "dashboard": {
+    "title": "Department Dashboard",
+    "welcome": "Welcome to your Department Portal. Monitor services and manage agents.",
+    "stats": {
+      "total_submissions": "Total Submissions",
+      "assigned_agents": "Assigned Agents",
+      "pending_reviews": "Pending Reviews",
+      "service_uptime": "Service Uptime"
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "refresh": "Refresh"
+    }
+  }
+}
