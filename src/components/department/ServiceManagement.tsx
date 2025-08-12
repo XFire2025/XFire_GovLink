@@ -61,9 +61,10 @@ export default function ServiceManagement() {
             </h1>
             <p className="text-muted-foreground">Define and manage the services offered by your department.</p>
           </div>
-          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-gradient-to-r from-[#008060] to-[#FFC72C] hover:from-[#FFC72C] hover:to-[#FF5722] text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all hover:scale-105 modern-card">
-            <Plus className="w-4 h-4" />
-            Add New Service
+          
+          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-gradient-to-r from-[#008060] to-[#FFC72C] hover:from-[#FFC72C] hover:to-[#FF5722] text-white px-4 py-2.5 rounded-xl">
+                      <Plus className="w-4 h-4" />
+            Add Service
           </button>
         </motion.div>
         
