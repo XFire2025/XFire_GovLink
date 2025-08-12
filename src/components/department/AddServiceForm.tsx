@@ -39,7 +39,7 @@ export default function AddServiceForm({ onSave, onClose }: AddServiceFormProps)
     onClose();
   };
 
-  const inputStyles = "w-full bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl px-4 py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#008060] focus:ring-2 focus:ring-[#008060]/20";
+  const inputStyles = "w-full bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl px-4 py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#FFC72C] focus:ring-2 focus:ring-[#FFC72C]/20 transition-all duration-300 backdrop-blur-sm hover:border-[#FFC72C]/50";
   const labelStyles = "block text-sm font-semibold text-foreground mb-3 flex items-center gap-2";
 
   return (

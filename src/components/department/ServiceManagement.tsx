@@ -52,14 +52,16 @@ export default function ServiceManagement() {
       <div className="space-y-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="flex justify-between items-center">
           <div className="animate-fade-in-up">
-            <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-3">
+            <h1 className="text-3xl font-bold">
               <Layers className="w-8 h-8 text-[#008060]" />
-              <span className="text-foreground">Service</span>
-              <span className="bg-gradient-to-r from-[#008060] to-[#FF5722] bg-clip-text text-transparent">Management</span>
+              <span className="text-foreground">Service</span>{' '}
+              <span className="bg-gradient-to-r from-[#008060] to-[#FFC72C] bg-clip-text text-transparent">
+                Management
+              </span>
             </h1>
             <p className="text-muted-foreground">Define and manage the services offered by your department.</p>
           </div>
-          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-gradient-to-r from-[#008060] to-[#8D153A] text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all hover:scale-105 modern-card">
+          <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-gradient-to-r from-[#008060] to-[#FFC72C] hover:from-[#FFC72C] hover:to-[#FF5722] text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all hover:scale-105 modern-card">
             <Plus className="w-4 h-4" />
             Add New Service
           </button>

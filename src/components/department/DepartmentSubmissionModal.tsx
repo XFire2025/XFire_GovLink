@@ -27,10 +27,12 @@ const DepartmentSubmissionModal: React.FC<DepartmentSubmissionModalProps> = ({ i
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in-up">
-      <div className="glass-morphism max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-border/50 shadow-glow">
+      <div className="glass-morphism max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-border/50 shadow-glow bg-gradient-to-r from-[#008060] to-[#FFC72C]">
         <div className="flex items-center justify-between p-6 border-b border-border/30">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">{t('submissions.modal.title')}</h2>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-[#008060] to-[#FFC72C] bg-clip-text text-transparent">
+              {t('submissions.modal.title')}
+            </h2>
             <p className="text-sm text-muted-foreground">ID: {submission.id}</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl bg-card/30" aria-label="Close modal">

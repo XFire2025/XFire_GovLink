@@ -56,10 +56,18 @@ export default function DepartmentAgentManagement() {
       <div className="space-y-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3"><UserCog className="w-8 h-8 text-[#008060]" /> Agent Management</h1>
+            <h1 className="text-3xl font-bold">
+              <UserCog className="w-8 h-8 text-[#008060]" />
+              <span className="text-foreground">Agent</span>{' '}
+              <span className="bg-gradient-to-r from-[#008060] to-[#FFC72C] bg-clip-text text-transparent">
+                Management
+              </span>
+            </h1>
             <p className="text-muted-foreground">Manage your department&apos;s customer service agents.</p>
           </div>
-          <button onClick={openAddModal} className="flex items-center gap-2 bg-gradient-to-r from-[#008060] to-[#8D153A] text-white px-4 py-2.5 rounded-xl"><Plus className="w-4 h-4" /> Add Agent</button>
+          <button onClick={openAddModal} className="flex items-center gap-2 bg-gradient-to-r from-[#008060] to-[#FFC72C] hover:from-[#FFC72C] hover:to-[#FF5722] text-white px-4 py-2.5 rounded-xl">
+            <Plus className="w-4 h-4" /> Add Agent
+          </button>
         </motion.div>
         <div className="relative flex-1 group">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -98,7 +106,9 @@ export default function DepartmentAgentManagement() {
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
-                        <button onClick={() => openEditModal(agent)} className="p-2 hover:bg-[#FFC72C]/10 rounded-lg text-[#FFC72C]" title="Edit"><Edit className="w-4 h-4" /></button>
+                        <button onClick={() => openEditModal(agent)} className="p-2 hover:bg-[#FFC72C]/10 rounded-lg text-[#FFC72C]" title="Edit">
+                          <Edit className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>
