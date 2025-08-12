@@ -99,5 +99,30 @@
       "peakHours": "Peak Activity Hours",
       "topPerformingAgents": "Top Performing Agents"
     }
+  },
+  "submissions": {
+    "title": "Submissions Management",
+    "description": "Review, process, and manage all citizen submissions for your department.",
+    "searchPlaceholder": "Search by name, ID, or service...",
+    "filterByStatus": "Filter by Status",
+    "all": "All",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "needsInfo": "Needs Info",
+    "table": {
+      "citizen": "Citizen",
+      "service": "Service",
+      "status": "Status",
+      "submittedOn": "Submitted On",
+      "actions": "Actions"
+    },
+    "modal": {
+      "title": "Submission Details",
+      "approve": "Approve",
+      "reject": "Reject",
+      "requestInfo": "Request Info",
+      "close": "Close"
+    }
   }
 }
