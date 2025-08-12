@@ -2,13 +2,21 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Lock } from 'lucide-react';
-import CustomMultiSelect from './CustomMultiSelect'; // Import our new custom component
+import CustomMultiSelect from './CustomMultiSelect';
+
+// Define and export a specific interface for the form data
+export interface AgentFormData {
+  fullName: string;
+  email: string;
+  password?: string; // Password is optional for editing
+  assignedServices: string[];
+}
 
 interface Service { id: string; name: string; }
 interface Agent { id: string; name: string; email: string; assignedServices?: string[]; }
 
 interface AddAgentFormProps {
-  onSave: (agentData: any) => void;
+  onSave: (agentData: AgentFormData) => void;
   onClose: () => void;
   agentToEdit?: Agent | null;
   services: Service[];
@@ -43,8 +51,17 @@ export default function AddAgentForm({ onSave, onClose, agentToEdit, services }:
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    onSave({ ...formData, assignedServices: selectedServices });
+    // Construct the data object with a specific type
+    const saveData: AgentFormData = {
+        fullName: formData.fullName,
+        email: formData.email,
+        assignedServices: selectedServices,
+    };
+    if (!isEditMode && formData.password) {
+        saveData.password = formData.password;
+    }
 
+    onSave(saveData);
     setIsLoading(false);
     onClose();
   };
@@ -52,7 +69,6 @@ export default function AddAgentForm({ onSave, onClose, agentToEdit, services }:
   const inputStyles = "w-full bg-card/50 border border-border/50 rounded-xl px-4 py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#008060] focus:ring-2 focus:ring-[#008060]/20";
   const labelStyles = "block text-sm font-semibold text-foreground mb-3 flex items-center gap-2";
 
-  // Prepare options for our custom component
   const serviceOptions = services.map(service => ({ value: service.id, label: service.name }));
 
   return (
@@ -68,18 +84,10 @@ export default function AddAgentForm({ onSave, onClose, agentToEdit, services }:
           <input type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} className={inputStyles} required />
         </div>
       </div>
-
       <div className="space-y-6">
         <h4 className="text-lg font-bold text-foreground">Assign Services</h4>
-        {/* Use the new custom multi-select component */}
-        <CustomMultiSelect
-            options={serviceOptions}
-            selectedValues={selectedServices}
-            onChange={setSelectedServices}
-            placeholder="Select services..."
-        />
+        <CustomMultiSelect options={serviceOptions} selectedValues={selectedServices} onChange={setSelectedServices} placeholder="Select services..." />
       </div>
-      
       {!isEditMode && (
         <div className="space-y-6">
           <h4 className="text-lg font-bold text-foreground">Initial Credentials</h4>
@@ -89,7 +97,6 @@ export default function AddAgentForm({ onSave, onClose, agentToEdit, services }:
           </div>
         </div>
       )}
-
       <div className="flex justify-end gap-4 pt-6 border-t border-border/30">
         <button type="button" onClick={onClose} className="px-6 py-3 bg-card/30 border border-border/50 rounded-xl">Cancel</button>
         <button type="submit" disabled={isLoading} className="px-6 py-3 bg-gradient-to-r from-[#008060] to-[#8D153A] text-white rounded-xl disabled:opacity-50">

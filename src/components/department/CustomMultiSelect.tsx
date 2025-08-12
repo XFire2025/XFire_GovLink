@@ -1,8 +1,8 @@
 // src/components/department/CustomMultiSelect.tsx
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronsUpDown, Check, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge'; // Assuming badge is acceptable as it's just a styled div. If not, we can replace it.
+import { ChevronsUpDown, Check } from 'lucide-react';
+import CustomBadge from './CustomBadge'; // Correctly import our new custom badge
 
 interface Option {
   value: string;
@@ -52,7 +52,6 @@ export default function CustomMultiSelect({
 
   return (
     <div className="relative" ref={wrapperRef}>
-      {/* Trigger Button */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -61,16 +60,15 @@ export default function CustomMultiSelect({
         <div className="flex flex-wrap gap-1 items-center min-h-[24px]">
           {selectedOptions.length > 0
             ? selectedOptions.map(option => (
-                <Badge key={option.value} variant="secondary" className="bg-[#008060]/20 text-[#008060] border-transparent">
+                <CustomBadge key={option.value} className="bg-[#008060]/20 text-[#008060] border-transparent">
                   {option.label}
-                </Badge>
+                </CustomBadge>
               ))
             : <span className="text-muted-foreground ml-2">{placeholder}</span>}
         </div>
         <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
       </button>
 
-      {/* Popover Content */}
       {isOpen && (
         <div className="absolute z-10 top-full mt-2 w-full glass-morphism rounded-xl border border-border/50 shadow-glow animate-fade-in-up">
           <div className="p-2">

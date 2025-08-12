@@ -2,7 +2,7 @@
 "use client";
 import React from 'react';
 import { X } from 'lucide-react';
-import AddAgentForm from './AddAgentForm';
+import AddAgentForm, { AgentFormData } from './AddAgentForm'; // Import the specific interface
 
 interface Service { id: string; name: string; }
 interface Agent { id: string; name: string; email: string; assignedServices?: string[]; }
@@ -10,7 +10,7 @@ interface Agent { id: string; name: string; email: string; assignedServices?: st
 interface AddAgentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (agentData: any) => void;
+  onSave: (agentData: AgentFormData) => void; // Use the specific interface
   agentToEdit?: Agent | null;
   services: Service[];
 }
