@@ -42,5 +42,31 @@
       "title": "Recent Activity",
       "refresh": "Refresh"
     }
+  },
+  "config": {
+    "title": "Department Configuration",
+    "description": "Manage your department's public information and operational settings.",
+    "sections": {
+      "general": "General Information",
+      "contact": "Contact Details",
+      "operational": "Operational Settings"
+    },
+    "labels": {
+      "departmentName": "Department Name",
+      "publicAddress": "Public Address",
+      "contactEmail": "Contact Email",
+      "contactPhone": "Contact Phone",
+      "officeHours": "Office Hours",
+      "acceptingSubmissions": "Accepting New Submissions"
+    },
+    "placeholders": {
+      "publicAddress": "e.g., 'Suhurupaya', Sri Subhuthipura Road, Battaramulla",
+      "contactEmail": "e.g., info@immigration.gov.lk",
+      "contactPhone": "e.g., +94 11 532 9000",
+      "officeHours": "e.g., 8:30 AM - 4:30 PM"
+    },
+    "saveChanges": "Save Configuration",
+    "saving": "Saving...",
+    "successMessage": "Configuration updated successfully!"
   }
 }
