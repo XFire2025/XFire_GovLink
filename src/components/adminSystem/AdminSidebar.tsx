@@ -12,6 +12,7 @@ import {
   FileText,
   Settings,
   ChevronDown,
+  Building2,
 } from "lucide-react";
 
 interface MenuItem {
@@ -59,6 +60,12 @@ const menuItems: MenuItem[] = [
     label: "Customer & Agent",
     icon: UserCog,
     href: "/admin/customer-agent",
+  },
+  {
+    id: "create-department",
+    label: "Create Department",
+    icon: Building2,
+    href: "/admin/create-department",
   },
   {
     id: "reports",
