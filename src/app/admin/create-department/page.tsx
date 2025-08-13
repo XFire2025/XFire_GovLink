@@ -18,9 +18,10 @@ import {
   Filter,
   DollarSign,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface DepartmentFormData {
-  _id?: string;  // Changed from id to _id
+  _id?: string;
   name: string;
   code: string;
   description: string;
@@ -34,7 +35,7 @@ interface DepartmentFormData {
 }
 
 interface Department extends DepartmentFormData {
-  _id: string;  // Changed from id to _id
+  _id: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -70,7 +71,6 @@ export default function CreateDepartmentPage() {
     message: string;
   }>({ type: null, message: '' });
 
-  // Department management states
   const [departments, setDepartments] = useState<Department[]>([]);
   const [isLoadingDepartments, setIsLoadingDepartments] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -79,7 +79,6 @@ export default function CreateDepartmentPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [showDepartmentsList, setShowDepartmentsList] = useState(true);
 
-  // Fetch departments on component mount
   useEffect(() => {
     fetchDepartments();
   }, []);
@@ -96,11 +95,10 @@ export default function CreateDepartmentPage() {
       const result: ApiResponse = await response.json();
       
       if (result.success && result.data) {
-        // Map the data to ensure consistent field names
         const mappedDepartments = Array.isArray(result.data) 
           ? result.data.map((dept: any) => ({
               ...dept,
-              _id: dept._id || dept.id,  // Ensure _id is used
+              _id: dept._id || dept.id,
             }))
           : [];
         setDepartments(mappedDepartments);
@@ -117,10 +115,9 @@ export default function CreateDepartmentPage() {
   };
 
   const handleEditDepartment = (department: Department) => {
-    // Ensure we're using the correct ID field
     const editData = {
       ...department,
-      _id: department._id || department.id,  // Fallback to id if _id not present
+      _id: department._id || department.id,
     };
     setFormData(editData);
     setEditingDepartment(editData);
@@ -160,7 +157,7 @@ export default function CreateDepartmentPage() {
           type: 'success',
           message: 'Department deleted successfully!'
         });
-        fetchDepartments(); // Refresh the list
+        fetchDepartments();
         
         setTimeout(() => {
           setSubmitStatus({ type: null, message: '' });
@@ -180,7 +177,6 @@ export default function CreateDepartmentPage() {
     }
   };
 
-  // Filter departments based on search and status
   const filteredDepartments = departments.filter(dept => {
     const matchesSearch = dept.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          dept.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -195,12 +191,10 @@ export default function CreateDepartmentPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     
-    // Clear error when user starts typing
     if (errors[name as keyof DepartmentFormData]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
 
-    // Clear submit status
     if (submitStatus.type) {
       setSubmitStatus({ type: null, message: '' });
     }
@@ -263,21 +257,15 @@ export default function CreateDepartmentPage() {
     setSubmitStatus({ type: null, message: '' });
     
     try {
-      // Use _id for updates
       const url = isEditing ? `/api/admin/departments/${editingDepartment?._id}` : '/api/admin/departments';
       const method = isEditing ? 'PUT' : 'POST';
       
-      // Prepare the data payload (exclude _id from the body)
       const { _id, ...payloadData } = formData;
       const payload = {
         ...payloadData,
         budget: formData.budget ? parseFloat(formData.budget).toString() : '',
         tags: formData.tags || [],
       };
-
-      console.log('Submitting to URL:', url); // Debug log
-      console.log('Method:', method); // Debug log
-      console.log('Payload:', payload); // Debug log
 
       const response = await fetch(url, {
         method,
@@ -287,16 +275,12 @@ export default function CreateDepartmentPage() {
         body: JSON.stringify(payload),
       });
 
-      console.log('Response status:', response.status); // Debug log
-
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Response error:', errorText);
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const result: ApiResponse = await response.json();
-      console.log('Response result:', result); // Debug log
       
       if (result.success) {
         setSubmitStatus({
@@ -304,10 +288,8 @@ export default function CreateDepartmentPage() {
           message: result.message || `Department ${isEditing ? 'updated' : 'created'} successfully!`
         });
         
-        // Refresh departments list
         await fetchDepartments();
         
-        // Reset form after successful submission
         setTimeout(() => {
           setFormData(initialFormData);
           setEditingDepartment(null);
@@ -317,7 +299,6 @@ export default function CreateDepartmentPage() {
           setErrors({});
         }, 2000);
       } else {
-        // Handle validation errors
         if (result.details && Array.isArray(result.details)) {
           setSubmitStatus({
             type: 'error',
@@ -342,7 +323,6 @@ export default function CreateDepartmentPage() {
   };
 
   const handleSaveAsDraft = async () => {
-    // TODO: Implement save as draft functionality
     console.log("Save as draft:", formData);
     setSubmitStatus({
       type: 'success',
@@ -363,232 +343,244 @@ export default function CreateDepartmentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <div 
-          className="absolute inset-0 bg-center bg-no-repeat bg-cover"
-          style={{
-            backgroundImage: 'url("/2.png")',
-            backgroundPosition: 'center center',
-          }}
-        />
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-gradient-to-r from-[#8D153A]/10 to-[#FF5722]/5 border border-[#8D153A]/20">
+    <div className="relative min-h-full">
+      {/* Main content */}
+      <div className="space-y-8">
+        {/* Enhanced Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center"
+        >
+          <div className="animate-fade-in-up">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
+              <span className="flex items-center gap-3">
                 <Building2 className="w-8 h-8 text-[#8D153A]" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
-                  {isEditing ? 'Edit Department' : 'Department Management'}
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  {isEditing ? 'Update department information' : 'Create and manage your organization\'s departments'}
-                </p>
-              </div>
-            </div>
-            
-            {/* Toggle View Buttons */}
-            <div className="flex gap-2">
-              {isEditing && (
-                <button
-                  onClick={handleCancelEdit}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-all duration-200"
-                >
-                  Cancel Edit
-                </button>
-              )}
-              <button
-                onClick={() => showDepartmentsList ? handleCreateNew() : setShowDepartmentsList(true)}
-                className="px-4 py-2 bg-gradient-to-r from-[#8D153A]/10 to-[#FF5722]/5 border border-[#8D153A]/20 text-[#8D153A] rounded-xl hover:from-[#8D153A]/20 hover:to-[#FF5722]/10 transition-all duration-200"
-              >
-                {showDepartmentsList ? 'Create New' : 'View Departments'}
-              </button>
-            </div>
+                <span className="text-foreground">Department</span>{' '}
+                <span className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
+                  Management
+                </span>
+              </span>
+            </h1>
+            <p className="text-muted-foreground">
+              Create and manage your organization's departments
+            </p>
           </div>
-        </div>
+          
+          {/* Toggle View Buttons */}
+          <div className="flex gap-2">
+            {isEditing && (
+              <button
+                onClick={handleCancelEdit}
+                className="flex items-center gap-2 px-4 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl hover:bg-card/80 hover:border-[#FF5722]/50 transition-all duration-300 modern-card"
+              >
+                <X className="w-4 h-4" />
+                Cancel Edit
+              </button>
+            )}
+            <button
+              onClick={() => showDepartmentsList ? handleCreateNew() : setShowDepartmentsList(true)}
+              className="flex items-center gap-2 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 modern-card"
+            >
+              <Plus className="w-4 h-4" />
+              {showDepartmentsList ? 'Create New' : 'View Departments'}
+            </button>
+          </div>
+        </motion.div>
 
         {/* Status Messages */}
         {submitStatus.type && (
-          <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 ${
-            submitStatus.type === 'success' 
-              ? 'bg-green-50 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800/30 dark:text-green-300' 
-              : 'bg-red-50 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800/30 dark:text-red-300'
-          }`}>
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`p-4 rounded-xl flex items-center gap-3 ${
+              submitStatus.type === 'success' 
+                ? 'bg-green-100 border border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800/30 dark:text-green-300' 
+                : 'bg-red-100 border border-red-200 text-red-800 dark:bg-red-900/20 dark:border-red-800/30 dark:text-red-300'
+            }`}
+          >
             {submitStatus.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+              <CheckCircle className="w-5 h-5" />
             ) : (
-              <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <AlertCircle className="w-5 h-5" />
             )}
             <span className="font-medium">{submitStatus.message}</span>
-          </div>
+          </motion.div>
         )}
 
         {/* Departments List View */}
         {showDepartmentsList && !isEditing && (
-          <div className="mb-8">
+          <div className="space-y-6">
             {/* Search and Filter Controls */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-xl mb-6">
-              <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Search departments by name, code, or location..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <div className="relative">
-                    <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
-                      className="pl-10 pr-8 py-3 rounded-xl border border-gray-200 dark:border-gray-600 transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50"
-                    >
-                      <option value="all">All Status</option>
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
-                  </div>
-                </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.3 }}
+              className="flex flex-col sm:flex-row gap-4"
+            >
+              <div className="relative flex-1 group">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-[#8D153A] transition-colors duration-300" />
+                <input
+                  type="text"
+                  placeholder="Search departments by name, code, or location..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card hover:shadow-md"
+                />
               </div>
+              <div className="flex gap-3">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as "all" | "active" | "inactive")}
+                  className="px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card hover:shadow-md"
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                <button className="flex items-center gap-2 px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl hover:bg-card/80 hover:border-[#FFC72C]/50 transition-all duration-300 modern-card hover:shadow-md">
+                  <Filter className="w-4 h-4 text-[#FFC72C]" />
+                  Filter
+                </button>
+              </div>
+            </motion.div>
 
-              {/* Departments Grid */}
+            {/* Departments Grid */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+              className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card overflow-hidden"
+            >
               {isLoadingDepartments ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-8 h-8 border-2 border-[#8D153A]/30 border-t-[#8D153A] rounded-full animate-spin" />
                 </div>
               ) : filteredDepartments.length === 0 ? (
                 <div className="text-center py-12">
-                  <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4 opacity-50" />
-                  <h3 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">
+                  <Building2 className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-medium text-muted-foreground mb-2">
                     {departments.length === 0 ? 'No departments created yet' : 'No departments match your search'}
                   </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     {departments.length === 0 ? 'Create your first department to get started' : 'Try adjusting your search criteria'}
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredDepartments.map((department) => (
-                    <div
-                      key={department._id}
-                      className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-6 hover:shadow-lg transition-all duration-200 hover:scale-105"
-                    >
-                      {/* Department Header */}
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-gradient-to-r from-[#8D153A]/10 to-[#FF5722]/5 border border-[#8D153A]/20">
-                            <Building2 className="w-5 h-5 text-[#8D153A]" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-lg">{department.name}</h3>
-                            <p className="text-sm text-gray-500">{department.code}</p>
-                          </div>
-                        </div>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          department.status === 'active'
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'
-                        }`}>
-                          {department.status}
-                        </span>
-                      </div>
-
-                      {/* Department Details */}
-                      <div className="space-y-3 mb-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                          <MapPin className="w-4 h-4" />
-                          <span className="truncate">{department.location}</span>
-                        </div>
-                        {department.email && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <Mail className="w-4 h-4" />
-                            <span className="truncate">{department.email}</span>
-                          </div>
-                        )}
-                        {department.budget && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                            <DollarSign className="w-4 h-4" />
-                            <span>${parseFloat(department.budget).toLocaleString()}</span>
-                          </div>
-                        )}
-                        {department.tags && department.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-3">
-                            {department.tags.slice(0, 3).map((tag, index) => (
-                              <span
-                                key={index}
-                                className="px-2 py-1 bg-gradient-to-r from-blue-500/10 to-blue-600/5 border border-blue-500/20 rounded-full text-xs text-blue-700 dark:text-blue-300"
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5 border-b border-border/30">
+                      <tr>
+                        <th className="text-left p-4 font-semibold text-foreground">Department</th>
+                        <th className="text-left p-4 font-semibold text-foreground">Location</th>
+                        <th className="text-left p-4 font-semibold text-foreground">Status</th>
+                        <th className="text-left p-4 font-semibold text-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredDepartments.map((department, index) => (
+                        <motion.tr
+                          key={department._id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 * index, duration: 0.3 }}
+                          className="border-t border-border/20 hover:bg-card/30 transition-all duration-300 group"
+                        >
+                          <td className="p-4">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-10 h-10 bg-gradient-to-r rounded-full flex items-center justify-center border-2 shadow-md transition-all duration-300 group-hover:scale-110 from-[#8D153A]/20 to-[#FF5722]/20 border-[#8D153A]/30`}>
+                                <span className="text-sm font-bold text-foreground">
+                                  {department.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")}
+                                </span>
+                              </div>
+                              <div>
+                                <div className="font-medium text-foreground group-hover:text-[#8D153A] transition-colors duration-300">
+                                  {department.name}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {department.code}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <MapPin className="w-4 h-4" />
+                              <span>{department.location}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border backdrop-blur-sm transition-all duration-300 hover:scale-105 ${
+                                department.status === "active"
+                                  ? "bg-[#008060]/10 text-[#008060] border-[#008060]/20"
+                                  : "bg-[#FF5722]/10 text-[#FF5722] border-[#FF5722]/20"
+                              }`}
+                            >
+                              {department.status === "active" ? (
+                                <CheckCircle className="w-3 h-3" />
+                              ) : (
+                                <XCircle className="w-3 h-3" />
+                              )}
+                              {department.status.charAt(0).toUpperCase() + department.status.slice(1)}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleEditDepartment(department)}
+                                className="p-2 hover:bg-[#FFC72C]/10 rounded-lg transition-all duration-300 hover:scale-110 text-[#FFC72C]"
+                                title="Edit"
                               >
-                                {tag}
-                              </span>
-                            ))}
-                            {department.tags.length > 3 && (
-                              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs text-gray-600 dark:text-gray-400">
-                                +{department.tags.length - 3}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Department Description */}
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                        {department.description}
-                      </p>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEditDepartment(department)}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500/10 to-blue-600/5 border border-blue-500/20 text-blue-600 rounded-lg hover:from-blue-500/20 hover:to-blue-600/10 transition-all duration-200 text-sm"
-                        >
-                          <Edit className="w-4 h-4" />
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteDepartment(department._id)}
-                          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-red-500/10 to-red-600/5 border border-red-500/20 text-red-600 rounded-lg hover:from-red-500/20 hover:to-red-600/10 transition-all duration-200 text-sm"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                                <Edit className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteDepartment(department._id)}
+                                className="p-2 hover:bg-[#FF5722]/10 rounded-lg transition-all duration-300 hover:scale-110 text-[#FF5722]"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
-            </div>
+            </motion.div>
           </div>
         )}
 
         {/* Department Form */}
         {(!showDepartmentsList || isEditing) && (
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
+            onSubmit={handleSubmit}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Main Information */}
               <div className="lg:col-span-2 space-y-6">
                 {/* Basic Information Card */}
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-xl">
+                <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card p-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 rounded-lg bg-gradient-to-r from-[#8D153A]/10 to-[#FF5722]/5 border border-[#8D153A]/20">
                       <Building2 className="w-5 h-5 text-[#8D153A]" />
                     </div>
-                    <h2 className="text-xl font-semibold">Basic Information</h2>
+                    <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Department Name */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">
+                      <label className="text-sm font-medium text-foreground">
                         Department Name *
                       </label>
                       <input
@@ -596,8 +588,8 @@ export default function CreateDepartmentPage() {
                         name="name"
                         value={formData.name}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 ${
-                          errors.name ? "border-red-300" : "border-gray-200 dark:border-gray-600"
+                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-card/60 dark:bg-card/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 ${
+                          errors.name ? "border-red-300" : "border-border/50"
                         }`}
                         placeholder="e.g., Human Resources"
                       />
@@ -608,7 +600,7 @@ export default function CreateDepartmentPage() {
 
                     {/* Department Code */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">
+                      <label className="text-sm font-medium text-foreground">
                         Department Code *
                       </label>
                       <input
@@ -616,8 +608,8 @@ export default function CreateDepartmentPage() {
                         name="code"
                         value={formData.code}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 ${
-                          errors.code ? "border-red-300" : "border-gray-200 dark:border-gray-600"
+                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-card/60 dark:bg-card/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 ${
+                          errors.code ? "border-red-300" : "border-border/50"
                         }`}
                         placeholder="e.g., HR001"
                       />
@@ -628,7 +620,7 @@ export default function CreateDepartmentPage() {
 
                     {/* Description */}
                     <div className="md:col-span-2 space-y-2">
-                      <label className="text-sm font-medium">
+                      <label className="text-sm font-medium text-foreground">
                         Description *
                       </label>
                       <textarea
@@ -636,8 +628,8 @@ export default function CreateDepartmentPage() {
                         value={formData.description}
                         onChange={handleInputChange}
                         rows={4}
-                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 resize-none ${
-                          errors.description ? "border-red-300" : "border-gray-200 dark:border-gray-600"
+                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-card/60 dark:bg-card/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 resize-none ${
+                          errors.description ? "border-red-300" : "border-border/50"
                         }`}
                         placeholder="Brief description of the department's role and responsibilities..."
                       />
@@ -649,18 +641,18 @@ export default function CreateDepartmentPage() {
                 </div>
 
                 {/* Contact Information Card */}
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-xl">
+                <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card p-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500/10 to-blue-600/5 border border-blue-500/20">
                       <Phone className="w-5 h-5 text-blue-600" />
                     </div>
-                    <h2 className="text-xl font-semibold">Contact Information</h2>
+                    <h2 className="text-xl font-semibold text-foreground">Contact Information</h2>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Location */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
+                      <label className="text-sm font-medium text-foreground flex items-center gap-2">
                         <MapPin className="w-4 h-4" />
                         Location *
                       </label>
@@ -669,8 +661,8 @@ export default function CreateDepartmentPage() {
                         name="location"
                         value={formData.location}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 ${
-                          errors.location ? "border-red-300" : "border-gray-200 dark:border-gray-600"
+                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-card/60 dark:bg-card/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 ${
+                          errors.location ? "border-red-300" : "border-border/50"
                         }`}
                         placeholder="e.g., Building A, Floor 3"
                       />
@@ -681,7 +673,7 @@ export default function CreateDepartmentPage() {
 
                     {/* Phone */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
+                      <label className="text-sm font-medium text-foreground flex items-center gap-2">
                         <Phone className="w-4 h-4" />
                         Phone Number
                       </label>
@@ -690,8 +682,8 @@ export default function CreateDepartmentPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 ${
-                          errors.phone ? "border-red-300" : "border-gray-200 dark:border-gray-600"
+                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-card/60 dark:bg-card/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 ${
+                          errors.phone ? "border-red-300" : "border-border/50"
                         }`}
                         placeholder="e.g., +1 (555) 123-4567"
                       />
@@ -702,7 +694,7 @@ export default function CreateDepartmentPage() {
 
                     {/* Email */}
                     <div className="md:col-span-2 space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
+                      <label className="text-sm font-medium text-foreground flex items-center gap-2">
                         <Mail className="w-4 h-4" />
                         Email Address *
                       </label>
@@ -711,8 +703,8 @@ export default function CreateDepartmentPage() {
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 ${
-                          errors.email ? "border-red-300" : "border-gray-200 dark:border-gray-600"
+                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-card/60 dark:bg-card/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 ${
+                          errors.email ? "border-red-300" : "border-border/50"
                         }`}
                         placeholder="e.g., hr@company.com"
                       />
@@ -724,12 +716,12 @@ export default function CreateDepartmentPage() {
                 </div>
 
                 {/* Tags */}
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-xl">
+                <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card p-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 rounded-lg bg-gradient-to-r from-green-500/10 to-green-600/5 border border-green-500/20">
                       <Plus className="w-5 h-5 text-green-600" />
                     </div>
-                    <h2 className="text-xl font-semibold">Tags & Categories</h2>
+                    <h2 className="text-xl font-semibold text-foreground">Tags & Categories</h2>
                   </div>
 
                   <div className="space-y-4">
@@ -739,7 +731,7 @@ export default function CreateDepartmentPage() {
                         value={tagInput}
                         onChange={(e) => setTagInput(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                        className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500/50"
+                        className="flex-1 px-4 py-3 rounded-xl border border-border/50 transition-all duration-200 bg-card/60 dark:bg-card/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500/50"
                         placeholder="Add tags (e.g., administrative, support, core)"
                       />
                       <button
@@ -778,18 +770,18 @@ export default function CreateDepartmentPage() {
               {/* Side Panel */}
               <div className="space-y-6">
                 {/* Financial Information */}
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-xl">
+                <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card p-6">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2 rounded-lg bg-gradient-to-r from-yellow-500/10 to-yellow-600/5 border border-yellow-500/20">
                       <Users className="w-5 h-5 text-yellow-600" />
                     </div>
-                    <h2 className="text-lg font-semibold">Additional Details</h2>
+                    <h2 className="text-lg font-semibold text-foreground">Additional Details</h2>
                   </div>
 
                   <div className="space-y-4">
                     {/* Budget */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">
+                      <label className="text-sm font-medium text-foreground">
                         Annual Budget ($)
                       </label>
                       <input
@@ -797,8 +789,8 @@ export default function CreateDepartmentPage() {
                         name="budget"
                         value={formData.budget}
                         onChange={handleInputChange}
-                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500/50 ${
-                          errors.budget ? "border-red-300" : "border-gray-200 dark:border-gray-600"
+                        className={`w-full px-4 py-3 rounded-xl border transition-all duration-200 bg-card/60 dark:bg-card/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500/50 ${
+                          errors.budget ? "border-red-300" : "border-border/50"
                         }`}
                         placeholder="e.g., 500000"
                         min="0"
@@ -811,7 +803,7 @@ export default function CreateDepartmentPage() {
 
                     {/* Established Date */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
+                      <label className="text-sm font-medium text-foreground flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         Established Date
                       </label>
@@ -820,20 +812,20 @@ export default function CreateDepartmentPage() {
                         name="establishedDate"
                         value={formData.establishedDate}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500/50"
+                        className="w-full px-4 py-3 rounded-xl border border-border/50 transition-all duration-200 bg-card/60 dark:bg-card/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500/50"
                       />
                     </div>
 
                     {/* Status */}
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">
+                      <label className="text-sm font-medium text-foreground">
                         Department Status
                       </label>
                       <select
                         name="status"
                         value={formData.status}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 transition-all duration-200 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500/50"
+                        className="w-full px-4 py-3 rounded-xl border border-border/50 transition-all duration-200 bg-card/60 dark:bg-card/40 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-yellow-500/20 focus:border-yellow-500/50"
                       >
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
@@ -843,26 +835,26 @@ export default function CreateDepartmentPage() {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-xl">
+                <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card p-6">
                   <div className="space-y-4">
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white rounded-xl hover:from-[#8D153A]/90 hover:to-[#FF5722]/90 transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white rounded-xl hover:from-[#8D153A]/90 hover:to-[#FF5722]/90 transition-all duration-200 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       {isLoading ? (
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       ) : (
                         <Save className="w-5 h-5" />
                       )}
-                      {isLoading ? (isEditing ? "Updating Department..." : "Creating Department...") : (isEditing ? "Update Department" : "Create Department")}
+                      {isLoading ? (isEditing ? "Updating..." : "Creating...") : (isEditing ? "Update Department" : "Create Department")}
                     </button>
 
                     <button
                       type="button"
                       onClick={handleSaveAsDraft}
                       disabled={isLoading}
-                      className="w-full px-6 py-3 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                      className="w-full px-6 py-3 border border-border/50 text-foreground rounded-xl hover:bg-card/80 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       Save as Draft
                     </button>
@@ -870,7 +862,7 @@ export default function CreateDepartmentPage() {
                 </div>
               </div>
             </div>
-          </form>
+          </motion.form>
         )}
       </div>
     </div>
