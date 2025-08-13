@@ -1,55 +1,82 @@
 // src/components/department/SubmissionManagement.tsx
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Eye, FileText, CheckCircle, XCircle, Clock, HelpCircle } from "lucide-react";
+import { Search, Eye, FileText, CheckCircle, XCircle, Clock, HelpCircle, RefreshCw, AlertCircle, Loader } from "lucide-react";
 import { useTranslation } from '@/lib/i18n/hooks/useTranslation';
 import DepartmentSubmissionModal from "./DepartmentSubmissionModal";
-
-type SubmissionStatus = 'pending' | 'approved' | 'rejected' | 'needs_info';
-
-interface Submission {
-  id: string;
-  citizenName: string;
-  citizenId: string;
-  serviceName: string;
-  submittedDate: string;
-  status: SubmissionStatus;
-}
+import { useSubmissions, useSubmissionMutations } from "@/lib/hooks/useDepartmentApi";
+import { Submission } from "@/lib/services/departmentApiService";
 
 export default function SubmissionManagement() {
   const { t } = useTranslation('department');
-  const [submissions, setSubmissions] = useState<Submission[]>([
-    { id: 'SUB-001', citizenName: 'Amal Perera', citizenId: '199012345V', serviceName: 'New Passport Application', submittedDate: '2024-05-20T10:30:00Z', status: 'pending' },
-    { id: 'SUB-002', citizenName: 'Saman Silva', citizenId: '198554321V', serviceName: 'Passport Renewal', submittedDate: '2024-05-19T14:00:00Z', status: 'approved' },
-    { id: 'SUB-003', citizenName: 'Kamala Fernando', citizenId: '199298765V', serviceName: 'New Passport Application', submittedDate: '2024-05-18T09:00:00Z', status: 'rejected' },
-    { id: 'SUB-004', citizenName: 'Nimal Jayasuriya', citizenId: '197811223V', serviceName: 'ID Card Correction', submittedDate: '2024-05-21T11:00:00Z', status: 'needs_info' },
-  ]);
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<SubmissionStatus | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [filters, setFilters] = useState<{
+    status?: string;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }>({ limit: 20, offset: 0 });
 
-  const filteredSubmissions = submissions.filter(s => {
-    const matchesSearch = s.citizenName.toLowerCase().includes(searchTerm.toLowerCase()) || s.citizenId.toLowerCase().includes(searchTerm.toLowerCase()) || s.serviceName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Use API hooks
+  const { data: submissionsData, loading, error, refetch } = useSubmissions(filters);
+  const { updateSubmission, loading: mutationLoading } = useSubmissionMutations();
+
+  // Update filters when search term or status changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters(prev => ({ 
+        ...prev, 
+        search: searchTerm || undefined,
+        status: statusFilter === 'all' ? undefined : statusFilter,
+        offset: 0 // Reset to first page when filters change
+      }));
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, statusFilter]);
+
+  const submissions = submissionsData?.submissions || [];
 
   const openModal = (submission: Submission) => {
     setSelectedSubmission(submission);
     setIsModalOpen(true);
   };
 
-  const StatusBadge = ({ status }: { status: SubmissionStatus }) => {
-    const statusMap = {
-      pending: { text: t('submissions.pending'), icon: Clock, color: 'text-[#FFC72C] bg-[#FFC72C]/10' },
-      approved: { text: t('submissions.approved'), icon: CheckCircle, color: 'text-[#008060] bg-[#008060]/10' },
-      rejected: { text: t('submissions.rejected'), icon: XCircle, color: 'text-[#FF5722] bg-[#FF5722]/10' },
-      needs_info: { text: t('submissions.needsInfo'), icon: HelpCircle, color: 'text-[#8D153A] bg-[#8D153A]/10' },
+  const handleStatusUpdate = async (submissionId: string, newStatus: string) => {
+    try {
+      await updateSubmission(submissionId, { status: newStatus });
+      await refetch();
+    } catch (error) {
+      console.error('Failed to update submission status:', error);
+    }
+  };
+
+  const handleFilterChange = (key: string, value: string) => {
+    if (key === 'status') {
+      setStatusFilter(value);
+    }
+  };
+
+  const StatusBadge = ({ status }: { status: string }) => {
+    const statusMap: Record<string, { text: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
+      PENDING: { text: t('submissions.pending'), icon: Clock, color: 'text-[#FFC72C] bg-[#FFC72C]/10' },
+      APPROVED: { text: t('submissions.approved'), icon: CheckCircle, color: 'text-[#008060] bg-[#008060]/10' },
+      REJECTED: { text: t('submissions.rejected'), icon: XCircle, color: 'text-[#FF5722] bg-[#FF5722]/10' },
+      IN_REVIEW: { text: t('submissions.inReview'), icon: HelpCircle, color: 'text-[#8D153A] bg-[#8D153A]/10' },
+      COMPLETED: { text: t('submissions.completed'), icon: CheckCircle, color: 'text-[#008060] bg-[#008060]/10' },
     };
-    const { text, icon: Icon, color } = statusMap[status];
+    
+    const statusInfo = statusMap[status] || { 
+      text: status, 
+      icon: HelpCircle, 
+      color: 'text-muted-foreground bg-muted' 
+    };
+    
+    const { text, icon: Icon, color } = statusInfo;
     return (
       <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${color}`}>
         <Icon className="w-3 h-3" />
@@ -62,62 +89,184 @@ export default function SubmissionManagement() {
     <div className="relative min-h-full">
       <div className="space-y-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <FileText className="w-8 h-8 text-[#008060]" />
-            {t('submissions.title')}
-          </h1>
-          <p className="text-muted-foreground">{t('submissions.description')}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold flex items-center gap-3">
+                <FileText className="w-8 h-8 text-[#008060]" />
+                {t('submissions.title')}
+              </h1>
+              <p className="text-muted-foreground">{t('submissions.description')}</p>
+            </div>
+            <button 
+              onClick={refetch}
+              disabled={loading}
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-card border border-border rounded-lg hover:bg-muted/50 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </motion.div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1 group">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input type="text" placeholder={t('submissions.searchPlaceholder')} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-card/60 border border-border/50 rounded-xl modern-card" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1 group">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input 
+                type="text" 
+                placeholder={t('submissions.searchPlaceholder')} 
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+                className="w-full pl-10 pr-4 py-2.5 bg-card/60 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#008060]/20 focus:border-[#008060]/50 modern-card" 
+              />
+            </div>
+            <select 
+              value={statusFilter} 
+              onChange={(e) => handleFilterChange('status', e.target.value)} 
+              className="px-3 py-2.5 bg-card/60 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#008060]/20 focus:border-[#008060]/50 modern-card"
+            >
+              <option value="all">{t('submissions.all')}</option>
+              <option value="PENDING">{t('submissions.pending')}</option>
+              <option value="IN_REVIEW">{t('submissions.inReview')}</option>
+              <option value="APPROVED">{t('submissions.approved')}</option>
+              <option value="REJECTED">{t('submissions.rejected')}</option>
+              <option value="COMPLETED">{t('submissions.completed')}</option>
+            </select>
           </div>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as SubmissionStatus | 'all')} className="px-3 py-2.5 bg-card/60 border border-border/50 rounded-xl modern-card">
-            <option value="all">{t('submissions.all')}</option>
-            <option value="pending">{t('submissions.pending')}</option>
-            <option value="approved">{t('submissions.approved')}</option>
-            <option value="rejected">{t('submissions.rejected')}</option>
-            <option value="needs_info">{t('submissions.needsInfo')}</option>
-          </select>
-        </div>
+        </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-card/90 modern-card rounded-2xl border border-border/50 shadow-glow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-[#008060]/5 to-[#FF5722]/5 border-b border-border/30">
-                <tr>
-                  <th className="p-4 text-left font-semibold">{t('submissions.table.citizen')}</th>
-                  <th className="p-4 text-left font-semibold">{t('submissions.table.service')}</th>
-                  <th className="p-4 text-left font-semibold">{t('submissions.table.status')}</th>
-                  <th className="p-4 text-left font-semibold">{t('submissions.table.submittedOn')}</th>
-                  <th className="p-4 text-left font-semibold">{t('submissions.table.actions')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSubmissions.map((sub) => (
-                  <tr key={sub.id} className="border-t border-border/20 hover:bg-card/30">
-                    <td className="p-4">
-                      <div className="font-medium">{sub.citizenName}</div>
-                      <div className="text-sm text-muted-foreground font-mono">{sub.citizenId}</div>
-                    </td>
-                    <td className="p-4 text-muted-foreground">{sub.serviceName}</td>
-                    <td className="p-4"><StatusBadge status={sub.status} /></td>
-                    <td className="p-4 text-muted-foreground">{new Date(sub.submittedDate).toLocaleDateString()}</td>
-                    <td className="p-4">
-                      <button onClick={() => openModal(sub)} className="p-2 hover:bg-[#008060]/10 rounded-lg text-[#008060]" title="View Details">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    </td>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 dark:bg-red-900/10 backdrop-blur-md p-4 rounded-xl border border-red-200 dark:border-red-800"
+          >
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-red-700 dark:text-red-300">Failed to load submissions</h3>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">{error}</p>
+              </div>
+              <button
+                onClick={refetch}
+                className="flex items-center gap-2 px-3 py-2 text-sm bg-red-100 dark:bg-red-800/20 text-red-700 dark:text-red-300 rounded-lg hover:bg-red-200 dark:hover:bg-red-800/30 transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Retry
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-card/90 modern-card rounded-2xl border border-border/50 shadow-glow overflow-hidden">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex items-center gap-3">
+                <Loader className="w-5 h-5 animate-spin text-[#008060]" />
+                <span className="text-muted-foreground">Loading submissions...</span>
+              </div>
+            </div>
+          ) : submissions.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground mb-2">No submissions found</p>
+              {searchTerm && (
+                <p className="text-sm text-muted-foreground">
+                  Try adjusting your search or filters
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-[#008060]/5 to-[#FF5722]/5 border-b border-border/30">
+                  <tr>
+                    <th className="p-4 text-left font-semibold">{t('submissions.table.citizen')}</th>
+                    <th className="p-4 text-left font-semibold">{t('submissions.table.service')}</th>
+                    <th className="p-4 text-left font-semibold">Priority</th>
+                    <th className="p-4 text-left font-semibold">{t('submissions.table.status')}</th>
+                    <th className="p-4 text-left font-semibold">{t('submissions.table.submittedOn')}</th>
+                    <th className="p-4 text-left font-semibold">Agent</th>
+                    <th className="p-4 text-left font-semibold">{t('submissions.table.actions')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {submissions.map((sub) => (
+                    <tr key={sub.id} className="border-t border-border/20 hover:bg-card/30">
+                      <td className="p-4">
+                        <div className="font-medium">{sub.applicantName}</div>
+                        <div className="text-sm text-muted-foreground">{sub.applicantEmail}</div>
+                      </td>
+                      <td className="p-4">
+                        <div className="font-medium">{sub.title}</div>
+                        <div className="text-sm text-muted-foreground">ID: {sub.submissionId}</div>
+                      </td>
+                      <td className="p-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          sub.priority === 'HIGH' ? 'bg-red-100 text-red-700' :
+                          sub.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-green-100 text-green-700'
+                        }`}>
+                          {sub.priority}
+                        </span>
+                      </td>
+                      <td className="p-4"><StatusBadge status={sub.status} /></td>
+                      <td className="p-4 text-muted-foreground">
+                        {new Date(sub.submittedAt).toLocaleDateString()}
+                      </td>
+                      <td className="p-4 text-muted-foreground">
+                        {sub.agentId || 'Unassigned'}
+                      </td>
+                      <td className="p-4">
+                        <button 
+                          onClick={() => openModal(sub)} 
+                          className="p-2 hover:bg-[#008060]/10 rounded-lg text-[#008060]" 
+                          title="View Details"
+                          disabled={mutationLoading}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {submissionsData && submissionsData.total > filters.limit! && (
+            <div className="p-4 border-t border-border/30 flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Showing {filters.offset! + 1} to {Math.min(filters.offset! + filters.limit!, submissionsData.total)} of {submissionsData.total} submissions
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setFilters(prev => ({ ...prev, offset: Math.max(0, prev.offset! - prev.limit!) }))}
+                  disabled={filters.offset === 0 || loading}
+                  className="px-3 py-1 text-sm bg-card border border-border rounded-lg hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setFilters(prev => ({ ...prev, offset: prev.offset! + prev.limit! }))}
+                  disabled={filters.offset! + filters.limit! >= submissionsData.total || loading}
+                  className="px-3 py-1 text-sm bg-card border border-border rounded-lg hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </motion.div>
       </div>
-      <DepartmentSubmissionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} submission={selectedSubmission} />
+      <DepartmentSubmissionModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        submission={selectedSubmission}
+        onStatusUpdate={handleStatusUpdate}
+        loading={mutationLoading}
+      />
     </div>
   );
 }
