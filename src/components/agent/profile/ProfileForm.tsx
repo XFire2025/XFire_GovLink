@@ -1,9 +1,22 @@
 // src/components/agent/profile/ProfileForm.tsx
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
+
+// Agent interface (matching auth utils)
+interface Agent {
+  id: string;
+  officerId: string;
+  fullName: string;
+  email: string;
+  position: string;
+  department: string;
+  officeName: string;
+  isActive: boolean;
+  assignedDistricts: string[];
+}
 
 interface ProfileData {
   fullName: string;
@@ -164,25 +177,33 @@ const formTranslations: Record<Language, FormTranslation> = {
 
 interface ProfileFormProps {
   language?: Language;
-  onSave: () => Promise<void>;
+  onSave: (formData?: ProfileData) => Promise<void>;
   isLoading: boolean;
+  agent: Agent;
+  onDataChange?: (data: ProfileData) => void;
 }
 
-const ProfileForm: React.FC<ProfileFormProps> = ({ language = 'en', onSave, isLoading }) => {
+const ProfileForm: React.FC<ProfileFormProps> = ({ 
+  language = 'en', 
+  onSave, 
+  isLoading, 
+  agent,
+  onDataChange
+}) => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
-    fullName: 'Demo Agent',
-    email: 'demo.agent@immigration.gov.lk',
-    phone: '+94 77 123 4567',
-    department: 'Department of Immigration & Emigration',
-    agentId: 'DEMO1234',
+    fullName: agent.fullName,
+    email: agent.email,
+    phone: '+94 77 123 4567', // This would come from agent schema in future
+    department: agent.department || 'Department of Immigration & Emigration',
+    agentId: agent.officerId,
     preferredLanguage: language,
     workingHours: {
       start: '08:00',
       end: '17:00'
     },
     timezone: 'Asia/Colombo',
-    availability: 'available',
+    availability: agent.isActive ? 'available' : 'away',
     notifications: {
       email: true,
       sms: false,
@@ -190,35 +211,58 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ language = 'en', onSave, isLo
     }
   });
 
+  // Update profile data when agent changes
+  useEffect(() => {
+    setProfileData(prev => ({
+      ...prev,
+      fullName: agent.fullName,
+      email: agent.email,
+      department: agent.department || 'Department of Immigration & Emigration',
+      agentId: agent.officerId,
+      availability: agent.isActive ? 'available' : 'away'
+    }));
+  }, [agent]);
+
   const t = formTranslations[language];
 
   const handleInputChange = (field: keyof ProfileData, value: string | boolean) => {
-    setProfileData(prev => ({
-      ...prev,
+    const newData = {
+      ...profileData,
       [field]: value
-    }));
+    };
+    setProfileData(newData);
+    
+    // Notify parent component of data change
+    if (onDataChange) {
+      onDataChange(newData);
+    }
   };
 
   const handleNestedInputChange = (field: 'workingHours' | 'notifications', subField: string, value: string | boolean) => {
-    setProfileData(prev => ({
-      ...prev,
+    const newData = {
+      ...profileData,
       [field]: {
-        ...(prev[field]),
+        ...(profileData[field]),
         [subField]: value
       }
-    }));
+    };
+    setProfileData(newData);
+    
+    // Notify parent component of data change
+    if (onDataChange) {
+      onDataChange(newData);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSave();
+    await onSave(profileData);
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
   };
 
   const inputStyles = "w-full bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl px-4 py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#FFC72C] focus:ring-2 focus:ring-[#FFC72C]/20 transition-all duration-300 backdrop-blur-sm hover:border-[#FFC72C]/50";
   const labelStyles = "block text-sm font-semibold text-foreground mb-3 flex items-center gap-2";
-  const sectionStyles = "space-y-6 p-6 bg-card/30 rounded-xl border border-border/30";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
