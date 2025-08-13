@@ -4,7 +4,7 @@ import connectDB from '@/lib/db';
 import Agent from '@/lib/models/agentSchema';
 import Department from '@/lib/models/departmentSchema';
 
-// GET /api/user/departments/[departmentId]/agents - Fetch agents for a specific department
+// GET /api/user/departments/[departmentId]/agents - Fetch agents for a specific department (public endpoint)
 export async function GET(
   request: NextRequest,
   { params }: { params: { departmentId: string } }

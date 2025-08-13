@@ -1,12 +1,13 @@
 // src/app/User/Booking/New/page.tsx
 "use client";
 
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
+import UserApiService, { Department, Service, Agent } from '@/lib/services/userApiService';
 
-// New booking translations
+// New booking translations (keeping existing translations)
 const newBookingTranslations = {
   title: 'Book Appointment',
   subtitle: 'Schedule your meeting with government officials and submit required documents',
@@ -26,11 +27,11 @@ const newBookingTranslations = {
   selectDepartment: 'Select a department...',
   selectService: 'Select a service...',
   selectDepartmentFirst: 'Select a department first',
-  agentDesignation: 'Agent Designation',
+  agentDesignation: 'Agent Position',
   agentName: 'Agent Name',
-  selectDesignation: 'Select a designation...',
+  selectDesignation: 'Select a position...',
   selectAgent: 'Select an agent...',
-  selectDesignationFirst: 'Select a designation first',
+  selectDesignationFirst: 'Select a position first',
   pickDay: 'Pick a Day',
   availableSlots: 'Available Slots',
   selectAgentAndDay: 'Select an agent and a day first',
@@ -70,16 +71,24 @@ const newBookingTranslations = {
   dashboard: 'Dashboard',
   bookingReceived: 'Your booking request has been received. Reference',
   errors: {
-    selectDesignation: 'Please select an agent designation',
+    selectDepartment: 'Please select a department',
+    selectService: 'Please select a service',
+    selectDesignation: 'Please select an agent position',
     selectAgent: 'Please select an agent',
     pickDay: 'Please pick a day for your appointment',
     chooseTimeSlot: 'Please choose an available time slot',
     missingField: 'Missing required field',
     pleaseUpload: 'Please upload'
-  }
+  },
+  loading: 'Loading...',
+  loadingDepartments: 'Loading departments...',
+  loadingServices: 'Loading services...',
+  loadingAgents: 'Loading agents...',
+  errorLoadingData: 'Error loading data. Please try again.',
+  retry: 'Retry'
 };
 
-// --- ICONS ---
+// Icons (keeping existing icons)
 const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
 const UserCheckIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>;
 const CalendarClockIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.25V14"/><circle cx="16" cy="16" r="5.5"/></svg>;
@@ -93,8 +102,9 @@ const ChevronDownIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props
 const UploadIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
 const FileIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>;
 const HomeIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>;
+const RefreshIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>;
 
-// --- DOCUMENT REQUIREMENTS BY DESIGNATION ---
+// Document requirement interface
 interface DocumentRequirement {
     name: string;
     label: string;
@@ -103,56 +113,7 @@ interface DocumentRequirement {
     description?: string;
 }
 
-const DOCUMENT_REQUIREMENTS: Record<string, DocumentRequirement[]> = {
-    "passport-new": [
-        { name: "nicScan", label: "NIC Copy", required: true, accept: ".jpg,.jpeg,.png,.pdf", description: "Clear scan or photo of your National Identity Card" },
-        { name: "birthCertificate", label: "Birth Certificate", required: true, accept: ".pdf,.jpg,.jpeg,.png", description: "Certified copy of birth certificate" },
-        { name: "photos", label: "Passport Photos", required: true, accept: ".jpg,.jpeg,.png", description: "Recent passport-sized photographs" },
-        { name: "applicationForm", label: "Application Form", required: true, accept: ".pdf", description: "Completed passport application form" }
-    ],
-    "passport-renewal": [
-        { name: "nicScan", label: "NIC Copy", required: true, accept: ".jpg,.jpeg,.png,.pdf", description: "Clear scan or photo of your National Identity Card" },
-        { name: "oldPassport", label: "Old Passport", required: true, accept: ".pdf,.jpg,.jpeg,.png", description: "Bio page of expiring passport" },
-        { name: "photos", label: "Recent Photos", required: true, accept: ".jpg,.jpeg,.png", description: "Recent passport-sized photographs" },
-        { name: "applicationForm", label: "Renewal Form", required: true, accept: ".pdf", description: "Completed renewal application" }
-    ],
-    "business-registration": [
-        { name: "nicScan", label: "Owner NIC", required: true, accept: ".jpg,.jpeg,.png,.pdf", description: "NIC of business owner" },
-        { name: "applicationForm", label: "Registration Form", required: true, accept: ".pdf", description: "Completed business registration form" },
-        { name: "addressProof", label: "Address Proof", required: true, accept: ".pdf,.jpg,.jpeg,.png", description: "Utility bill or lease agreement" },
-        { name: "bankStatement", label: "Bank Statement", required: false, accept: ".pdf", description: "Recent bank statement" }
-    ],
-    "birth-certificate": [
-        { name: "nicScan", label: "Applicant NIC", required: true, accept: ".jpg,.jpeg,.png,.pdf", description: "NIC of person requesting certificate" },
-        { name: "applicationForm", label: "Application Form", required: true, accept: ".pdf", description: "Birth certificate request form" },
-        { name: "hospitalRecord", label: "Hospital Record", required: false, accept: ".pdf,.jpg,.jpeg,.png", description: "Birth record from hospital (if available)" }
-    ],
-    "marriage-certificate": [
-        { name: "nicScans", label: "Both NIC Copies", required: true, accept: ".jpg,.jpeg,.png,.pdf", description: "NIC copies of both spouses" },
-        { name: "applicationForm", label: "Application Form", required: true, accept: ".pdf", description: "Marriage certificate request form" },
-        { name: "marriageProof", label: "Marriage Proof", required: false, accept: ".pdf,.jpg,.jpeg,.png", description: "Wedding photos or church records" }
-    ],
-    "license-new": [
-        { name: "nicScan", label: "NIC Copy", required: true, accept: ".jpg,.jpeg,.png,.pdf", description: "Clear scan of National Identity Card" },
-        { name: "medicalReport", label: "Medical Certificate", required: true, accept: ".pdf,.jpg,.jpeg,.png", description: "Medical fitness certificate" },
-        { name: "applicationForm", label: "License Application", required: true, accept: ".pdf", description: "Driving license application form" },
-        { name: "photos", label: "Passport Photos", required: true, accept: ".jpg,.jpeg,.png", description: "Recent passport-sized photos" }
-    ],
-    "tax-registration": [
-        { name: "nicScan", label: "NIC Copy", required: true, accept: ".jpg,.jpeg,.png,.pdf", description: "National Identity Card copy" },
-        { name: "businessDocs", label: "Business Registration", required: true, accept: ".pdf,.jpg,.jpeg,.png", description: "Business registration certificate" },
-        { name: "applicationForm", label: "Tax Registration Form", required: true, accept: ".pdf", description: "Completed tax registration application" },
-        { name: "bankDocs", label: "Bank Details", required: true, accept: ".pdf", description: "Bank account verification letter" }
-    ],
-    // Default fallback for services not specifically defined
-    "default": [
-        { name: "nicScan", label: "NIC Copy", required: true, accept: ".jpg,.jpeg,.png,.pdf", description: "Clear scan or photo of your National Identity Card" },
-        { name: "applicationForm", label: "Application Form", required: true, accept: ".pdf,.jpg,.jpeg,.png", description: "Completed and signed application form" },
-        { name: "supportingDocs", label: "Supporting Documents", required: false, accept: ".pdf,.jpg,.jpeg,.png", description: "Any additional documents related to your request" }
-    ]
-};
-
-// Custom Dropdown Component
+// Custom Dropdown Component (keeping existing)
 const CustomDropdown = ({ 
     id, 
     name, 
@@ -160,7 +121,8 @@ const CustomDropdown = ({
     onChange, 
     disabled, 
     placeholder, 
-    options 
+    options,
+    loading = false
 }: {
     id: string;
     name: string;
@@ -169,6 +131,7 @@ const CustomDropdown = ({
     disabled?: boolean;
     placeholder: string;
     options: { value: string; label: string }[];
+    loading?: boolean;
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedLabel, setSelectedLabel] = useState(placeholder);
@@ -207,11 +170,11 @@ const CustomDropdown = ({
 
             <button
                 type="button"
-                onClick={() => !disabled && setIsOpen(!isOpen)}
-                disabled={disabled}
+                onClick={() => !disabled && !loading && setIsOpen(!isOpen)}
+                disabled={disabled || loading}
                 className={`
                     w-full text-left px-4 py-3 rounded-xl border transition-all duration-300 flex items-center justify-between backdrop-blur-md
-                    ${disabled 
+                    ${disabled || loading
                         ? 'opacity-60 cursor-not-allowed bg-card/20 dark:bg-card/30 border-border/30' 
                         : 'bg-card/50 dark:bg-card/70 border-border/50 hover:border-[#FFC72C]/60 hover:bg-card/70 dark:hover:bg-card/80 focus:border-[#FFC72C] focus:ring-2 focus:ring-[#FFC72C]/30'
                     }
@@ -219,14 +182,14 @@ const CustomDropdown = ({
                 `}
             >
                 <span className={`${value ? 'text-foreground' : 'text-muted-foreground'} font-medium`}>
-                    {selectedLabel}
+                    {loading ? newBookingTranslations.loading : selectedLabel}
                 </span>
                 <ChevronDownIcon 
                     className={`w-5 h-5 text-[#FFC72C] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
                 />
             </button>
 
-            {isOpen && (
+            {isOpen && !loading && (
                 <>
                     <div 
                         className="fixed inset-0 z-10" 
@@ -263,7 +226,7 @@ const CustomDropdown = ({
     );
 };
 
-// File Upload Component
+// File Upload Component (keeping existing but enhanced)
 const FileUpload = ({ 
     document: doc, 
     file, 
@@ -305,7 +268,7 @@ const FileUpload = ({
                         onClick={onRemove} 
                         className="text-xs text-[#FF5722] hover:text-[#FF5722]/80 transition-colors"
                     >
-                        Remove
+                        {newBookingTranslations.remove}
                     </button>
                 )}
             </div>
@@ -352,7 +315,7 @@ const FileUpload = ({
     );
 };
 
-// Form Step component for visual structure
+// Form Step component (keeping existing)
 const Step = ({ icon: Icon, title, description, children }: { icon: React.ElementType; title: string; description: string; children: React.ReactNode }) => (
     <div className="animate-fade-in-up">
         <div className="mb-6">
@@ -368,7 +331,7 @@ const Step = ({ icon: Icon, title, description, children }: { icon: React.Elemen
     </div>
 );
 
-// Themed alert components
+// Alert components (keeping existing)
 const SuccessAlert = ({ message }: { message: string }) => (
     <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-4 rounded-2xl border border-[#008060]/30 flex items-center gap-3 shadow-glow modern-card animate-fade-in-up">
         <CheckCircleIcon className="w-6 h-6 text-[#008060] flex-shrink-0" />
@@ -376,14 +339,25 @@ const SuccessAlert = ({ message }: { message: string }) => (
     </div>
 );
 
-const ErrorAlert = ({ message }: { message: string }) => (
+const ErrorAlert = ({ message, onRetry }: { message: string; onRetry?: () => void }) => (
     <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-4 rounded-2xl border border-[#FF5722]/30 flex items-center gap-3 shadow-glow modern-card animate-fade-in-up">
         <AlertTriangleIcon className="w-6 h-6 text-[#FF5722] flex-shrink-0" />
-        <p className="text-sm font-medium text-[#FF5722]">{message}</p>
+        <div className="flex-1">
+            <p className="text-sm font-medium text-[#FF5722]">{message}</p>
+        </div>
+        {onRetry && (
+            <button
+                onClick={onRetry}
+                className="flex items-center gap-1 px-3 py-1 text-xs font-medium text-[#FF5722] hover:bg-[#FF5722]/10 rounded-lg transition-colors"
+            >
+                <RefreshIcon className="w-3 h-3" />
+                {newBookingTranslations.retry}
+            </button>
+        )}
     </div>
 );
 
-// Time Slot Card Component
+// Time Slot Card Component (keeping existing)
 const TimeSlotCard = ({ 
     slot, 
     isAvailable, 
@@ -402,14 +376,6 @@ const TimeSlotCard = ({
         const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
         return `${displayHour}:${minutes} ${ampm}`;
     };
-
-    const getSlotStatus = () => {
-        if (!isAvailable) return { text: 'Unavailable', color: 'text-[#FF5722]' };
-        if (isSelected) return { text: 'Selected', color: 'text-[#008060]' };
-        return { text: 'Available', color: 'text-[#FFC72C]' };
-    };
-
-    const status = getSlotStatus();
 
     return (
         <div
@@ -439,11 +405,6 @@ const TimeSlotCard = ({
                         <div className="font-semibold text-foreground text-lg transition-colors duration-300 group-hover:text-[#FFC72C]">
                             {formatTime(slot)}
                         </div>
-                        {isAvailable && (
-                            <div className={`text-xs font-medium transition-colors duration-300 ${status.color}`}>
-                                {status.text}
-                            </div>
-                        )}
                     </div>
                 </div>
                 
@@ -461,77 +422,11 @@ const TimeSlotCard = ({
                     </span>
                 </div>
             )}
-            
-            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FFC72C]/5 via-transparent to-[#FF5722]/5 rounded-2xl"></div>
-            </div>
         </div>
     );
 };
 
-// --- DEPARTMENTS AND SERVICES DATA ---
-const DEPARTMENTS = [
-    { value: "immigration", label: "Immigration & Emigration" },
-    { value: "registration", label: "Registrar General's Department" },
-    { value: "customs", label: "Sri Lanka Customs" },
-    { value: "revenue", label: "Inland Revenue Department" },
-    { value: "transport", label: "Department of Motor Traffic" }
-];
-
-const SERVICES_BY_DEPARTMENT: Record<string, { value: string; label: string }[]> = {
-    immigration: [
-        { value: "passport-new", label: "New Passport Application" },
-        { value: "passport-renewal", label: "Passport Renewal" },
-        { value: "visa-extension", label: "Visa Extension" },
-        { value: "emigration-clearance", label: "Emigration Clearance" }
-    ],
-    registration: [
-        { value: "birth-certificate", label: "Birth Certificate" },
-        { value: "marriage-certificate", label: "Marriage Certificate" },
-        { value: "death-certificate", label: "Death Certificate" },
-        { value: "business-registration", label: "Business Registration" }
-    ],
-    customs: [
-        { value: "import-permit", label: "Import Permit" },
-        { value: "export-permit", label: "Export Permit" },
-        { value: "customs-clearance", label: "Customs Clearance" },
-        { value: "duty-calculation", label: "Duty Calculation" }
-    ],
-    revenue: [
-        { value: "tax-registration", label: "Tax Registration" },
-        { value: "tax-clearance", label: "Tax Clearance Certificate" },
-        { value: "vat-registration", label: "VAT Registration" },
-        { value: "income-tax", label: "Income Tax Matters" }
-    ],
-    transport: [
-        { value: "license-new", label: "New Driving License" },
-        { value: "license-renewal", label: "License Renewal" },
-        { value: "vehicle-registration", label: "Vehicle Registration" },
-        { value: "revenue-license", label: "Revenue License" }
-    ]
-};
-
-// --- MOCK DATA & GENERATORS ---
-const DESIGNATIONS = [
-    { value: "officer", label: "Officer" }, 
-    { value: "senior-officer", label: "Senior Officer" }, 
-    { value: "manager", label: "Manager" }
-];
-
-const AGENTS_BY_DESIGNATION: Record<string, { value: string; label: string }[]> = {
-    officer: [
-        { value: "a_perera", label: "A. Perera" }, 
-        { value: "s_fernando", label: "S. Fernando" }
-    ],
-    "senior-officer": [
-        { value: "n_silva", label: "N. Silva" }, 
-        { value: "k_de_alwis", label: "K. De Alwis" }
-    ],
-    manager: [
-        { value: "r_jayasinghe", label: "R. Jayasinghe" }
-    ],
-};
-
+// Helper functions
 function generateDays(days = 14) {
     const out: { key: string; date: Date; label: string }[] = [];
     const now = new Date();
@@ -547,42 +442,13 @@ function generateDays(days = 14) {
     return out;
 }
 
-function generateSlots() {
-    const slots: string[] = [];
-    for (let h = 9; h <= 16; h++) {
-        for (const m of [0, 30]) {
-            const timeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-            
-            // Skip lunch break: 12:30 PM to 2:00 PM (12:30 - 14:00)
-            if ((h === 12 && m === 30) || h === 13 || (h === 14 && m === 0)) {
-                continue;
-            }
-            
-            slots.push(timeSlot);
-        }
-    }
-    return slots;
-}
-
-function mockAvailability(dayKey: string, agent: string) {
-    const base = generateSlots();
-    const blocked = new Set<string>();
-    for (let i = 0; i < base.length; i++) {
-        const seed = (dayKey.charCodeAt(0) + (agent?.charCodeAt(0) || 0) + i) % 5;
-        if (seed === 0) blocked.add(base[i]);
-    }
-    return new Set(base.filter((s) => !blocked.has(s)));
-}
-
-const generateReference = () => 'APT-' + Date.now().toString().slice(-8);
-
-// --- MAIN PAGE COMPONENT ---
+// MAIN PAGE COMPONENT
 export default function NewBookingPage() {
     const router = useRouter();
     const [form, setForm] = useState({ 
         department: "",
         service: "",
-        designation: "", 
+        position: "", 
         agent: "", 
         day: "", 
         slot: "", 
@@ -595,28 +461,189 @@ export default function NewBookingPage() {
     const [success, setSuccess] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const t = newBookingTranslations;
+    // API state
+    const [departments, setDepartments] = useState<Department[]>([]);
+    const [services, setServices] = useState<Service[]>([]);
+    const [agents, setAgents] = useState<Agent[]>([]);
+    const [availableSlots, setAvailableSlots] = useState<Set<string>>(new Set());
+    
+    // Loading states
+    const [loadingDepartments, setLoadingDepartments] = useState(false);
+    const [loadingServices, setLoadingServices] = useState(false);
+    const [loadingAgents, setLoadingAgents] = useState(false);
+    const [loadingSlots, setLoadingSlots] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+    const t = newBookingTranslations;
     const days = useMemo(() => generateDays(14), []);
-    const slots = useMemo(() => generateSlots(), []);
-    const services = useMemo(() => form.department ? SERVICES_BY_DEPARTMENT[form.department] || [] : [], [form.department]);
-    const agents = useMemo(() => form.designation ? AGENTS_BY_DESIGNATION[form.designation] || [] : [], [form.designation]);
-    const availableSlots = useMemo(() => (!form.day || !form.agent) ? new Set<string>() : mockAvailability(form.day, form.agent), [form.day, form.agent]);
-    const requiredDocuments = useMemo(() => {
-        if (form.service && DOCUMENT_REQUIREMENTS[form.service]) {
-            return DOCUMENT_REQUIREMENTS[form.service];
+
+    // Check login status on mount
+    useEffect(() => {
+        const token = localStorage.getItem('user_access_token');
+        const authenticated = !!token;
+        setIsAuthenticated(authenticated);
+        
+        console.log('🔐 Login status check:', authenticated ? 'Logged in' : 'Not logged in');
+        if (!authenticated) {
+            console.warn('⚠️ User not logged in - appointment creation will fail');
         }
-        return DOCUMENT_REQUIREMENTS["default"] || [];
-    }, [form.service]);
+        
+        // Load departments
+        loadDepartments();
+    }, []);
+
+    const loadDepartments = async () => {
+        console.log('🔄 Loading departments...');
+        setLoadingDepartments(true);
+        setError(null);
+        try {
+            console.log('📡 Calling UserApiService.getDepartments()...');
+            const response = await UserApiService.getDepartments();
+            console.log('📥 Response:', response);
+            
+            if (response.success && response.data) {
+                console.log('✅ Departments loaded:', response.data.departments);
+                setDepartments(response.data.departments);
+            } else {
+                console.error('❌ API Error:', response.message);
+                setError(response.message || t.errorLoadingData);
+            }
+        } catch (err) {
+            console.error('💥 Load departments error:', err);
+            setError(t.errorLoadingData);
+        }
+        setLoadingDepartments(false);
+    };
+
+    // Load services when department changes
+    useEffect(() => {
+        if (form.department) {
+            loadServices(form.department);
+        } else {
+            setServices([]);
+        }
+    }, [form.department]);
+
+    const loadServices = async (departmentId: string) => {
+        setLoadingServices(true);
+        setError(null);
+        try {
+            const response = await UserApiService.getDepartmentServices(departmentId);
+            if (response.success && response.data) {
+                setServices(response.data.services);
+            } else {
+                setError(response.message || t.errorLoadingData);
+            }
+        } catch (err) {
+            setError(t.errorLoadingData);
+            console.error('Load services error:', err);
+        }
+        setLoadingServices(false);
+    };
+
+    // Load agents when department changes
+    useEffect(() => {
+        if (form.department) {
+            loadAgents(form.department, form.position);
+        } else {
+            setAgents([]);
+        }
+    }, [form.department, form.position]);
+
+    const loadAgents = async (departmentId: string, position?: string) => {
+        setLoadingAgents(true);
+        setError(null);
+        try {
+            const response = await UserApiService.getDepartmentAgents(departmentId, position);
+            if (response.success && response.data) {
+                setAgents(response.data.agents);
+            } else {
+                setError(response.message || t.errorLoadingData);
+            }
+        } catch (err) {
+            setError(t.errorLoadingData);
+            console.error('Load agents error:', err);
+        }
+        setLoadingAgents(false);
+    };
+
+    // Load available slots when agent and day change
+    useEffect(() => {
+        if (form.agent && form.day) {
+            loadAvailableSlots(form.agent, form.day);
+        } else {
+            setAvailableSlots(new Set());
+        }
+    }, [form.agent, form.day]);
+
+    const loadAvailableSlots = async (agentId: string, date: string) => {
+        setLoadingSlots(true);
+        try {
+            const response = await UserApiService.getAvailableTimeSlots(agentId, date);
+            if (response.success && response.data) {
+                setAvailableSlots(new Set(response.data.slots));
+            } else {
+                setAvailableSlots(new Set());
+            }
+        } catch (err) {
+            setAvailableSlots(new Set());
+            console.error('Load slots error:', err);
+        }
+        setLoadingSlots(false);
+    };
+
+    // Dynamic options
+    const departmentOptions = departments.map(dept => ({
+        value: dept.id,
+        label: dept.name
+    }));
+    console.log('🏢 Department options:', departmentOptions);
+
+    const serviceOptions = services.map(service => ({
+        value: service.id,
+        label: service.name
+    }));
+
+    const positionOptions = [...new Set(agents.map(agent => agent.position))].map(position => ({
+        value: position,
+        label: position
+    }));
+
+    const agentOptions = agents
+        .filter(agent => !form.position || agent.position === form.position)
+        .map(agent => ({
+            value: agent.id,
+            label: `${agent.name} (${agent.officerId})`
+        }));
+
+    // Document requirements based on selected service
+    const requiredDocuments: DocumentRequirement[] = useMemo(() => {
+        const selectedService = services.find(s => s.id === form.service);
+        if (!selectedService || !selectedService.requirements.length) {
+            return [
+                { name: "applicationForm", label: "Application Form", required: true, accept: ".pdf,.jpg,.jpeg,.png", description: "Completed and signed application form" },
+                { name: "nicScan", label: "NIC Copy", required: true, accept: ".jpg,.jpeg,.png,.pdf", description: "Clear scan or photo of your National Identity Card" },
+                { name: "supportingDocs", label: "Supporting Documents", required: false, accept: ".pdf,.jpg,.jpeg,.png", description: "Any additional documents related to your request" }
+            ];
+        }
+        
+        return selectedService.requirements.map((req, index) => ({
+            name: `document_${index}`,
+            label: req,
+            required: index < 2, // First 2 requirements are required
+            accept: ".pdf,.jpg,.jpeg,.png",
+            description: `${req} - Required for ${selectedService.name}`
+        }));
+    }, [services, form.service]);
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { name, value } = e.target;
         setForm((prev) => ({
             ...prev, 
             [name]: value, 
-            ...(name === "department" ? { service: "", designation: "", agent: "", slot: "" } : {}),
-            ...(name === "service" ? { designation: "", agent: "", slot: "" } : {}),
-            ...(name === "designation" ? { agent: "", slot: "" } : {}), 
+            ...(name === "department" ? { service: "", position: "", agent: "", slot: "" } : {}),
+            ...(name === "service" ? { position: "", agent: "", slot: "" } : {}),
+            ...(name === "position" ? { agent: "", slot: "" } : {}), 
             ...(name === "agent" ? { slot: "" } : {})
         }));
         
@@ -639,9 +666,8 @@ export default function NewBookingPage() {
     };
 
     const validate = useCallback(() => {
-        if (!form.department) return 'Please select a department';
-        if (!form.service) return 'Please select a service';
-        if (!form.designation) return t.errors.selectDesignation;
+        if (!form.department) return t.errors.selectDepartment;
+        if (!form.service) return t.errors.selectService;
         if (!form.agent) return t.errors.selectAgent;
         if (!form.day) return t.errors.pickDay;
         if (!form.slot) return t.errors.chooseTimeSlot;
@@ -662,41 +688,106 @@ export default function NewBookingPage() {
         setError(null);
         setSuccess(null);
         
+        // Check if user is logged in first
+        const token = localStorage.getItem('user_access_token');
+        if (!token) {
+            setError('Please login first to create an appointment. Redirecting to login...');
+            setTimeout(() => {
+                window.location.href = '/user/auth/login';
+            }, 2000);
+            return;
+        }
+        
         const validationError = validate();
         if (validationError) { 
             setError(validationError); 
             return; 
         }
 
+        console.log('🚀 Starting appointment submission...');
         setSubmitting(true);
-        await new Promise((res) => setTimeout(res, 1200));
-        
-        const ref = generateReference();
-        setReference(ref);
-        setSubmitted(true);
-        setSuccess(`${t.bookingReceived} ${ref}`);
+
+        try {
+            // Prepare files and file names
+            const fileArray: File[] = [];
+            const fileNames: string[] = [];
+            
+            Object.entries(files).forEach(([docName, file]) => {
+                if (file) {
+                    fileArray.push(file);
+                    fileNames.push(docName);
+                }
+            });
+
+            console.log('📝 Appointment data:', {
+                departmentId: form.department,
+                serviceId: form.service,
+                agentId: form.agent,
+                date: form.day,
+                time: form.slot,
+                notes: form.notes,
+                files: fileArray.length
+            });
+
+            const appointmentData = {
+                departmentId: form.department,
+                serviceId: form.service,
+                agentId: form.agent,
+                date: form.day,
+                time: form.slot,
+                notes: form.notes,
+                priority: 'normal' as const,
+                files: fileArray,
+                fileNames: fileNames
+            };
+
+            const response = await UserApiService.createAppointment(appointmentData);
+            
+            if (response.success && response.data) {
+                console.log('✅ Appointment created successfully!');
+                setReference(response.data.appointment.bookingReference);
+                setSubmitted(true);
+                setSuccess(`${t.bookingReceived} ${response.data.appointment.bookingReference}`);
+            } else {
+                console.error('❌ Appointment creation failed:', response.message);
+                setError(response.message || 'Failed to create appointment');
+            }
+        } catch (err: any) {
+            console.error('💥 Appointment submission error:', err);
+            
+            // Handle specific authentication errors
+            if (err.message.includes('Authentication failed') || err.message.includes('Please login')) {
+                setError('Your session has expired. Please login again. Redirecting...');
+                setTimeout(() => {
+                    window.location.href = '/user/auth/login';
+                }, 2000);
+            } else {
+                setError(err.message || 'Failed to create appointment. Please try again.');
+            }
+        }
         
         setSubmitting(false);
     }
 
+    // Helper functions to get display names
     const getDepartmentName = () => {
-        const department = DEPARTMENTS.find(d => d.value === form.department);
-        return department ? department.label : '';
+        const department = departments.find(d => d.id === form.department);
+        return department ? department.name : '';
     };
 
     const getServiceName = () => {
-        const service = services.find(s => s.value === form.service);
-        return service ? service.label : '';
+        const service = services.find(s => s.id === form.service);
+        return service ? service.name : '';
     };
 
     const getAgentName = () => {
-        const agent = agents.find(a => a.value === form.agent);
-        return agent ? agent.label : '';
+        const agent = agents.find(a => a.id === form.agent);
+        return agent ? agent.name : '';
     };
 
-    const getDesignationName = () => {
-        const designation = DESIGNATIONS.find(d => d.value === form.designation);
-        return designation ? designation.label : '';
+    const getAgentPosition = () => {
+        const agent = agents.find(a => a.id === form.agent);
+        return agent ? agent.position : '';
     };
 
     const getSelectedDay = () => {
@@ -719,8 +810,8 @@ export default function NewBookingPage() {
             onLanguageChange={() => {}}
         >
             <div className="max-w-4xl mx-auto">
-                {/* Back Button */}
-                <div className="mb-8">
+                {/* Back Button and Login Status */}
+                <div className="mb-8 flex justify-between items-center">
                     <Link 
                         href="/User/Booking"
                         className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
@@ -728,10 +819,26 @@ export default function NewBookingPage() {
                         <ArrowLeftIcon className="w-4 h-4" />
                         {t.backToBookings}
                     </Link>
+                    
+                    {/* Login Status Indicator (for debugging) */}
+                    <div className="text-xs flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${isAuthenticated ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                        <span className="text-muted-foreground">
+                            {isAuthenticated ? 'Authenticated' : 'Not Logged In'}
+                        </span>
+                        {!isAuthenticated && (
+                            <Link 
+                                href="/user/auth/login"
+                                className="ml-2 px-2 py-1 text-xs bg-[#FFC72C] text-black rounded-md hover:bg-[#FF5722] transition-colors"
+                            >
+                                Login
+                            </Link>
+                        )}
+                    </div>
                 </div>
 
                 {success && <div className="mb-8"><SuccessAlert message={success} /></div>}
-                {error && <div className="mb-8"><ErrorAlert message={error} /></div>}
+                {error && <div className="mb-8"><ErrorAlert message={error} onRetry={error.includes('loading') ? loadDepartments : undefined} /></div>}
             
                 <form onSubmit={handleSubmit} className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-border/50 shadow-glow modern-card hover:border-[#FFC72C]/30 transition-all duration-500">
                     <div className="space-y-12">
@@ -745,7 +852,8 @@ export default function NewBookingPage() {
                                     value={form.department}
                                     onChange={handleChange}
                                     placeholder={t.selectDepartment}
-                                    options={DEPARTMENTS}
+                                    options={departmentOptions}
+                                    loading={loadingDepartments}
                                 />
                             </div>
                             <div>
@@ -757,7 +865,8 @@ export default function NewBookingPage() {
                                     onChange={handleChange}
                                     disabled={!form.department}
                                     placeholder={form.department ? t.selectService : t.selectDepartmentFirst}
-                                    options={services}
+                                    options={serviceOptions}
+                                    loading={loadingServices}
                                 />
                             </div>
                         </Step>
@@ -767,14 +876,16 @@ export default function NewBookingPage() {
                         {/* Step 2: Agent Selection */}
                         <Step icon={CalendarClockIcon} title={t.step2Title} description={t.step2Desc}>
                             <div>
-                                <label htmlFor="designation" className="block text-sm font-medium text-muted-foreground mb-2">{t.agentDesignation}</label>
+                                <label htmlFor="position" className="block text-sm font-medium text-muted-foreground mb-2">{t.agentDesignation}</label>
                                 <CustomDropdown
-                                    id="designation"
-                                    name="designation"
-                                    value={form.designation}
+                                    id="position"
+                                    name="position"
+                                    value={form.position}
                                     onChange={handleChange}
-                                    placeholder={t.selectDesignation}
-                                    options={DESIGNATIONS}
+                                    disabled={!form.department}
+                                    placeholder={form.department ? t.selectDesignation : t.selectDepartmentFirst}
+                                    options={positionOptions}
+                                    loading={loadingAgents}
                                 />
                             </div>
                             <div>
@@ -784,9 +895,10 @@ export default function NewBookingPage() {
                                     name="agent"
                                     value={form.agent}
                                     onChange={handleChange}
-                                    disabled={!form.designation}
-                                    placeholder={form.designation ? t.selectAgent : t.selectDesignationFirst}
-                                    options={agents}
+                                    disabled={!form.department}
+                                    placeholder={form.department ? t.selectAgent : t.selectDepartmentFirst}
+                                    options={agentOptions}
+                                    loading={loadingAgents}
                                 />
                             </div>
                         </Step>
@@ -837,6 +949,11 @@ export default function NewBookingPage() {
                                                 <p className="text-sm text-muted-foreground/70">{t.availableSlotsWillAppear}</p>
                                             </div>
                                         </div>
+                                    ) : loadingSlots ? (
+                                        <div className="flex items-center justify-center py-12">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FFC72C]"></div>
+                                            <span className="ml-3 text-muted-foreground">Loading slots...</span>
+                                        </div>
                                     ) : (
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between">
@@ -848,23 +965,19 @@ export default function NewBookingPage() {
                                                 </div>
                                             </div>
                                             
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                {slots.map((s) => {
-                                                    const isAvailable = availableSlots.has(s);
-                                                    const isSelected = form.slot === s;
-                                                    return (
+                                            {Array.from(availableSlots).length > 0 ? (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                    {Array.from(availableSlots).map((slot) => (
                                                         <TimeSlotCard
-                                                            key={s}
-                                                            slot={s}
-                                                            isAvailable={isAvailable}
-                                                            isSelected={isSelected}
-                                                            onSelect={() => selectSlot(s)}
+                                                            key={slot}
+                                                            slot={slot}
+                                                            isAvailable={true}
+                                                            isSelected={form.slot === slot}
+                                                            onSelect={() => selectSlot(slot)}
                                                         />
-                                                    );
-                                                })}
-                                            </div>
-                                            
-                                            {Array.from(availableSlots).length === 0 && (
+                                                    ))}
+                                                </div>
+                                            ) : (
                                                 <div className="text-center py-8">
                                                     <AlertTriangleIcon className="w-12 h-12 text-[#FFC72C] mx-auto mb-3" />
                                                     <p className="text-muted-foreground font-medium mb-1">{t.noSlotsAvailable}</p>
@@ -978,7 +1091,7 @@ export default function NewBookingPage() {
                                         </div>
                                         <div className="space-y-1">
                                             <p className="text-muted-foreground">{t.agent}</p>
-                                            <p className="font-medium">{getDesignationName()} - {getAgentName()}</p>
+                                            <p className="font-medium">{getAgentPosition()} - {getAgentName()}</p>
                                         </div>
                                         <div className="space-y-1">
                                             <p className="text-muted-foreground">{t.dateTime}</p>

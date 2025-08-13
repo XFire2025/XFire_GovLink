@@ -3,17 +3,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Department from '@/lib/models/departmentSchema';
 
-// GET /api/user/departments - Fetch all active departments for users
+// GET /api/user/departments - Fetch all active departments for users (public endpoint)
 export async function GET(request: NextRequest) {
   try {
+    console.log('🚀 API: /api/user/departments called');
     await connectDB();
+    console.log('✅ Database connected');
 
     const { searchParams } = new URL(request.url);
     const includeServices = searchParams.get('includeServices') === 'true';
+    console.log('🔍 Include services:', includeServices);
 
-    // Fetch only active departments
+    // Fetch departments with active status (checking both cases)
     const departments = await Department.find(
-      { status: 'ACTIVE' },
+      { 
+        $or: [
+          { status: 'ACTIVE' },
+          { status: 'active' }
+        ]
+      },
       {
         _id: 1,
         departmentId: 1,
@@ -29,6 +37,9 @@ export async function GET(request: NextRequest) {
         ...(includeServices && { services: 1 })
       }
     ).sort({ name: 1 });
+
+    console.log('📊 Found departments:', departments.length);
+    console.log('📋 Department data:', departments.map(d => ({ id: d._id, name: d.name, status: d.status })));
 
     // Transform departments for frontend
     const transformedDepartments = departments.map(dept => ({
@@ -56,6 +67,8 @@ export async function GET(request: NextRequest) {
       })
     }));
 
+    console.log('✅ Transformed departments for frontend:', transformedDepartments.length);
+
     return NextResponse.json({
       success: true,
       message: 'Departments retrieved successfully',
@@ -63,7 +76,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Get departments error:', error);
+    console.error('❌ Get departments error:', error);
     return NextResponse.json(
       { success: false, message: 'Failed to retrieve departments' },
       { status: 500 }

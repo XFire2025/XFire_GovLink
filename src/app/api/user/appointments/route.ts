@@ -5,13 +5,14 @@ import Appointment from '@/lib/models/appointmentSchema';
 import Department from '@/lib/models/departmentSchema';
 import Agent from '@/lib/models/agentSchema';
 import { uploadFileToR2 } from '@/lib/r2';
-import { userAuthMiddleware } from '@/lib/auth/user-middleware';
+import { authenticate } from '@/lib/auth/user-middleware';
+import User from '@/lib/models/userSchema';
 
 // POST /api/user/appointments - Create new appointment with file uploads
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user
-    const authResult = await userAuthMiddleware(request);
+    const authResult = await authenticate(request);
     if (!authResult.success) {
       return NextResponse.json(
         { success: false, message: authResult.message },
@@ -20,6 +21,15 @@ export async function POST(request: NextRequest) {
     }
 
     await connectDB();
+
+    // Get full user data
+    const user = await User.findById(authResult.user!.userId);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
 
     const formData = await request.formData();
     
@@ -108,7 +118,7 @@ export async function POST(request: NextRequest) {
         // Generate unique filename
         const timestamp = Date.now();
         const fileName = `${timestamp}-${file.name}`;
-        const folderPath = `appointments/${authResult.user!.id}`;
+        const folderPath = `appointments/${user._id}`;
 
         // Upload to R2
         const uploadResult = await uploadFileToR2(
@@ -142,11 +152,11 @@ export async function POST(request: NextRequest) {
 
     // Create appointment
     const newAppointment = new Appointment({
-      citizenId: authResult.user!.id,
-      citizenName: authResult.user!.fullName,
-      citizenNIC: authResult.user!.nicNumber,
-      contactEmail: authResult.user!.email,
-      contactPhone: authResult.user!.mobileNumber,
+      citizenId: user._id,
+      citizenName: user.fullName,
+      citizenNIC: user.nicNumber,
+      contactEmail: user.email,
+      contactPhone: user.mobileNumber,
       serviceType: service.category.toLowerCase() as any, // Map to enum
       department: department.departmentId,
       date: new Date(appointmentData.date),
@@ -204,7 +214,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Authenticate user
-    const authResult = await userAuthMiddleware(request);
+    const authResult = await authenticate(request);
     if (!authResult.success) {
       return NextResponse.json(
         { success: false, message: authResult.message },
@@ -214,13 +224,22 @@ export async function GET(request: NextRequest) {
 
     await connectDB();
 
+    // Get full user data
+    const user = await User.findById(authResult.user!.userId);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User not found' },
+        { status: 404 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const limit = parseInt(searchParams.get('limit') || '50');
     const page = parseInt(searchParams.get('page') || '1');
 
     // Build filter
-    const filter: any = { citizenId: authResult.user!.id };
+    const filter: any = { citizenId: user._id };
     if (status && status !== 'all') {
       filter.status = status;
     }
