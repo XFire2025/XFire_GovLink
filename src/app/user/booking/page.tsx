@@ -181,13 +181,13 @@ export default function BookingListPage() {
             {/* Back Button and Create Button */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-16">
                 <Link 
-                    href="/User/Dashboard"
+                    href="/user/dashboard"
                     className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
                 >
                     <ArrowLeftIcon className="w-4 h-4" />
                     {t.backToDashboard}
                 </Link>
-                <Link href="/User/Booking/New" className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-xl hover:from-[#FF5722] hover:to-[#8D153A] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl">
+                <Link href="/user/booking/new" className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-xl hover:from-[#FF5722] hover:to-[#8D153A] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl">
                     <PlusIcon className="w-5 h-5" />
                     {t.createNew}
                 </Link>

@@ -5,9 +5,9 @@ import React, { useMemo, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
-import UserApiService, { Department, Service, Agent } from '@/lib/services/userApiService';
+import { useAuth } from '@/lib/auth/AuthContext';
 
-// New booking translations (keeping existing translations)
+// New booking translations
 const newBookingTranslations = {
   title: 'Book Appointment',
   subtitle: 'Schedule your meeting with government officials and submit required documents',
@@ -85,7 +85,9 @@ const newBookingTranslations = {
   loadingServices: 'Loading services...',
   loadingAgents: 'Loading agents...',
   errorLoadingData: 'Error loading data. Please try again.',
-  retry: 'Retry'
+  retry: 'Retry',
+  authRequired: 'Please login to create an appointment',
+  sessionExpired: 'Your session has expired. Please login again.'
 };
 
 // Icons (keeping existing icons)
@@ -103,6 +105,46 @@ const UploadIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xml
 const FileIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>;
 const HomeIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>;
 const RefreshIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>;
+
+// Data interfaces
+interface Department {
+  id: string;
+  code: string;
+  name: string;
+  shortName: string;
+  description: string;
+  email: string;
+  phone: string;
+  allowOnlineServices: boolean;
+  requiresAppointment: boolean;
+  services?: Service[];
+}
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  processingTime: string;
+  fee: number;
+  requirements: string[];
+  departmentId?: string;
+  departmentName?: string;
+}
+
+interface Agent {
+  id: string;
+  name: string;
+  officerId: string;
+  position: string;
+  officeName: string;
+  email: string;
+  phone: string;
+  specialization: string[];
+  duties: string[];
+  departmentCode: string;
+  departmentName: string;
+}
 
 // Document requirement interface
 interface DocumentRequirement {
@@ -442,9 +484,37 @@ function generateDays(days = 14) {
     return out;
 }
 
+function generateTimeSlots(): string[] {
+    const slots: string[] = [];
+    for (let h = 9; h <= 16; h++) {
+        for (const m of [0, 30]) {
+            const timeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+            
+            // Skip lunch break: 12:30 PM to 2:00 PM (12:30 - 14:00)
+            if ((h === 12 && m === 30) || h === 13 || (h === 14 && m === 0)) {
+                continue;
+            }
+            
+            slots.push(timeSlot);
+        }
+    }
+    return slots;
+}
+
+function mockAvailableSlots(agentId: string, date: string, baseSlots: string[]): Set<string> {
+    const blocked = new Set<string>();
+    for (let i = 0; i < baseSlots.length; i++) {
+        const seed = (date.charCodeAt(0) + (agentId?.charCodeAt(0) || 0) + i) % 5;
+        if (seed === 0) blocked.add(baseSlots[i]);
+    }
+    return new Set(baseSlots.filter((s) => !blocked.has(s)));
+}
+
 // MAIN PAGE COMPONENT
 export default function NewBookingPage() {
     const router = useRouter();
+    const { user, isAuthenticated, isLoading } = useAuth();
+    
     const [form, setForm] = useState({ 
         department: "",
         service: "",
@@ -472,34 +542,42 @@ export default function NewBookingPage() {
     const [loadingServices, setLoadingServices] = useState(false);
     const [loadingAgents, setLoadingAgents] = useState(false);
     const [loadingSlots, setLoadingSlots] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
     const t = newBookingTranslations;
     const days = useMemo(() => generateDays(14), []);
+    const timeSlots = useMemo(() => generateTimeSlots(), []);
 
-    // Check login status on mount
-    useEffect(() => {
-        const token = localStorage.getItem('user_access_token');
-        const authenticated = !!token;
-        setIsAuthenticated(authenticated);
-        
-        console.log('🔐 Login status check:', authenticated ? 'Logged in' : 'Not logged in');
-        if (!authenticated) {
-            console.warn('⚠️ User not logged in - appointment creation will fail');
+    // API Functions using your existing auth pattern
+    const apiCall = async (endpoint: string, options: RequestInit = {}) => {
+        try {
+            const response = await fetch(endpoint, {
+                ...options,
+                credentials: 'include', // Use cookies for auth
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers,
+                },
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP ${response.status}`);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`API call failed for ${endpoint}:`, error);
+            throw error;
         }
-        
-        // Load departments
-        loadDepartments();
-    }, []);
+    };
 
     const loadDepartments = async () => {
         console.log('🔄 Loading departments...');
         setLoadingDepartments(true);
         setError(null);
         try {
-            console.log('📡 Calling UserApiService.getDepartments()...');
-            const response = await UserApiService.getDepartments();
-            console.log('📥 Response:', response);
+            const response = await apiCall('/api/user/departments');
+            console.log('📥 Departments response:', response);
             
             if (response.success && response.data) {
                 console.log('✅ Departments loaded:', response.data.departments);
@@ -508,12 +586,64 @@ export default function NewBookingPage() {
                 console.error('❌ API Error:', response.message);
                 setError(response.message || t.errorLoadingData);
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error('💥 Load departments error:', err);
             setError(t.errorLoadingData);
         }
         setLoadingDepartments(false);
     };
+
+    const loadServices = async (departmentId: string) => {
+        setLoadingServices(true);
+        setError(null);
+        try {
+            const response = await apiCall(`/api/user/departments/${departmentId}/services`);
+            if (response.success && response.data) {
+                setServices(response.data.services);
+            } else {
+                setError(response.message || t.errorLoadingData);
+            }
+        } catch (err: any) {
+            setError(t.errorLoadingData);
+        }
+        setLoadingServices(false);
+    };
+
+    const loadAgents = async (departmentId: string, position?: string) => {
+        setLoadingAgents(true);
+        setError(null);
+        try {
+            const endpoint = position 
+                ? `/api/user/departments/${departmentId}/agents?position=${encodeURIComponent(position)}`
+                : `/api/user/departments/${departmentId}/agents`;
+            const response = await apiCall(endpoint);
+            if (response.success && response.data) {
+                setAgents(response.data.agents);
+            } else {
+                setError(response.message || t.errorLoadingData);
+            }
+        } catch (err: any) {
+            setError(t.errorLoadingData);
+        }
+        setLoadingAgents(false);
+    };
+
+    const loadAvailableSlots = async (agentId: string, date: string) => {
+        setLoadingSlots(true);
+        try {
+            // For now using mock data - replace with real API call
+            const mockSlots = mockAvailableSlots(agentId, date, timeSlots);
+            setAvailableSlots(mockSlots);
+        } catch (err) {
+            setAvailableSlots(new Set());
+        }
+        setLoadingSlots(false);
+    };
+
+    // Load departments on mount
+    useEffect(() => {
+        loadDepartments();
+    }, []);
 
     // Load services when department changes
     useEffect(() => {
@@ -524,23 +654,6 @@ export default function NewBookingPage() {
         }
     }, [form.department]);
 
-    const loadServices = async (departmentId: string) => {
-        setLoadingServices(true);
-        setError(null);
-        try {
-            const response = await UserApiService.getDepartmentServices(departmentId);
-            if (response.success && response.data) {
-                setServices(response.data.services);
-            } else {
-                setError(response.message || t.errorLoadingData);
-            }
-        } catch (err) {
-            setError(t.errorLoadingData);
-            console.error('Load services error:', err);
-        }
-        setLoadingServices(false);
-    };
-
     // Load agents when department changes
     useEffect(() => {
         if (form.department) {
@@ -549,23 +662,6 @@ export default function NewBookingPage() {
             setAgents([]);
         }
     }, [form.department, form.position]);
-
-    const loadAgents = async (departmentId: string, position?: string) => {
-        setLoadingAgents(true);
-        setError(null);
-        try {
-            const response = await UserApiService.getDepartmentAgents(departmentId, position);
-            if (response.success && response.data) {
-                setAgents(response.data.agents);
-            } else {
-                setError(response.message || t.errorLoadingData);
-            }
-        } catch (err) {
-            setError(t.errorLoadingData);
-            console.error('Load agents error:', err);
-        }
-        setLoadingAgents(false);
-    };
 
     // Load available slots when agent and day change
     useEffect(() => {
@@ -576,28 +672,11 @@ export default function NewBookingPage() {
         }
     }, [form.agent, form.day]);
 
-    const loadAvailableSlots = async (agentId: string, date: string) => {
-        setLoadingSlots(true);
-        try {
-            const response = await UserApiService.getAvailableTimeSlots(agentId, date);
-            if (response.success && response.data) {
-                setAvailableSlots(new Set(response.data.slots));
-            } else {
-                setAvailableSlots(new Set());
-            }
-        } catch (err) {
-            setAvailableSlots(new Set());
-            console.error('Load slots error:', err);
-        }
-        setLoadingSlots(false);
-    };
-
     // Dynamic options
     const departmentOptions = departments.map(dept => ({
         value: dept.id,
         label: dept.name
     }));
-    console.log('🏢 Department options:', departmentOptions);
 
     const serviceOptions = services.map(service => ({
         value: service.id,
@@ -688,13 +767,10 @@ export default function NewBookingPage() {
         setError(null);
         setSuccess(null);
         
-        // Check if user is logged in first
-        const token = localStorage.getItem('user_access_token');
-        if (!token) {
-            setError('Please login first to create an appointment. Redirecting to login...');
-            setTimeout(() => {
-                window.location.href = '/user/auth/login';
-            }, 2000);
+        // Check authentication using your context
+        if (!isAuthenticated || !user) {
+            setError(t.authRequired);
+            router.push('/user/auth/login');
             return;
         }
         
@@ -708,62 +784,55 @@ export default function NewBookingPage() {
         setSubmitting(true);
 
         try {
-            // Prepare files and file names
-            const fileArray: File[] = [];
-            const fileNames: string[] = [];
-            
+            // Prepare FormData for file upload
+            const formData = new FormData();
+            formData.append('departmentId', form.department);
+            formData.append('serviceId', form.service);
+            formData.append('agentId', form.agent);
+            formData.append('date', form.day);
+            formData.append('time', form.slot);
+            if (form.notes) formData.append('notes', form.notes);
+            formData.append('priority', 'normal');
+
+            // Add files
             Object.entries(files).forEach(([docName, file]) => {
                 if (file) {
-                    fileArray.push(file);
-                    fileNames.push(docName);
+                    formData.append('files', file);
+                    formData.append('fileNames', docName);
                 }
             });
 
-            console.log('📝 Appointment data:', {
-                departmentId: form.department,
-                serviceId: form.service,
-                agentId: form.agent,
-                date: form.day,
-                time: form.slot,
-                notes: form.notes,
-                files: fileArray.length
+            console.log('📝 Submitting appointment...');
+
+            const response = await fetch('/api/user/appointments', {
+                method: 'POST',
+                credentials: 'include', // Use cookies for auth
+                body: formData, // Don't set Content-Type for FormData
             });
 
-            const appointmentData = {
-                departmentId: form.department,
-                serviceId: form.service,
-                agentId: form.agent,
-                date: form.day,
-                time: form.slot,
-                notes: form.notes,
-                priority: 'normal' as const,
-                files: fileArray,
-                fileNames: fileNames
-            };
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                if (response.status === 401) {
+                    setError(t.sessionExpired);
+                    router.push('/user/auth/login');
+                    return;
+                }
+                throw new Error(errorData.message || 'Failed to create appointment');
+            }
 
-            const response = await UserApiService.createAppointment(appointmentData);
+            const result = await response.json();
             
-            if (response.success && response.data) {
+            if (result.success && result.data) {
                 console.log('✅ Appointment created successfully!');
-                setReference(response.data.appointment.bookingReference);
+                setReference(result.data.appointment.bookingReference);
                 setSubmitted(true);
-                setSuccess(`${t.bookingReceived} ${response.data.appointment.bookingReference}`);
+                setSuccess(`${t.bookingReceived} ${result.data.appointment.bookingReference}`);
             } else {
-                console.error('❌ Appointment creation failed:', response.message);
-                setError(response.message || 'Failed to create appointment');
+                throw new Error(result.message || 'Failed to create appointment');
             }
         } catch (err: any) {
             console.error('💥 Appointment submission error:', err);
-            
-            // Handle specific authentication errors
-            if (err.message.includes('Authentication failed') || err.message.includes('Please login')) {
-                setError('Your session has expired. Please login again. Redirecting...');
-                setTimeout(() => {
-                    window.location.href = '/user/auth/login';
-                }, 2000);
-            } else {
-                setError(err.message || 'Failed to create appointment. Please try again.');
-            }
+            setError(err.message || 'Failed to create appointment. Please try again.');
         }
         
         setSubmitting(false);
@@ -795,6 +864,23 @@ export default function NewBookingPage() {
         return day ? day.label : '';
     };
 
+    // Show loading while checking auth
+    if (isLoading) {
+        return (
+            <UserDashboardLayout
+                title="Loading..."
+                subtitle="Checking authentication..."
+                language="en"
+                onLanguageChange={() => {}}
+            >
+                <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FFC72C]"></div>
+                    <span className="ml-3 text-muted-foreground">Loading...</span>
+                </div>
+            </UserDashboardLayout>
+        );
+    }
+
     return (
         <UserDashboardLayout
             title={
@@ -810,8 +896,8 @@ export default function NewBookingPage() {
             onLanguageChange={() => {}}
         >
             <div className="max-w-4xl mx-auto">
-                {/* Back Button and Login Status */}
-                <div className="mb-8 flex justify-between items-center">
+                {/* Back Button */}
+                <div className="mb-8">
                     <Link 
                         href="/User/Booking"
                         className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
@@ -819,22 +905,6 @@ export default function NewBookingPage() {
                         <ArrowLeftIcon className="w-4 h-4" />
                         {t.backToBookings}
                     </Link>
-                    
-                    {/* Login Status Indicator (for debugging) */}
-                    <div className="text-xs flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${isAuthenticated ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                        <span className="text-muted-foreground">
-                            {isAuthenticated ? 'Authenticated' : 'Not Logged In'}
-                        </span>
-                        {!isAuthenticated && (
-                            <Link 
-                                href="/user/auth/login"
-                                className="ml-2 px-2 py-1 text-xs bg-[#FFC72C] text-black rounded-md hover:bg-[#FF5722] transition-colors"
-                            >
-                                Login
-                            </Link>
-                        )}
-                    </div>
                 </div>
 
                 {success && <div className="mb-8"><SuccessAlert message={success} /></div>}
@@ -1141,7 +1211,7 @@ export default function NewBookingPage() {
                                 </Link>
                                 <button 
                                     type="submit" 
-                                    disabled={submitting || !!success} 
+                                    disabled={submitting || !!success || !isAuthenticated} 
                                     className="px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-2xl"
                                 >
                                     {submitting ? t.submitting : (submitted ? t.resubmit : t.requestBooking)}
