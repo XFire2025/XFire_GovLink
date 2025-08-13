@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:departments": "node scripts/seed-departments.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.864.0",
@@ -31,6 +32,7 @@
     "nodemailer": "^7.0.5",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-hot-toast": "^2.5.2",
     "react-i18next": "^15.6.1",
     "react-markdown": "^10.1.0",
     "rehype-highlight": "^7.0.2",
