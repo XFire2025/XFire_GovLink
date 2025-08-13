@@ -1,11 +1,11 @@
 // app/api/agent/appointments/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
+import connect from '@/lib/db';
 import Appointment, { ServiceType, AppointmentStatus } from '@/lib/models/appointmentSchema';
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB();
+    await connect();
 
     // Parse query parameters for filtering
     const { searchParams } = new URL(request.url);
@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
 // Get appointment statistics
 export async function POST(request: NextRequest) {
   try {
-    await connectDB();
+    await connect();
 
     const body = await request.json();
     const { action } = body;
