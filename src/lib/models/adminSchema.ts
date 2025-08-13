@@ -47,7 +47,9 @@ const AdminSchema = new Schema<IAdmin>({
 });
 
 // Indexes for fast lookups
-AdminSchema.index({ email: 1 });
+// ...existing schema definitions...
+// Unique email index provided by "unique" option; remove duplicate manual index
+// AdminSchema.index({ email: 1 });
 AdminSchema.index({ accountStatus: 1 });
 
 const Admin = mongoose.models.Admin || mongoose.model<IAdmin>('Admin', AdminSchema);

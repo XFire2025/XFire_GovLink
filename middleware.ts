@@ -47,6 +47,14 @@ const PUBLIC_ROUTES = [
   '/api/auth/user/logout',
   '/api/auth/user/refresh',
   '/api/auth/user/verify-email',
+  '/api/auth/admin/login',
+  '/api/auth/admin/logout',
+  '/api/auth/admin/refresh',
+  '/api/auth/admin/initialize',
+  '/api/auth/admin/logout',
+  '/api/auth/admin/refresh',
+  // '/api/auth/admin/create-default', // removed, now handled by create route
+  '/api/auth/admin/create',
   '/verify-email',
   '/reset-password'
 ];
@@ -70,7 +78,7 @@ async function getUserFromToken(token: string) {
   try {
     const decoded = verifyAccessToken(token);
     return decoded;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

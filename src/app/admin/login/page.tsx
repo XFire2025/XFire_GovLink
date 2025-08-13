@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useAdminAuth } from '@/lib/auth/AdminAuthContext';
 import * as LucideIcons from 'lucide-react';
 
 // EXACT SAME Lotus Icon as Agent Login with Sri Lankan Colors
@@ -83,14 +84,22 @@ const AdminBackground = () => {
 // --- ADMIN LOGIN PAGE COMPONENT ---
 export default function AdminLogin() {
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{username?: string; password?: string}>({});
+  const [errors, setErrors] = useState<{email?: string; password?: string}>({});
   
   const router = useRouter();
+  const { login, isAuthenticated, admin } = useAdminAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && admin) {
+      router.push('/admin/dashboard');
+    }
+  }, [isAuthenticated, admin, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,10 +107,12 @@ export default function AdminLogin() {
     setErrors({});
 
     // Basic validation
-    const newErrors: {username?: string; password?: string} = {};
+    const newErrors: {email?: string; password?: string} = {};
     
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Invalid email format';
     }
     
     if (!formData.password) {
@@ -116,16 +127,15 @@ export default function AdminLogin() {
       return;
     }
 
-    // Simulate API call
+    // Call admin login
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const result = await login(formData.email, formData.password);
       
-      // For demo purposes - replace with actual authentication
-      if (formData.username === 'admin' && formData.password === 'admin123') {
+      if (result.success) {
         router.push('/admin/dashboard');
       } else {
         setErrors({ 
-          password: 'Invalid username or password' 
+          password: result.message || 'Login failed. Please check your credentials.' 
         });
       }
     } catch (error) {
@@ -218,31 +228,31 @@ export default function AdminLogin() {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username Field */}
+            {/* Email Field */}
             <div>
-              <label htmlFor="username" className="block text-sm font-medium mb-2">
-                Username
+              <label htmlFor="email" className="block text-sm font-medium mb-2">
+                Email Address
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                  <LucideIcons.User className="h-5 w-5 text-muted-foreground/80 hover:text-[#8D153A] transition-colors" />
+                  <LucideIcons.Mail className="h-5 w-5 text-muted-foreground/80 hover:text-[#8D153A] transition-colors" />
                 </div>
                 <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  value={formData.username}
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
                   onChange={handleInputChange}
                   className={`w-full pl-10 pr-4 py-3 bg-card/60 dark:bg-card/40 backdrop-blur-sm border rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card ${
-                    errors.username ? 'border-destructive' : 'border-border/50'
+                    errors.email ? 'border-destructive' : 'border-border/50'
                   }`}
-                  placeholder="Enter your username"
+                  placeholder="Enter your email address"
                   disabled={isLoading}
                 />
               </div>
-              {errors.username && (
+              {errors.email && (
                 <p className="mt-2 text-sm text-destructive">
-                  {errors.username}
+                  {errors.email}
                 </p>
               )}
             </div>
