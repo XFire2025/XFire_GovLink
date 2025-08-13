@@ -1,12 +1,61 @@
 import { NextRequest, NextResponse } from "next/server";
 import connect from "@/lib/db";
-import Department from "@/lib/models/department";
+import Department, { IDepartment } from "@/lib/models/department";
 import mongoose from "mongoose";
 
 interface RouteParams {
   params: {
     id: string;
   };
+}
+
+interface UpdateDepartmentBody {
+  name?: string;
+  code?: string;
+  description?: string;
+  location?: string;
+  email?: string;
+  phone?: string | null;
+  budget?: number | null;
+  establishedDate?: string | null;
+  status?: "active" | "inactive";
+  tags?: string[];
+  password?: string;
+}
+
+// Type for Mongoose validation error
+interface MongooseValidationError extends Error {
+  name: 'ValidationError';
+  errors: {
+    [key: string]: {
+      message: string;
+    };
+  };
+}
+
+// Type for MongoDB duplicate key error
+interface MongoDBDuplicateKeyError extends Error {
+  code: 11000;
+  keyPattern?: { [key: string]: number };
+  keyValue?: { [key: string]: string };
+}
+
+// Type guard for Mongoose validation error
+function isMongooseValidationError(error: unknown): error is MongooseValidationError {
+  return (
+    error instanceof Error &&
+    error.name === 'ValidationError' &&
+    'errors' in error
+  );
+}
+
+// Type guard for MongoDB duplicate key error
+function isMongoDBDuplicateKeyError(error: unknown): error is MongoDBDuplicateKeyError {
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    (error as MongoDBDuplicateKeyError).code === 11000
+  );
 }
 
 // GET - Retrieve a single department by ID
@@ -27,7 +76,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const department = await Department.findById(id);
+    // Exclude password from the response
+    const department = await Department.findById(id).select('-password');
 
     if (!department) {
       return NextResponse.json(
@@ -62,7 +112,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     await connect();
 
     const { id } = params;
-    const body = await request.json();
+    const body: UpdateDepartmentBody = await request.json();
 
     // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -105,20 +155,34 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Prepare update data
-    const updateData: any = {};
-    
-    if (body.name) updateData.name = body.name.trim();
-    if (body.code) updateData.code = body.code.trim().toUpperCase();
-    if (body.description) updateData.description = body.description.trim();
-    if (body.location) updateData.location = body.location.trim();
-    if (body.email) updateData.email = body.email.trim().toLowerCase();
-    if (body.phone !== undefined) updateData.phone = body.phone?.trim() || null;
-    if (body.headOfDepartment !== undefined) updateData.headOfDepartment = body.headOfDepartment?.trim() || null;
-    if (body.budget !== undefined) updateData.budget = body.budget ? parseFloat(body.budget) : null;
-    if (body.establishedDate !== undefined) updateData.establishedDate = body.establishedDate ? new Date(body.establishedDate) : null;
-    if (body.status) updateData.status = body.status;
+    // Prepare update data - using a more flexible approach for Mongoose
+    const updateData: Record<string, unknown> = {};
+
+    if (body.name !== undefined) updateData.name = body.name.trim();
+    if (body.code !== undefined) updateData.code = body.code.trim().toUpperCase();
+    if (body.description !== undefined) updateData.description = body.description.trim();
+    if (body.location !== undefined) updateData.location = body.location.trim();
+    if (body.email !== undefined) updateData.email = body.email.trim().toLowerCase();
+    if (body.phone !== undefined) updateData.phone = body.phone?.trim() || undefined;
+    if (body.budget !== undefined) updateData.budget = body.budget || undefined;
+    if (body.establishedDate !== undefined) updateData.establishedDate = body.establishedDate ? new Date(body.establishedDate) : undefined;
+    if (body.status !== undefined) updateData.status = body.status;
     if (body.tags !== undefined) updateData.tags = Array.isArray(body.tags) ? body.tags.filter((tag: string) => tag.trim()) : [];
+    
+    // Handle password update
+    if (body.password !== undefined) {
+      // Validate password length
+      if (body.password.length < 8) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: "Password must be at least 8 characters" 
+          },
+          { status: 400 }
+        );
+      }
+      updateData.password = body.password; // Will be hashed by the pre-hook
+    }
 
     // Update department
     const updatedDepartment = await Department.findByIdAndUpdate(
@@ -129,7 +193,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         runValidators: true,
         context: 'query'
       }
-    );
+    ).select('-password'); // Exclude password from response
 
     return NextResponse.json({
       success: true,
@@ -137,12 +201,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       data: updatedDepartment,
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating department:", error);
     
     // Handle mongoose validation errors
-    if (error.name === 'ValidationError') {
-      const validationErrors = Object.values(error.errors).map((err: any) => err.message);
+    if (isMongooseValidationError(error)) {
+      const validationErrors = Object.values(error.errors).map((err) => err.message);
       return NextResponse.json(
         { 
           success: false, 
@@ -154,7 +218,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     }
 
     // Handle mongoose duplicate key error
-    if (error.code === 11000) {
+    if (isMongoDBDuplicateKeyError(error)) {
       return NextResponse.json(
         { 
           success: false, 
@@ -192,7 +256,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const department = await Department.findByIdAndDelete(id);
+    const department = await Department.findByIdAndDelete(id).select('-password');
 
     if (!department) {
       return NextResponse.json(
