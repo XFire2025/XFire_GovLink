@@ -1,9 +1,10 @@
-// src/app/agent/appointments/page.tsx
+// app/agent/appointments/page.tsx
 "use client";
 import { useState, useEffect, useCallback } from 'react';
 import AppointmentsLayout from '@/components/agent/appointments/AppointmentsLayout';
 import AppointmentCard from '@/components/agent/appointments/AppointmentCard';
 import AppointmentModal from '@/components/agent/appointments/AppointmentModal';
+import appointmentService from '@/lib/services/appointmentService';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
@@ -23,77 +24,19 @@ interface Appointment {
   contactEmail: string;
   contactPhone: string;
   submittedDate: string;
+  bookingReference?: string;
+  agentNotes?: string;
 }
 
-// Mock appointment data
-const mockAppointments: Appointment[] = [
-  {
-    id: 'APT001',
-    citizenName: 'Nimal Perera',
-    citizenId: '199012345678V',
-    serviceType: 'passport',
-    date: '2025-08-15',
-    time: '09:00',
-    status: 'pending',
-    priority: 'urgent',
-    contactEmail: 'nimal.perera@email.com',
-    contactPhone: '+94 77 123 4567',
-    submittedDate: '2025-08-07',
-    notes: 'Emergency travel required for medical treatment abroad'
-  },
-  {
-    id: 'APT002',
-    citizenName: 'Kamala Silva',
-    citizenId: '198567891234V',
-    serviceType: 'license',
-    date: '2025-08-15',
-    time: '10:30',
-    status: 'confirmed',
-    priority: 'normal',
-    contactEmail: 'kamala.silva@email.com',
-    contactPhone: '+94 71 987 6543',
-    submittedDate: '2025-08-05'
-  },
-  {
-    id: 'APT003',
-    citizenName: 'Sunil Fernando',
-    citizenId: '197734567890V',
-    serviceType: 'certificate',
-    date: '2025-08-16',
-    time: '14:00',
-    status: 'pending',
-    priority: 'normal',
-    contactEmail: 'sunil.fernando@email.com',
-    contactPhone: '+94 76 456 7890',
-    submittedDate: '2025-08-06'
-  },
-  {
-    id: 'APT004',
-    citizenName: 'Priya Jayawardena',
-    citizenId: '199223456789V',
-    serviceType: 'registration',
-    date: '2025-08-17',
-    time: '11:15',
-    status: 'cancelled',
-    priority: 'normal',
-    contactEmail: 'priya.jayawardena@email.com',
-    contactPhone: '+94 75 234 5678',
-    submittedDate: '2025-08-04'
-  },
-  {
-    id: 'APT005',
-    citizenName: 'Ravi Wickramasinghe',
-    citizenId: '198845678901V',
-    serviceType: 'visa',
-    date: '2025-08-18',
-    time: '13:45',
-    status: 'completed',
-    priority: 'normal',
-    contactEmail: 'ravi.wickramasinghe@email.com',
-    contactPhone: '+94 78 345 6789',
-    submittedDate: '2025-08-03'
-  }
-];
+interface AppointmentStats {
+  total: number;
+  pending: number;
+  confirmed: number;
+  completed: number;
+  cancelled: number;
+  today: number;
+  urgent: number;
+}
 
 // Page translations
 const pageTranslations: Record<Language, {
@@ -106,6 +49,9 @@ const pageTranslations: Record<Language, {
   quickFilters: string;
   noAppointments: string;
   noAppointmentsDesc: string;
+  loading: string;
+  error: string;
+  retry: string;
 }> = {
   en: {
     title: 'Appointment Management',
@@ -116,29 +62,38 @@ const pageTranslations: Record<Language, {
     overview: 'Statistics Overview',
     quickFilters: 'Quick Filters',
     noAppointments: 'No appointments found',
-    noAppointmentsDesc: 'Try adjusting your search filters to find what you\'re looking for'
+    noAppointmentsDesc: 'Try adjusting your search filters to find what you\'re looking for',
+    loading: 'Loading appointments...',
+    error: 'Failed to load appointments',
+    retry: 'Retry'
   },
   si: {
     title: 'නියමයන් කළමනාකරණය',
-    subtitle: 'පුරවැසි නියමයන් සහ කාල සටහන් කළමනාකරණය කරන්න',
+    subtitle: 'පුරවැසි නියමයන් සහ කාල සැහැන් කළමනාකරණය කරන්න',
     totalAppointments: 'සම්පූර්ණ නියමයන්',
     pendingAppointments: 'සමාලෝචනය අපේක්ෂිත',
-    todayAppointments: 'අද දිනයේ කාල සටහන',
+    todayAppointments: 'අද දිනයේ කාල සැහැන',
     overview: 'සංඛ්‍යාලේඛන දළ විශ්ලේෂණය',
     quickFilters: 'ඉක්මන් පෙරහන්',
-    noAppointments: 'නියමයන් හමු නොවිය',
-    noAppointmentsDesc: 'ඔබ සොයන දේ සොයා ගැනීමට ඔබේ සෙවුම් පෙරහන් සකසන්න'
+    noAppointments: 'නියමයන් හමු නොවීය',
+    noAppointmentsDesc: 'ඔබ සොයන දේ සොයා ගැනීමට ඔබේ සේවුම් පෙරහන් සකසන්න',
+    loading: 'නියමයන් පූරණය වෙමින්...',
+    error: 'නියමයන් පූරණය කිරීමට අසමත්',
+    retry: 'නැවත උත්සාහ කරන්න'
   },
   ta: {
     title: 'சந்திப்பு மேலாண்மை',
     subtitle: 'குடிமக்கள் சந்திப்பு முன்பதிவுகள் மற்றும் அட்டவணைகளை நிர்வகிக்கவும்',
     totalAppointments: 'மொத்த சந்திப்புகள்',
-    pendingAppointments: 'மதிப்பாய்வு நிலுவையில்',
+    pendingAppointments: 'மதிப்பாய்வு நிலவையில்',
     todayAppointments: 'இன்றைய அட்டவணை',
     overview: 'புள்ளிவிவர கண்ணோட்டம்',
     quickFilters: 'விரைவு வடிப்பான்கள்',
     noAppointments: 'சந்திப்புகள் எதுவும் கிடைக்கவில்லை',
-    noAppointmentsDesc: 'நீங்கள் தேடுவதைக் கண்டறிய உங்கள் தேடல் வடிப்பான்களை சரிசெய்ய முயற்சிக்கவும்'
+    noAppointmentsDesc: 'நீங்கள் தேடுவதைக் கண்டறிய உங்கள் தேடல் வடிப்பான்களை சரிசெய்ய முயற்சிக்கவும்',
+    loading: 'சந்திப்புகள் ஏற்றப்படுகின்றன...',
+    error: 'சந்திப்புகளை ஏற்ற முடியவில்லை',
+    retry: 'மீண்டும் முயற்சிக்கவும்'
   }
 };
 
@@ -158,7 +113,7 @@ const filterTranslations: Record<Language, {
     export: 'Export',
   },
   si: {
-    searchPlaceholder: 'නම, හැඳුනුම්පත, හෝ සේවාව අනුව සොයන්න...',
+    searchPlaceholder: 'නම, හැඳුනුම්පත, හෝ සේවා අනුව සොයන්න...',
     allServices: 'සියලුම සේවා වර්ග',
     allStatuses: 'සියලුම තත්ත්ව',
     clearFilters: 'පෙරහන් ඉවත් කරන්න',
@@ -166,7 +121,7 @@ const filterTranslations: Record<Language, {
   },
   ta: {
     searchPlaceholder: 'பெயர், ஐடி, அல்லது சேவை மூலம் தேடவும்...',
-    allServices: 'அனைத்து சேவை வகைகள்',
+    allServices: 'அனைத்து சேவை வகைகளும்',
     allStatuses: 'அனைத்து நிலைகளும்',
     clearFilters: 'வடிப்பான்களை அழிக்கவும்',
     export: 'ஏற்றுமதி',
@@ -174,73 +129,85 @@ const filterTranslations: Record<Language, {
 };
 
 // --- START: AppointmentFilters Component ---
-const AppointmentFilters = ({ appointments, onFilterChange, language, filteredAppointments }: {
-  appointments: Appointment[];
-  onFilterChange: (filtered: Appointment[]) => void;
+const AppointmentFilters = ({ onFilterChange, language, isLoading }: {
+  onFilterChange: (filters: any) => void;
   language: Language;
-  filteredAppointments: Appointment[];
+  isLoading: boolean;
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [serviceType, setServiceType] = useState('all');
   const [status, setStatus] = useState('all');
-  const [date, setDate] = useState('');
+  const [priority, setPriority] = useState('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const t = filterTranslations[language];
 
   const applyFilters = useCallback(() => {
-    let filtered = [...appointments];
-    const lowercasedSearchTerm = searchTerm.toLowerCase();
-
-    if (searchTerm) {
-      filtered = filtered.filter(apt =>
-        apt.citizenName.toLowerCase().includes(lowercasedSearchTerm) ||
-        apt.citizenId.toLowerCase().includes(lowercasedSearchTerm) ||
-        apt.serviceType.toLowerCase().includes(lowercasedSearchTerm)
-      );
-    }
-    if (serviceType !== 'all') {
-      filtered = filtered.filter(apt => apt.serviceType === serviceType);
-    }
-    if (status !== 'all') {
-      filtered = filtered.filter(apt => apt.status === status);
-    }
-    if (date) {
-      filtered = filtered.filter(apt => apt.date === date);
-    }
-
-    onFilterChange(filtered);
-  }, [appointments, searchTerm, serviceType, status, date, onFilterChange]);
+    const filters = {
+      search: searchTerm || undefined,
+      serviceType: serviceType !== 'all' ? serviceType : undefined,
+      status: status !== 'all' ? status : undefined,
+      priority: priority !== 'all' ? priority : undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
+    };
+    onFilterChange(filters);
+  }, [searchTerm, serviceType, status, priority, dateFrom, dateTo, onFilterChange]);
 
   useEffect(() => {
-    applyFilters();
+    const timeoutId = setTimeout(() => {
+      applyFilters();
+    }, 300); // Debounce search
+
+    return () => clearTimeout(timeoutId);
   }, [applyFilters]);
 
   const handleClearFilters = () => {
     setSearchTerm('');
     setServiceType('all');
     setStatus('all');
-    setDate('');
+    setPriority('all');
+    setDateFrom('');
+    setDateTo('');
   };
 
-  const handleExport = () => {
-    const dataStr = JSON.stringify(filteredAppointments, null, 2);
-    const blob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = 'appointments_export.json';
-    link.href = url;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleExport = async () => {
+    try {
+      const result = await appointmentService.getAppointments({
+        search: searchTerm || undefined,
+        serviceType: serviceType !== 'all' ? serviceType : undefined,
+        status: status !== 'all' ? status : undefined,
+        priority: priority !== 'all' ? priority : undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
+        limit: 1000 // Get all results for export
+      });
+
+      if (result.success && result.data) {
+        const dataStr = JSON.stringify(result.data.appointments, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = `appointments_export_${new Date().toISOString().split('T')[0]}.json`;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
   };
 
   const serviceTypes: ServiceType[] = ['passport', 'license', 'certificate', 'registration', 'visa'];
   const statuses: AppointmentStatus[] = ['pending', 'confirmed', 'cancelled', 'completed'];
+  const priorities = ['normal', 'urgent'];
 
   return (
     <div className="group bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow mb-8 animate-fade-in-up modern-card hover:shadow-2xl hover:border-[#FFC72C]/70 transition-all duration-500 relative overflow-hidden">
-      {/* Header Section - EXACT SAME as Dashboard Cards */}
+      {/* Header Section */}
       <div className="mb-6">
         <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 modern-card">
           <div className="w-2 h-2 bg-gradient-to-r from-[#008060] to-[#FFC72C] rounded-full animate-pulse"></div>
@@ -255,55 +222,74 @@ const AppointmentFilters = ({ appointments, onFilterChange, language, filteredAp
           placeholder={t.searchPlaceholder}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-card/50 dark:bg-card/70 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#FFC72C] focus:bg-card transition-all duration-300 hover:border-[#FFC72C]/50"
+          disabled={isLoading}
+          className="w-full bg-card/50 dark:bg-card/70 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#FFC72C] focus:bg-card transition-all duration-300 hover:border-[#FFC72C]/50 disabled:opacity-50 disabled:cursor-not-allowed"
         />
         <select 
           value={serviceType} 
-          onChange={(e) => setServiceType(e.target.value)} 
-          className="w-full bg-card/50 dark:bg-card/70 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-[#FFC72C] transition-all duration-300 appearance-none cursor-pointer hover:border-[#FFC72C]/50 hover:bg-card"
+          onChange={(e) => setServiceType(e.target.value)}
+          disabled={isLoading}
+          className="w-full bg-card/50 dark:bg-card/70 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-[#FFC72C] transition-all duration-300 appearance-none cursor-pointer hover:border-[#FFC72C]/50 hover:bg-card disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="all">{t.allServices}</option>
           {serviceTypes.map(s => <option key={s} value={s} className="capitalize bg-card">{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
         </select>
         <select 
           value={status} 
-          onChange={(e) => setStatus(e.target.value)} 
-          className="w-full bg-card/50 dark:bg-card/70 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-[#FFC72C] transition-all duration-300 appearance-none cursor-pointer hover:border-[#FFC72C]/50 hover:bg-card"
+          onChange={(e) => setStatus(e.target.value)}
+          disabled={isLoading}
+          className="w-full bg-card/50 dark:bg-card/70 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-[#FFC72C] transition-all duration-300 appearance-none cursor-pointer hover:border-[#FFC72C]/50 hover:bg-card disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <option value="all">{t.allStatuses}</option>
           {statuses.map(s => <option key={s} value={s} className="capitalize bg-card">{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
         </select>
-        <div className="relative">
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full bg-card/50 dark:bg-card/70 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 pr-12 text-foreground focus:outline-none focus:border-[#FFC72C] transition-all duration-300 hover:border-[#FFC72C]/50 hover:bg-card"
-          />
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-        </div>
+        <select 
+          value={priority} 
+          onChange={(e) => setPriority(e.target.value)}
+          disabled={isLoading}
+          className="w-full bg-card/50 dark:bg-card/70 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-[#FFC72C] transition-all duration-300 appearance-none cursor-pointer hover:border-[#FFC72C]/50 hover:bg-card disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <option value="all">All Priorities</option>
+          {priorities.map(p => <option key={p} value={p} className="capitalize bg-card">{p.charAt(0).toUpperCase() + p.slice(1)}</option>)}
+        </select>
       </div>
+
+      {/* Date Range */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          disabled={isLoading}
+          className="w-full bg-card/50 dark:bg-card/70 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-[#FFC72C] transition-all duration-300 hover:border-[#FFC72C]/50 hover:bg-card disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+        <input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          disabled={isLoading}
+          className="w-full bg-card/50 dark:bg-card/70 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-[#FFC72C] transition-all duration-300 hover:border-[#FFC72C]/50 hover:bg-card disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+      </div>
+
       <div className="flex items-center justify-end gap-3 mt-4">
         <button 
-          onClick={handleClearFilters} 
-          className="px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground bg-card/50 dark:bg-card/70 backdrop-blur-md hover:text-foreground hover:bg-card hover:border-[#FFC72C]/50 border border-border/50 transition-all duration-300 hover:scale-105"
+          onClick={handleClearFilters}
+          disabled={isLoading}
+          className="px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground bg-card/50 dark:bg-card/70 backdrop-blur-md hover:text-foreground hover:bg-card hover:border-[#FFC72C]/50 border border-border/50 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t.clearFilters}
         </button>
         <button 
-          onClick={handleExport} 
-          className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#008060] to-[#FFC72C] hover:from-[#FFC72C] hover:to-[#FF5722] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+          onClick={handleExport}
+          disabled={isLoading}
+          className="px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#008060] to-[#FFC72C] hover:from-[#FFC72C] hover:to-[#FF5722] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t.export}
         </button>
       </div>
 
-      {/* Hover Effect Gradient - EXACT SAME as Dashboard Cards */}
+      {/* Hover Effect Gradient */}
       <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-[#FFC72C]/5 via-transparent to-[#FF5722]/5 rounded-2xl"></div>
       </div>
@@ -312,48 +298,179 @@ const AppointmentFilters = ({ appointments, onFilterChange, language, filteredAp
 };
 // --- END: AppointmentFilters Component ---
 
+// Loading Component
+const LoadingSpinner = ({ message }: { message?: string }) => (
+  <div className="flex flex-col items-center justify-center py-16">
+    <div className="w-12 h-12 border-4 border-[#FFC72C]/20 border-t-[#FFC72C] rounded-full animate-spin mb-4"></div>
+    {message && <p className="text-muted-foreground">{message}</p>}
+  </div>
+);
+
+// Error Component
+const ErrorMessage = ({ message, onRetry }: { message: string; onRetry?: () => void }) => (
+  <div className="text-center py-16 animate-fade-in-up">
+    <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-8 rounded-2xl border border-border/50 shadow-glow modern-card hover:shadow-2xl transition-all duration-500 max-w-md mx-auto">
+      <div className="p-4 bg-gradient-to-r from-[#FF5722]/10 to-[#8D153A]/10 rounded-2xl mb-6 inline-block" style={{border: '2px solid rgba(255, 87, 34, 0.3)'}}>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FF5722" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      </div>
+      <h3 className="text-lg font-semibold text-foreground mb-2">Error</h3>
+      <p className="text-muted-foreground mb-4">{message}</p>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="px-4 py-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white rounded-xl hover:from-[#FF5722] hover:to-[#8D153A] transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+        >
+          Try Again
+        </button>
+      )}
+    </div>
+  </div>
+);
+
 export default function AppointmentsPage() {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
-  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>(mockAppointments);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [stats, setStats] = useState<AppointmentStats>({
+    total: 0,
+    pending: 0,
+    confirmed: 0,
+    completed: 0,
+    cancelled: 0,
+    today: 0,
+    urgent: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFilterLoading, setIsFilterLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [currentFilters, setCurrentFilters] = useState<any>({});
 
   const t = pageTranslations[currentLanguage];
+
+  // Load initial appointments and stats
+  const loadAppointments = useCallback(async (filters = {}) => {
+    try {
+      setIsFilterLoading(true);
+      setError(null);
+
+      const [appointmentsResult, statsResult] = await Promise.all([
+        appointmentService.getAppointments(filters),
+        appointmentService.getStats()
+      ]);
+
+      if (appointmentsResult.success && appointmentsResult.data) {
+        setAppointments(appointmentsResult.data.appointments);
+        setFilteredAppointments(appointmentsResult.data.appointments);
+      } else {
+        setError(appointmentsResult.message || 'Failed to load appointments');
+      }
+
+      if (statsResult.success && statsResult.data) {
+        setStats(statsResult.data.overview);
+      }
+    } catch (error) {
+      console.error('Error loading appointments:', error);
+      setError('Failed to load appointments. Please try again.');
+    } finally {
+      setIsLoading(false);
+      setIsFilterLoading(false);
+    }
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    loadAppointments();
+  }, [loadAppointments]);
 
   const handleLanguageChange = (newLanguage: Language) => {
     setCurrentLanguage(newLanguage);
   };
 
-  const handleFilterChange = (filtered: Appointment[]) => {
-    setFilteredAppointments(filtered);
-  };
+  const handleFilterChange = useCallback(async (filters: any) => {
+    setCurrentFilters(filters);
+    try {
+      setIsFilterLoading(true);
+      const result = await appointmentService.getAppointments(filters);
+      
+      if (result.success && result.data) {
+        setFilteredAppointments(result.data.appointments);
+      } else {
+        setError(result.message || 'Failed to filter appointments');
+      }
+    } catch (error) {
+      console.error('Error filtering appointments:', error);
+      setError('Failed to filter appointments. Please try again.');
+    } finally {
+      setIsFilterLoading(false);
+    }
+  }, []);
 
   const handleAppointmentClick = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
     setIsModalOpen(true);
   };
 
-  const handleStatusUpdate = (appointmentId: string, newStatus: AppointmentStatus) => {
-    const updatedAppointments = appointments.map(apt => 
-      apt.id === appointmentId ? { ...apt, status: newStatus } : apt
-    );
-    setAppointments(updatedAppointments);
-    
-    // Re-apply filters after status update
-    const currentlyFiltered = updatedAppointments.filter(apt => filteredAppointments.some(f => f.id === apt.id));
-    setFilteredAppointments(currentlyFiltered.map(apt => apt.id === appointmentId ? { ...apt, status: newStatus } : apt));
-    
-    // Close modal if it's open
-    if (selectedAppointment?.id === appointmentId) {
-      setSelectedAppointment(prev => prev ? { ...prev, status: newStatus } : null);
+  const handleStatusUpdate = async (appointmentId: string, newStatus: AppointmentStatus) => {
+    try {
+      const result = await appointmentService.updateStatus(appointmentId, newStatus);
+      
+      if (result.success) {
+        // Update local state
+        setAppointments(prev => prev.map(apt => 
+          apt.id === appointmentId ? { ...apt, status: newStatus } : apt
+        ));
+        
+        setFilteredAppointments(prev => prev.map(apt => 
+          apt.id === appointmentId ? { ...apt, status: newStatus } : apt
+        ));
+        
+        // Update selected appointment if it's open
+        if (selectedAppointment?.id === appointmentId) {
+          setSelectedAppointment(prev => prev ? { ...prev, status: newStatus } : null);
+        }
+
+        // Refresh stats
+        const statsResult = await appointmentService.getStats();
+        if (statsResult.success && statsResult.data) {
+          setStats(statsResult.data.overview);
+        }
+      } else {
+        setError(result.message || 'Failed to update appointment status');
+      }
+    } catch (error) {
+      console.error('Error updating appointment status:', error);
+      setError('Failed to update appointment status. Please try again.');
     }
   };
 
-  // Calculate stats
-  const totalAppointments = appointments.length;
-  const pendingAppointments = appointments.filter(apt => apt.status === 'pending').length;
-  const todayAppointments = appointments.filter(apt => apt.date === '2025-08-15').length; // Mock today's date
+  const handleRetry = () => {
+    setError(null);
+    loadAppointments(currentFilters);
+  };
+
+  if (error && appointments.length === 0) {
+    return (
+      <AppointmentsLayout
+        title={
+          <>
+            <span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
+            <span className="text-gradient">{t.title.split(' ')[1] || ''}</span>
+          </>
+        }
+        subtitle={t.subtitle}
+        language={currentLanguage}
+        onLanguageChange={handleLanguageChange}
+      >
+        <ErrorMessage message={error} onRetry={handleRetry} />
+      </AppointmentsLayout>
+    );
+  }
 
   return (
     <AppointmentsLayout
@@ -368,7 +485,7 @@ export default function AppointmentsPage() {
       onLanguageChange={handleLanguageChange}
     >
       <div className="space-y-8">
-        {/* Stats Overview - Enhanced with Dashboard Styling */}
+        {/* Stats Overview */}
         <section>
           <div className="mb-6 animate-fade-in-up">
             <div className="inline-flex items-center gap-2 bg-card/90 dark:bg-card/95 backdrop-blur-md px-4 py-2 rounded-full border border-border/50 mb-4 modern-card">
@@ -389,13 +506,9 @@ export default function AppointmentsPage() {
                     <line x1="8" y1="2" x2="8" y2="6"/>
                     <line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
-                  {/* Icon Glow Effect */}
-                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                    <div className="absolute inset-0 rounded-xl blur-xl" style={{background: 'radial-gradient(circle, rgba(255, 199, 44, 0.2) 0%, transparent 70%)'}}></div>
-                  </div>
                 </div>
               </div>
-              <div className="text-3xl font-bold text-[#FFC72C] mb-2 transition-all duration-500 group-hover:scale-105">{totalAppointments}</div>
+              <div className="text-3xl font-bold text-[#FFC72C] mb-2 transition-all duration-500 group-hover:scale-105">{stats.total}</div>
               <div className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors duration-300 leading-tight">{t.totalAppointments}</div>
               
               {/* Hover Effect Gradient */}
@@ -414,15 +527,8 @@ export default function AppointmentsPage() {
                     <polyline points="12 6 12 12 16 14"/>
                   </svg>
                 </div>
-                <div className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md border text-[#FF5722] bg-[#FF5722]/10 border-[#FF5722]/20 transition-all duration-300 hover:scale-105">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M7 17l10-10"/>
-                    <path d="M17 7h-10v10"/>
-                  </svg>
-                  <span>+15%</span>
-                </div>
               </div>
-              <div className="text-3xl font-bold text-[#FF5722] mb-2 transition-all duration-500 group-hover:scale-105">{pendingAppointments}</div>
+              <div className="text-3xl font-bold text-[#FF5722] mb-2 transition-all duration-500 group-hover:scale-105">{stats.pending}</div>
               <div className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors duration-300 leading-tight">{t.pendingAppointments}</div>
               
               {/* Hover Effect Gradient */}
@@ -452,7 +558,7 @@ export default function AppointmentsPage() {
                   <span>Today</span>
                 </div>
               </div>
-              <div className="text-3xl font-bold text-[#008060] mb-2 transition-all duration-500 group-hover:scale-105">{todayAppointments}</div>
+              <div className="text-3xl font-bold text-[#008060] mb-2 transition-all duration-500 group-hover:scale-105">{stats.today}</div>
               <div className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors duration-300 leading-tight">{t.todayAppointments}</div>
               
               {/* Hover Effect Gradient */}
@@ -466,12 +572,41 @@ export default function AppointmentsPage() {
         {/* Filters */}
         <section>
           <AppointmentFilters
-            appointments={appointments}
             onFilterChange={handleFilterChange}
             language={currentLanguage}
-            filteredAppointments={filteredAppointments}
+            isLoading={isFilterLoading}
           />
         </section>
+
+        {/* Error Message for Filter Errors */}
+        {error && appointments.length > 0 && (
+          <div className="bg-[#FF5722]/10 border border-[#FF5722]/30 text-[#FF5722] p-4 rounded-xl animate-fade-in-up">
+            <div className="flex items-center gap-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              <span className="font-medium">{error}</span>
+              <button onClick={handleRetry} className="ml-auto text-sm underline hover:no-underline">
+                {t.retry}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State for Initial Load */}
+        {isLoading && appointments.length === 0 && (
+          <LoadingSpinner message={t.loading} />
+        )}
+
+        {/* Loading State for Filters */}
+        {isFilterLoading && !isLoading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="w-6 h-6 border-2 border-[#FFC72C]/20 border-t-[#FFC72C] rounded-full animate-spin mr-3"></div>
+            <span className="text-muted-foreground">Filtering appointments...</span>
+          </div>
+        )}
 
         {/* Appointments List */}
         <section>
@@ -487,7 +622,7 @@ export default function AppointmentsPage() {
               </div>
             ))}
             
-            {filteredAppointments.length === 0 && (
+            {!isLoading && !isFilterLoading && filteredAppointments.length === 0 && (
               <div className="text-center py-16 animate-fade-in-up">
                 <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-8 rounded-2xl border border-border/50 shadow-glow modern-card hover:shadow-2xl transition-all duration-500 max-w-md mx-auto">
                   <div className="p-4 bg-gradient-to-r from-[#8D153A]/10 to-[#FF5722]/10 rounded-2xl mb-6 inline-block" style={{border: '2px solid rgba(141, 21, 58, 0.3)'}}>
