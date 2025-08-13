@@ -20,6 +20,7 @@ import {
 import AddServiceModal from "./AddServiceModal";
 import { useServices, useServiceMutations } from "@/lib/hooks/useDepartmentApi";
 import { Service } from "@/lib/services/departmentApiService";
+import { NewServiceData } from "./AddServiceForm";
 
 export default function ServiceManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,7 +60,7 @@ export default function ServiceManagement() {
 
   const filteredServices = services || [];
 
-  const handleSaveService = async (serviceData: any) => {
+  const handleSaveService = async (serviceData: NewServiceData) => {
     const loadingToast = toast.loading(editingService ? 'Updating service...' : 'Creating service...');
     
     try {

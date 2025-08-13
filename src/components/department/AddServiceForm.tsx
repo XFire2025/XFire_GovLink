@@ -2,6 +2,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import { Layers, FileText, Clock, DollarSign } from 'lucide-react';
+import { Service } from "@/lib/services/departmentApiService";
 
 // This is the data for the form itself.
 export interface NewServiceData {
@@ -17,7 +18,7 @@ export interface NewServiceData {
 interface AddServiceFormProps {
   onSave: (serviceData: NewServiceData) => void;
   onClose: () => void;
-  serviceToEdit?: any; // Service object when editing
+  serviceToEdit?: Service | null; // Replace 'any' with 'Service | null'
   loading?: boolean;
 }
 

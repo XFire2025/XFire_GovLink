@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken'; // Import JwtPayload
 import connectDB from '@/lib/db';
-import Department, { IDepartment } from '@/lib/models/departmentSchema';
+import Department from '@/lib/models/departmentSchema';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret';
@@ -29,6 +29,14 @@ export interface DepartmentAuthResult {
   };
   tokens?: DepartmentTokens;
   errors?: string[];
+}
+
+// Define a specific type for the JWT payload
+interface DepartmentJwtPayload extends JwtPayload {
+  departmentId: string;
+  departmentCode: string;
+  email: string;
+  role: 'department';
 }
 
 class DepartmentAuthService {
@@ -172,14 +180,13 @@ class DepartmentAuthService {
         };
       }
 
-      // Verify refresh token
-      const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as any;
-      
+      // Replace 'as any' with the specific JWT payload type
+      const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as DepartmentJwtPayload;
+
       await connectDB();
-      
-      // Find department
+
       const department = await Department.findById(decoded.departmentId);
-      
+
       if (!department || department.status !== 'ACTIVE') {
         return {
           success: false,
@@ -188,7 +195,6 @@ class DepartmentAuthService {
         };
       }
 
-      // Generate new access token
       const accessToken = jwt.sign(
         {
           departmentId: department._id,
@@ -270,11 +276,12 @@ class DepartmentAuthService {
   /**
    * Verify department token
    */
-  static verifyDepartmentToken(token: string): { valid: boolean; decoded?: any; error?: string } {
+  static verifyDepartmentToken(token: string): { valid: boolean; decoded?: string | DepartmentJwtPayload; error?: string } {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET) as DepartmentJwtPayload;
       return { valid: true, decoded };
-    } catch (error) {
+    } catch (_error) {
+      console.error('Token verification error:', _error); // Log the error
       return { valid: false, error: 'Invalid or expired token' };
     }
   }
