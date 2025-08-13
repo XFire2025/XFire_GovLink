@@ -141,7 +141,7 @@ const modalTranslations: Record<Language, {
     actions: 'ක්‍රියාමාර්ග',
     close: 'වසන්න',
     updateStatus: 'තත්ත්වය යාවත්කාලීන කරන්න',
-    reschedule: 'නව කාලය නියම කරන්න',
+    reschedule: 'නව කාල නියම කරන්න',
     sendNotification: 'දැනුම්දීම යවන්න',
     viewHistory: 'පුරවැසි ඉතිහාසය බලන්න',
     addNotes: 'සටහන් එක් කරන්න',
@@ -159,7 +159,7 @@ const modalTranslations: Record<Language, {
     notes: 'සටහන්',
     agentNotes: 'නිලධාරි සටහන්',
     notificationSent: 'දැනුම්දීම සාර්ථකව යවන ලදී!',
-    notificationFailed: 'දැනුම්දීම යැවීමට අසමත් විය. නැවත උත්සාහ කරන්න.',
+    notificationFailed: 'දැනුම්දීම යවීමට අසමත් විය. නොවත උත්සාහ කරන්න.',
     updatingStatus: 'තත්ත්වය යාවත්කාලීන කරමින්...',
     sendingNotification: 'දැනුම්දීම යවමින්...',
     savingNotes: 'සටහන් සුරකිමින්...',
@@ -216,7 +216,7 @@ const modalTranslations: Record<Language, {
     agentNotes: 'அதிகாரி குறிப்புகள்',
     notificationSent: 'அறிவிப்பு வெற்றிகரமாக அனுப்பப்பட்டது!',
     notificationFailed: 'அறிவிப்பு அனுப்ப முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
-    updatingStatus: 'நிலையை புதுப்பிக்கிறது...',
+    updatingStatus: 'நிலையைப் புதுப்பிக்கிறது...',
     sendingNotification: 'அறிவிப்பு அனுப்புகிறது...',
     savingNotes: 'குறிப்புகளை சேமிக்கிறது...',
     bookingReference: 'முன்பதிவு குறிப்பு',
@@ -227,7 +227,7 @@ const modalTranslations: Record<Language, {
       both: 'SMS மற்றும் மின்னஞ்சல்'
     },
     statuses: {
-      pending: 'மதிப்பாய்வு நிலவையில்',
+      pending: 'மதிப்பாய்வு நிலையில்',
       confirmed: 'உறுதிப்படுத்தப்பட்டது',
       cancelled: 'ரத்துசெய்யப்பட்டது',
       completed: 'முடிக்கப்பட்டது'
@@ -432,10 +432,11 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in-up">
-      <div className="bg-background/98 dark:bg-card/98 backdrop-blur-md border border-border/50 shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto rounded-2xl modern-card">
+    // FIXED: Increased z-index to z-[60] to be above header which is z-50
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-fade-in-up" style={{ zIndex: 60 }}>
+      <div className="bg-background/98 dark:bg-card/98 backdrop-blur-md border border-border/50 shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto rounded-2xl modern-card relative z-[61]" style={{ zIndex: 61 }}>
         {/* Header - Enhanced with Dashboard Styling */}
-        <div className="flex items-center justify-between p-6 border-b border-border/50 bg-card/90 dark:bg-card/95 backdrop-blur-md">
+        <div className="flex items-center justify-between p-6 border-b border-border/50 bg-card/90 dark:bg-card/95 backdrop-blur-md sticky top-0 z-[62]" style={{ zIndex: 62 }}>
           <div>
             <h2 className="text-2xl font-bold text-foreground">{t.appointmentDetails}</h2>
             <div className="flex items-center gap-4 mt-1">
@@ -449,7 +450,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-3 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 text-foreground hover:bg-card/80 dark:hover:bg-card/90 hover:border-[#FF5722]/60 transition-all duration-300 hover:scale-105"
+            className="p-3 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 text-foreground hover:bg-card/80 dark:hover:bg-card/90 hover:border-[#FF5722]/60 transition-all duration-300 hover:scale-105 relative z-[63]"
+            style={{ zIndex: 63 }}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -821,7 +823,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
         </div>
 
         {/* Footer - Enhanced */}
-        <div className="flex justify-between items-center gap-4 p-6 border-t border-border/50 bg-card/90 dark:bg-card/95 backdrop-blur-md">
+        <div className="flex justify-between items-center gap-4 p-6 border-t border-border/50 bg-card/90 dark:bg-card/95 backdrop-blur-md sticky bottom-0">
           <button
             onClick={onClose}
             className="px-6 py-3 bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 rounded-xl text-foreground hover:bg-card/80 dark:hover:bg-card/90 hover:border-[#FF5722]/60 transition-all duration-300 hover:scale-105"

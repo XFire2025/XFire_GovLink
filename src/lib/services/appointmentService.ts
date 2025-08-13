@@ -1,256 +1,267 @@
-// app/api/agent/appointments/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
-import Appointment, { ServiceType, AppointmentStatus } from '@/lib/models/appointmentSchema';
+// lib/services/appointmentService.ts
+import { AppointmentStatus, ServiceType } from '@/lib/models/appointmentSchema';
 
-export async function GET(request: NextRequest) {
-  try {
-    await connectDB();
-
-    // Parse query parameters for filtering
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get('search') || '';
-    const status = searchParams.get('status') || 'all';
-    const serviceType = searchParams.get('serviceType') || 'all';
-    const priority = searchParams.get('priority') || 'all';
-    const dateFrom = searchParams.get('dateFrom') || '';
-    const dateTo = searchParams.get('dateTo') || '';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50');
-
-    // Build filter object
-    const filter: Record<string, unknown> = {};
-
-    // Search filter (name, NIC, or email)
-    if (search) {
-      filter.$or = [
-        { citizenName: { $regex: search, $options: 'i' } },
-        { citizenNIC: { $regex: search, $options: 'i' } },
-        { contactEmail: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    // Status filter
-    if (status !== 'all') {
-      filter.status = status;
-    }
-
-    // Service type filter
-    if (serviceType !== 'all') {
-      filter.serviceType = serviceType;
-    }
-
-    // Priority filter
-    if (priority !== 'all') {
-      filter.priority = priority;
-    }
-
-    // Date range filter
-    if (dateFrom || dateTo) {
-      filter.date = {};
-      if (dateFrom) {
-        filter.date.$gte = new Date(dateFrom);
-      }
-      if (dateTo) {
-        filter.date.$lte = new Date(dateTo);
-      }
-    }
-
-    // Calculate pagination
-    const skip = (page - 1) * limit;
-
-    // Execute query with pagination
-    const [appointments, totalCount] = await Promise.all([
-      Appointment.find(filter)
-        .populate('citizenId', 'fullName email mobileNumber')
-        .populate('assignedAgent', 'fullName officerId')
-        .sort({ submittedDate: -1, date: 1, time: 1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Appointment.countDocuments(filter)
-    ]);
-
-    // Transform data to match frontend interface
-    const transformedAppointments = appointments.map(appointment => ({
-      id: appointment._id.toString(),
-      citizenName: appointment.citizenName,
-      citizenId: appointment.citizenNIC,
-      serviceType: appointment.serviceType,
-      date: appointment.date.toISOString().split('T')[0], // YYYY-MM-DD format
-      time: appointment.time,
-      status: appointment.status,
-      priority: appointment.priority,
-      notes: appointment.notes || appointment.agentNotes,
-      contactEmail: appointment.contactEmail,
-      contactPhone: appointment.contactPhone,
-      submittedDate: appointment.submittedDate.toISOString().split('T')[0],
-      bookingReference: appointment.bookingReference,
-      assignedAgent: appointment.assignedAgent ? {
-        id: appointment.assignedAgent._id,
-        name: appointment.assignedAgent.fullName,
-        officerId: appointment.assignedAgent.officerId
-      } : null
-    }));
-
-    // Calculate pagination info
-    const totalPages = Math.ceil(totalCount / limit);
-    const hasMore = page < totalPages;
-
-    return NextResponse.json({
-      success: true,
-      message: 'Appointments retrieved successfully',
-      data: {
-        appointments: transformedAppointments,
-        pagination: {
-          currentPage: page,
-          totalPages,
-          totalCount,
-          limit,
-          hasMore
-        },
-        filters: {
-          search,
-          status,
-          serviceType,
-          priority,
-          dateFrom,
-          dateTo
-        }
-      }
-    }, { status: 200 });
-
-  } catch (error) {
-    console.error('Get appointments API error:', error);
-    return NextResponse.json({
-      success: false,
-      message: 'Failed to retrieve appointments',
-      errors: ['Internal server error']
-    }, { status: 500 });
-  }
+// Types that match your frontend interface
+export interface Appointment {
+  id: string;
+  citizenName: string;
+  citizenId: string;
+  serviceType: ServiceType;
+  date: string;
+  time: string;
+  status: AppointmentStatus;
+  priority: 'normal' | 'urgent';
+  notes?: string;
+  contactEmail: string;
+  contactPhone: string;
+  submittedDate: string;
+  bookingReference?: string;
+  agentNotes?: string;
 }
 
-// Get appointment statistics
-export async function POST(request: NextRequest) {
-  try {
-    await connectDB();
+export interface AppointmentFilters {
+  search?: string;
+  status?: string;
+  serviceType?: string;
+  priority?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  limit?: number;
+}
 
-    const body = await request.json();
-    const { action } = body;
+export interface AppointmentStats {
+  total: number;
+  pending: number;
+  confirmed: number;
+  completed: number;
+  cancelled: number;
+  today: number;
+  urgent: number;
+}
 
-    if (action === 'getStats') {
-      // Get appointment statistics
-      const [
-        totalCount,
-        pendingCount,
-        confirmedCount,
-        completedCount,
-        cancelledCount,
-        todayCount,
-        urgentCount
-      ] = await Promise.all([
-        Appointment.countDocuments(),
-        Appointment.countDocuments({ status: 'pending' }),
-        Appointment.countDocuments({ status: 'confirmed' }),
-        Appointment.countDocuments({ status: 'completed' }),
-        Appointment.countDocuments({ status: 'cancelled' }),
-        Appointment.countDocuments({
-          date: {
-            $gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            $lte: new Date(new Date().setHours(23, 59, 59, 999))
-          }
-        }),
-        Appointment.countDocuments({ priority: 'urgent' })
-      ]);
+class AppointmentService {
+  private baseUrl = '/api/agent/appointments';
 
-      // Get service type breakdown
-      const serviceStats = await Appointment.aggregate([
-        {
-          $group: {
-            _id: '$serviceType',
-            count: { $sum: 1 }
-          }
-        }
-      ]);
-
-      // Get daily appointment counts for the last 7 days
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  // Get all appointments with filtering
+  async getAppointments(filters: AppointmentFilters = {}): Promise<{
+    success: boolean;
+    data?: {
+      appointments: Appointment[];
+      pagination: {
+        currentPage: number;
+        totalPages: number;
+        totalCount: number;
+        limit: number;
+        hasMore: boolean;
+      };
+    };
+    message: string;
+    errors?: string[];
+  }> {
+    try {
+      const params = new URLSearchParams();
       
-      const dailyStats = await Appointment.aggregate([
-        {
-          $match: {
-            date: { $gte: sevenDaysAgo }
-          }
-        },
-        {
-          $group: {
-            _id: {
-              $dateToString: {
-                format: '%Y-%m-%d',
-                date: '$date'
-              }
-            },
-            count: { $sum: 1 }
-          }
-        },
-        {
-          $sort: { _id: 1 }
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== '' && value !== 'all') {
+          params.append(key, value.toString());
         }
-      ]);
+      });
 
-      return NextResponse.json({
-        success: true,
-        message: 'Statistics retrieved successfully',
-        data: {
-          overview: {
-            total: totalCount,
-            pending: pendingCount,
-            confirmed: confirmedCount,
-            completed: completedCount,
-            cancelled: cancelledCount,
-            today: todayCount,
-            urgent: urgentCount
-          },
-          serviceBreakdown: serviceStats.reduce((acc, item) => {
-            acc[item._id] = item.count;
-            return acc;
-          }, {}),
-          dailyStats: dailyStats.map(item => ({
-            date: item._id,
-            count: item.count
-          }))
-        }
-      }, { status: 200 });
+      const response = await fetch(`${this.baseUrl}?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Include cookies for authentication
+      });
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+      return {
+        success: false,
+        message: 'Failed to fetch appointments',
+        errors: ['Network error or server unavailable']
+      };
+    }
+  }
+
+  // Get single appointment by ID
+  async getAppointment(id: string): Promise<{
+    success: boolean;
+    data?: Appointment & {
+      citizen?: any;
+      assignedAgent?: any;
+      requirements?: string[];
+      notificationsSent?: { email: boolean; sms: boolean };
+    };
+    message: string;
+    errors?: string[];
+  }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching appointment:', error);
+      return {
+        success: false,
+        message: 'Failed to fetch appointment',
+        errors: ['Network error or server unavailable']
+      };
+    }
+  }
+
+  // Update appointment (status, notes, etc.)
+  async updateAppointment(
+    id: string, 
+    updates: {
+      status?: AppointmentStatus;
+      agentNotes?: string;
+      priority?: 'normal' | 'urgent';
+      cancellationReason?: string;
+      agentId?: string;
+    }
+  ): Promise<{
+    success: boolean;
+    data?: Appointment;
+    message: string;
+    errors?: string[];
+  }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(updates),
+      });
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating appointment:', error);
+      return {
+        success: false,
+        message: 'Failed to update appointment',
+        errors: ['Network error or server unavailable']
+      };
+    }
+  }
+
+  // Send notification to citizen
+  async sendNotification(
+    id: string, 
+    notificationType: 'email' | 'sms' | 'both' = 'both'
+  ): Promise<{
+    success: boolean;
+    data?: {
+      notificationType: string;
+      sentTo: { email?: string; phone?: string };
+      sentAt: string;
+    };
+    message: string;
+    errors?: string[];
+  }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          action: 'sendNotification',
+          notificationType,
+        }),
+      });
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      return {
+        success: false,
+        message: 'Failed to send notification',
+        errors: ['Network error or server unavailable']
+      };
+    }
+  }
+
+  // Get appointment statistics
+  async getStats(): Promise<{
+    success: boolean;
+    data?: {
+      overview: AppointmentStats;
+      serviceBreakdown: Record<string, number>;
+      dailyStats: Array<{ date: string; count: number }>;
+    };
+    message: string;
+    errors?: string[];
+  }> {
+    try {
+      const response = await fetch(this.baseUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ action: 'getStats' }),
+      });
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      return {
+        success: false,
+        message: 'Failed to fetch statistics',
+        errors: ['Network error or server unavailable']
+      };
+    }
+  }
+
+  // Quick status update (commonly used operation)
+  async updateStatus(
+    id: string, 
+    status: AppointmentStatus, 
+    agentId?: string,
+    cancellationReason?: string
+  ): Promise<{
+    success: boolean;
+    data?: Appointment;
+    message: string;
+    errors?: string[];
+  }> {
+    const updates: any = { status, agentId };
+    
+    if (status === 'cancelled' && cancellationReason) {
+      updates.cancellationReason = cancellationReason;
     }
 
-    return NextResponse.json({
-      success: false,
-      message: 'Invalid action',
-      errors: ['Unknown action requested']
-    }, { status: 400 });
+    return this.updateAppointment(id, updates);
+  }
 
-  } catch (error) {
-    console.error('Appointment stats API error:', error);
-    return NextResponse.json({
-      success: false,
-      message: 'Failed to retrieve statistics',
-      errors: ['Internal server error']
-    }, { status: 500 });
+  // Add agent notes
+  async addNotes(
+    id: string, 
+    agentNotes: string, 
+    agentId?: string
+  ): Promise<{
+    success: boolean;
+    data?: Appointment;
+    message: string;
+    errors?: string[];
+  }> {
+    return this.updateAppointment(id, { agentNotes, agentId });
   }
 }
 
-// Handle unsupported methods
-export async function PUT() {
-  return NextResponse.json(
-    { success: false, message: 'Method not allowed' },
-    { status: 405 }
-  );
-}
-
-export async function DELETE() {
-  return NextResponse.json(
-    { success: false, message: 'Method not allowed' },
-    { status: 405 }
-  );
-}
+// Create and export a singleton instance
+const appointmentService = new AppointmentService();
+export default appointmentService;
