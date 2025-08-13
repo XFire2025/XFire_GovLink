@@ -1,5 +1,11 @@
 {
     "yaml.schemas": {
         "https://www.schemastore.org/github-issue-config.json": "file:///home/randitha/Desktop/IT/Personal/Tech-Triathlon-2025/Software/govlink/.github/ISSUE_TEMPLATE/config.yml"
-    }
+    },
+    "cSpell.words": [
+        "morphism",
+        "govlink",
+        "randitha",
+        "tsbuildinfo"
+    ]
 }

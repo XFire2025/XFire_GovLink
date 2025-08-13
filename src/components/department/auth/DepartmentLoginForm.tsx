@@ -55,11 +55,44 @@ export default function DepartmentLoginForm() {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    if (formData.email === 'dept@gov.lk' && formData.password === 'password123') {
-      router.push('/department/dashboard');
-    } else {
-      setErrors({ general: 'Invalid credentials. Please try again.' });
+    
+    try {
+      const response = await fetch('/api/auth/department/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Store department info and tokens in localStorage for client-side access
+        localStorage.setItem('department', JSON.stringify(result.department));
+        
+        // Store authentication tokens
+        if (result.tokens) {
+          localStorage.setItem('department_access_token', result.tokens.accessToken);
+          localStorage.setItem('department_refresh_token', result.tokens.refreshToken);
+        }
+        
+        // Redirect to dashboard
+        router.push('/department/dashboard');
+      } else {
+        setErrors({ 
+          general: result.message || 'Invalid credentials. Please try again.' 
+        });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors({ 
+        general: 'Connection error. Please check your internet connection and try again.' 
+      });
+    } finally {
       setIsLoading(false);
     }
   };

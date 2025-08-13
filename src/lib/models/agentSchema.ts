@@ -12,6 +12,7 @@ interface IAddress {
 
 export interface IAgent extends Document {
   fullName: string;
+  name?: string;
   officerId: string;
   nicNumber: string;
   position: string;
@@ -21,6 +22,7 @@ export interface IAgent extends Document {
   email: string;
   password: string; // For authentication
   duties: string[];
+  specialization: string[];
   department?: string;
   branch?: string;
   startDate?: Date;
@@ -36,11 +38,10 @@ export interface IAgent extends Document {
 
 const AgentSchema = new Schema<IAgent>({
   fullName: { type: String, required: true, trim: true, maxlength: 100 },
-  officerId: { type: String, required: true, unique: true, trim: true },
+  officerId: { type: String, required: true, trim: true },
   nicNumber: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
     validate: {
       validator: (v: string) => /^(\d{9}[VvXx]|\d{12})$/.test(v),
@@ -76,7 +77,6 @@ const AgentSchema = new Schema<IAgent>({
   email: {
     type: String,
     required: true,
-    unique: true,
     trim: true,
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email']
@@ -88,6 +88,7 @@ const AgentSchema = new Schema<IAgent>({
     select: false // Never return password in queries
   },
   duties: [{ type: String, trim: true }],
+  specialization: [{ type: String, trim: true }],
   department: { type: String, trim: true },
   branch: { type: String, trim: true },
   startDate: { type: Date },
@@ -103,11 +104,29 @@ const AgentSchema = new Schema<IAgent>({
   timestamps: true
 });
 
-// Indexes
-AgentSchema.index({ officerId: 1 });
-AgentSchema.index({ nicNumber: 1 });
-AgentSchema.index({ email: 1 });
-AgentSchema.index({ isActive: 1 });
+// Virtual fields for API compatibility
+AgentSchema.virtual('name').get(function() {
+  return this.fullName;
+});
+
+AgentSchema.virtual('status').get(function() {
+  return this.isActive ? 'ACTIVE' : 'INACTIVE';
+});
+
+AgentSchema.virtual('workload').get(function() {
+  // This would be calculated based on assigned submissions in real scenario
+  return Math.floor(Math.random() * 100);
+});
+
+// Ensure virtual fields are included in JSON output
+AgentSchema.set('toJSON', { virtuals: true });
+AgentSchema.set('toObject', { virtuals: true });
+
+// Unique indexes - combining with department for true uniqueness
+AgentSchema.index({ email: 1, department: 1 }, { unique: true });
+AgentSchema.index({ officerId: 1, department: 1 }, { unique: true });
+AgentSchema.index({ nicNumber: 1, department: 1 }, { unique: true });
+AgentSchema.index({ isActive: 1, department: 1 });
 
 const Agent = mongoose.models.Agent || mongoose.model<IAgent>('Agent', AgentSchema);
 export default Agent;

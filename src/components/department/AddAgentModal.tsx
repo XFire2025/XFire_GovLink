@@ -4,8 +4,9 @@ import React from 'react';
 import { X } from 'lucide-react';
 import AddAgentForm, { AgentFormData } from './AddAgentForm'; // Import the specific interface
 
+import { Agent } from '@/lib/services/departmentApiService';
+
 interface Service { id: string; name: string; }
-interface Agent { id: string; name: string; email: string; assignedServices?: string[]; }
 
 interface AddAgentModalProps {
   isOpen: boolean;
