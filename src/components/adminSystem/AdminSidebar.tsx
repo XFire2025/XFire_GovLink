@@ -63,7 +63,7 @@ const menuItems: MenuItem[] = [
   },
   {
     id: "create-department",
-    label: "Create Department",
+    label: "Departments",
     icon: Building2,
     href: "/admin/create-department",
   },
