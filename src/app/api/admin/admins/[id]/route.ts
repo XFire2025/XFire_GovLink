@@ -18,7 +18,7 @@ interface AdminUpdatePayload {
 // GET: Get specific admin (Super Admin only)
 export async function GET(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ) {
   try {
     // Authenticate admin
@@ -30,6 +30,7 @@ export async function GET(
       );
     }
 
+    const resolvedParams = await params;
     await connectDB();
 
     // Check if the authenticated admin is a super admin
@@ -42,7 +43,7 @@ export async function GET(
     }
 
     // Get specific admin
-    const targetAdmin = await Admin.findById(params.id).select(
+    const targetAdmin = await Admin.findById(resolvedParams.id).select(
       "fullName email role accountStatus lastLoginAt createdAt updatedAt"
     );
 
@@ -78,7 +79,7 @@ export async function GET(
 // PATCH: Update admin (Super Admin only)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ) {
   try {
     // Authenticate admin
@@ -90,6 +91,7 @@ export async function PATCH(
       );
     }
 
+    const resolvedParams = await params;
     await connectDB();
 
     // Check if the authenticated admin is a super admin
@@ -105,7 +107,7 @@ export async function PATCH(
       await request.json();
 
     // Find the admin to update
-    const targetAdmin = await Admin.findById(params.id);
+    const targetAdmin = await Admin.findById(resolvedParams.id);
     if (!targetAdmin) {
       return NextResponse.json(
         { success: false, message: "Admin not found" },
@@ -142,7 +144,7 @@ export async function PATCH(
       // Check if new email already exists
       const existingAdmin = await Admin.findOne({
         email: email.toLowerCase(),
-        _id: { $ne: params.id },
+        _id: { $ne: resolvedParams.id },
       });
       if (existingAdmin) {
         return NextResponse.json(
@@ -166,10 +168,14 @@ export async function PATCH(
     }
 
     // Update admin
-    const updatedAdmin = await Admin.findByIdAndUpdate(params.id, updateData, {
-      new: true,
-      runValidators: true,
-    }).select(
+    const updatedAdmin = await Admin.findByIdAndUpdate(
+      resolvedParams.id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select(
       "fullName email role accountStatus lastLoginAt createdAt updatedAt"
     );
 
@@ -199,7 +205,7 @@ export async function PATCH(
 // DELETE: Delete admin (Super Admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Params }
+  { params }: { params: Promise<Params> }
 ) {
   try {
     // Authenticate admin
@@ -211,6 +217,7 @@ export async function DELETE(
       );
     }
 
+    const resolvedParams = await params;
     await connectDB();
 
     // Check if the authenticated admin is a super admin
@@ -223,7 +230,7 @@ export async function DELETE(
     }
 
     // Find the admin to delete
-    const targetAdmin = await Admin.findById(params.id);
+    const targetAdmin = await Admin.findById(resolvedParams.id);
     if (!targetAdmin) {
       return NextResponse.json(
         { success: false, message: "Admin not found" },
@@ -254,7 +261,7 @@ export async function DELETE(
     }
 
     // Delete admin
-    await Admin.findByIdAndDelete(params.id);
+    await Admin.findByIdAndDelete(resolvedParams.id);
 
     return NextResponse.json({
       success: true,
