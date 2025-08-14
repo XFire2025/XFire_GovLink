@@ -11,7 +11,7 @@ on:
 jobs:
   # JOB 1: A quick check using the standard developer build (runs on all branches)
   Build-Test-Standard:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,7 +30,7 @@ jobs:
   Build-Test-Deploy:
     needs: Build-Test-Standard
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
