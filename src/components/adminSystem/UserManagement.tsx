@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Search,
@@ -46,11 +46,39 @@ interface UserDocument {
   _id: string;
   fullName: string;
   email: string;
-  role: string;
-  accountStatus: string;
-  verificationStatus: string;
+  role: 'citizen' | 'agent' | 'admin' | string;
+  accountStatus:
+    | 'active'
+    | 'pending_verification'
+    | 'under_review'
+    | 'suspended'
+    | 'deactivated'
+    | string;
+  verificationStatus:
+    | 'unverified'
+    | 'email_verified'
+    | 'phone_verified'
+    | 'documents_submitted'
+    | 'partially_verified'
+    | 'fully_verified'
+    | 'verification_failed'
+    | string;
   createdAt?: string;
   lastLoginAt?: string;
+
+  // Optionals that may exist in your API
+  nicNumber?: string;
+  dateOfBirth?: string; // ISO
+  mobileNumber?: string;
+}
+
+interface OfficeAddress {
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  district: string;
+  province: string;
+  postalCode: string;
 }
 
 interface AgentDocument {
@@ -61,6 +89,14 @@ interface AgentDocument {
   isEmailVerified: boolean;
   createdAt?: string;
   lastLoginAt?: string;
+
+  // Optionals that may exist in your API
+  officerId?: string;
+  nicNumber?: string;
+  position?: string;
+  officeName?: string;
+  officeAddress?: OfficeAddress;
+  phoneNumber?: string;
 }
 
 // Form interfaces
@@ -85,12 +121,27 @@ interface CreateFormData {
   phoneNumber: string;
 }
 
+type RoleOption = 'citizen' | 'agent' | 'admin';
+type AccountStatusOption =
+  | 'active'
+  | 'pending_verification'
+  | 'under_review'
+  | 'suspended'
+  | 'deactivated';
+type VerificationStatusOption =
+  | 'unverified'
+  | 'email_verified'
+  | 'phone_verified'
+  | 'documents_submitted'
+  | 'partially_verified'
+  | 'fully_verified'
+  | 'verification_failed';
+
 interface EditFormData {
   fullName?: string;
   email?: string;
-  role?: string;
-  accountStatus?: string;
-  verificationStatus?: string;
+  accountStatus?: AccountStatusOption;
+  verificationStatus?: VerificationStatusOption;
   isActive?: boolean;
   isEmailVerified?: boolean;
 }
@@ -187,13 +238,13 @@ function exportToCsv(filename: string, rows: UIUser[]) {
     headers.join(','),
     ...rows.map((r) =>
       [
-        `"${r.name}"`,
-        `"${r.email}"`,
+        `"${r.name.replace(/"/g, '""')}"`,
+        `"${r.email.replace(/"/g, '""')}"`,
         r.role,
         r.status,
         r.verificationStatus,
         r.joinDate,
-        `"${r.lastActive}"`,
+        `"${r.lastActive.replace(/"/g, '""')}"`,
       ].join(',')
     ),
   ].join('\n');
@@ -206,6 +257,38 @@ function exportToCsv(filename: string, rows: UIUser[]) {
   URL.revokeObjectURL(link.href);
 }
 
+interface DetailsState {
+  open: boolean;
+  loading: boolean;
+  item?: UIUser;
+  raw?: UserDocument | AgentDocument;
+  error?: string | null;
+}
+
+const ROLE_OPTIONS: Array<{ value: RoleOption; label: string }> = [
+  { value: 'citizen', label: 'User (Citizen)' },
+  { value: 'agent', label: 'Agent' },
+  { value: 'admin', label: 'Admin' },
+];
+
+const ACCOUNT_STATUS_OPTIONS: Array<{ value: AccountStatusOption; label: string }> = [
+  { value: 'active', label: 'Active' },
+  { value: 'pending_verification', label: 'Pending Verification' },
+  { value: 'under_review', label: 'Under Review' },
+  { value: 'suspended', label: 'Suspended' },
+  { value: 'deactivated', label: 'Deactivated' },
+];
+
+const VERIFICATION_STATUS_OPTIONS: Array<{ value: VerificationStatusOption; label: string }> = [
+  { value: 'unverified', label: 'Unverified' },
+  { value: 'email_verified', label: 'Email Verified' },
+  { value: 'phone_verified', label: 'Phone Verified' },
+  { value: 'documents_submitted', label: 'Documents Submitted' },
+  { value: 'partially_verified', label: 'Partially Verified' },
+  { value: 'fully_verified', label: 'Fully Verified' },
+  { value: 'verification_failed', label: 'Verification Failed' },
+];
+
 export default function UserManagement({ userType }: UserManagementProps) {
   const [items, setItems] = useState<UIUser[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -214,6 +297,7 @@ export default function UserManagement({ userType }: UserManagementProps) {
   const [error, setError] = useState<string | null>(null);
   const [openCreate, setOpenCreate] = useState(false);
   const [openEdit, setOpenEdit] = useState<{ open: boolean; item?: UIUser }>({ open: false });
+  const [details, setDetails] = useState<DetailsState>({ open: false, loading: false, error: null });
   const endpoint = userType === 'agents' ? '/api/admin/agents' : '/api/admin/users';
 
   // Create form state (minimal required fields per model)
@@ -259,20 +343,20 @@ export default function UserManagement({ userType }: UserManagementProps) {
         status: statusFilter,
         page: '1',
         limit: '50',
-      });
+      } as Record<string, string>);
       const res = await fetch(`${endpoint}?${params.toString()}`, { cache: 'no-store' });
       if (!res.ok) throw new Error(await res.text());
       const json = await res.json();
 
       const mapped: UIUser[] =
         userType === 'agents'
-          ? json.data.map((doc: AgentDocument) => mapAgentDocToUI(doc))
-          : json.data.map((doc: UserDocument) => mapUserDocToUI(doc));
+          ? (json.data as AgentDocument[]).map((doc) => mapAgentDocToUI(doc))
+          : (json.data as UserDocument[]).map((doc) => mapUserDocToUI(doc));
 
       setItems(mapped);
     } catch (e) {
-      const error = e as Error;
-      setError(error?.message || 'Failed to load');
+      const err = e as Error;
+      setError(err?.message || 'Failed to load');
     } finally {
       setLoading(false);
     }
@@ -291,7 +375,7 @@ export default function UserManagement({ userType }: UserManagementProps) {
       if (userType === 'agents') {
         payload = { isActive: newStatus === 'active', ...(newStatus === 'active' ? { isEmailVerified: true } : {}) };
       } else {
-        const accountStatus = newStatus === 'active' ? 'active' : 'suspended';
+        const accountStatus: AccountStatusOption = newStatus === 'active' ? 'active' : 'suspended';
         payload = { accountStatus };
       }
 
@@ -303,8 +387,8 @@ export default function UserManagement({ userType }: UserManagementProps) {
       if (!res.ok) throw new Error(await res.text());
       await fetchData();
     } catch (e) {
-      const error = e as Error;
-      alert(error?.message || 'Failed to update status');
+      const err = e as Error;
+      alert(err?.message || 'Failed to update status');
     }
   };
 
@@ -315,8 +399,8 @@ export default function UserManagement({ userType }: UserManagementProps) {
       if (!res.ok) throw new Error(await res.text());
       setItems((prev) => prev.filter((u) => u.id !== id));
     } catch (e) {
-      const error = e as Error;
-      alert(error?.message || 'Delete failed');
+      const err = e as Error;
+      alert(err?.message || 'Delete failed');
     }
   };
 
@@ -380,8 +464,8 @@ export default function UserManagement({ userType }: UserManagementProps) {
       });
       await fetchData();
     } catch (e) {
-      const error = e as Error;
-      alert(error?.message || 'Create failed');
+      const err = e as Error;
+      alert(err?.message || 'Create failed');
     }
   };
 
@@ -399,15 +483,18 @@ export default function UserManagement({ userType }: UserManagementProps) {
       setEditForm({
         fullName: item.name,
         email: item.email,
-        role: item.role === 'user' ? 'citizen' : item.role, // server uses citizen|agent|admin
         accountStatus:
-          item.status === 'active' ? 'active' : item.status === 'pending' ? 'pending_verification' : 'suspended',
+          item.status === 'active'
+            ? 'active'
+            : item.status === 'pending'
+              ? 'pending_verification'
+              : 'suspended',
         verificationStatus:
           item.verificationStatus === 'verified'
             ? 'fully_verified'
             : item.verificationStatus === 'rejected'
-            ? 'verification_failed'
-            : 'unverified',
+              ? 'verification_failed'
+              : 'unverified',
       });
     }
   };
@@ -424,14 +511,43 @@ export default function UserManagement({ userType }: UserManagementProps) {
       setOpenEdit({ open: false });
       await fetchData();
     } catch (e) {
-      const error = e as Error;
-      alert(error?.message || 'Update failed');
+      const err = e as Error;
+      alert(err?.message || 'Update failed');
+    }
+  };
+
+  const handleViewDetails = async (item: UIUser) => {
+    setDetails({ open: true, loading: true, item, error: null });
+    try {
+      const res = await fetch(`${endpoint}/${item.id}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(await res.text());
+      const rawJson: unknown = await res.json();
+
+      let doc: UserDocument | AgentDocument;
+      if (typeof rawJson === 'object' && rawJson !== null && 'data' in rawJson) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        doc = (rawJson as { data: UserDocument | AgentDocument }).data;
+      } else {
+        doc = rawJson as UserDocument | AgentDocument;
+      }
+
+      setDetails((prev) => ({ ...prev, loading: false, raw: doc }));
+    } catch (e) {
+      const err = e as Error;
+      setDetails((prev) => ({ ...prev, loading: false, error: err?.message || 'Failed to load details' }));
     }
   };
 
   const headerIcon = userType === 'agents' ? <UserCog className="w-8 h-8 text-[#8D153A]" /> : <Users className="w-8 h-8 text-[#8D153A]" />;
 
   const filteredUsers = items; // server already filters/sorts; keep simple
+
+  const isAgentsList = userType === 'agents';
+
+  const detailsTitle = useMemo(
+    () => (isAgentsList ? 'Agent Details' : 'User Details'),
+    [isAgentsList]
+  );
 
   return (
     <div className="relative min-h-full">
@@ -447,14 +563,14 @@ export default function UserManagement({ userType }: UserManagementProps) {
             <h1 className="text-3xl font-bold text-foreground mb-2">
               <span className="flex items-center gap-3">
                 {headerIcon}
-                <span className="text-foreground">{userType === 'agents' ? 'Agent' : 'User'}</span>{' '}
+                <span className="text-foreground">{isAgentsList ? 'Agent' : 'User'}</span>{' '}
                 <span className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
                   Management
                 </span>
               </span>
             </h1>
             <p className="text-muted-foreground">
-              Manage {userType === 'agents' ? 'customer service agents' : 'regular users'} and their permissions
+              Manage {isAgentsList ? 'customer service agents' : 'regular users'} and their permissions
             </p>
           </div>
           <button
@@ -462,7 +578,7 @@ export default function UserManagement({ userType }: UserManagementProps) {
             className="flex items-center gap-2 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105 modern-card"
           >
             <Plus className="w-4 h-4" />
-            Add {userType === 'agents' ? 'Agent' : 'User'}
+            Add {isAgentsList ? 'Agent' : 'User'}
           </button>
         </motion.div>
 
@@ -477,7 +593,7 @@ export default function UserManagement({ userType }: UserManagementProps) {
             <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground group-focus-within:text-[#8D153A] transition-colors duration-300" />
             <input
               type="text"
-              placeholder={`Search ${userType === 'agents' ? 'agents' : 'users'}...`}
+              placeholder={`Search ${isAgentsList ? 'agents' : 'users'}...`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card hover:shadow-md"
@@ -495,7 +611,7 @@ export default function UserManagement({ userType }: UserManagementProps) {
               <option value="suspended">Suspended</option>
             </select>
             <button
-              onClick={() => exportToCsv(`${userType === 'agents' ? 'agents' : 'users'}-export.csv`, filteredUsers)}
+              onClick={() => exportToCsv(`${isAgentsList ? 'agents' : 'users'}-export.csv`, filteredUsers)}
               className="flex items-center gap-2 px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl hover:bg-card/80 hover:border-[#008060]/50 transition-all duration-300 modern-card hover:shadow-md"
             >
               <Download className="w-4 h-4 text-[#008060]" />
@@ -515,7 +631,7 @@ export default function UserManagement({ userType }: UserManagementProps) {
             <table className="w-full">
               <thead className="bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5 border-b border-border/30">
                 <tr>
-                  <th className="text-left p-4 font-semibold text-foreground">{userType === 'agents' ? 'Agent' : 'User'}</th>
+                  <th className="text-left p-4 font-semibold text-foreground">{isAgentsList ? 'Agent' : 'User'}</th>
                   <th className="text-left p-4 font-semibold text-foreground">Status</th>
                   <th className="text-left p-4 font-semibold text-foreground">Verification</th>
                   <th className="text-left p-4 font-semibold text-foreground">Join Date</th>
@@ -559,7 +675,7 @@ export default function UserManagement({ userType }: UserManagementProps) {
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-10 h-10 bg-gradient-to-r rounded-full flex items-center justify-center border-2 shadow-md transition-all duration-300 group-hover:scale-110 ${
-                            userType === 'agents'
+                            isAgentsList
                               ? 'from-[#8D153A]/20 to-[#FF5722]/20 border-[#8D153A]/30'
                               : 'from-[#008060]/20 to-[#FFC72C]/20 border-[#008060]/30'
                           }`}
@@ -619,7 +735,7 @@ export default function UserManagement({ userType }: UserManagementProps) {
                         <button
                           className="p-2 hover:bg-[#8D153A]/10 rounded-lg transition-all duration-300 hover:scale-110 text-[#8D153A]"
                           title="View Details"
-                          onClick={() => alert('Implement a details drawer if you like ✨')}
+                          onClick={() => handleViewDetails(user)}
                         >
                           <Eye className="w-4 h-4" />
                         </button>
@@ -673,14 +789,14 @@ export default function UserManagement({ userType }: UserManagementProps) {
           <div className="w-full max-w-2xl bg-card rounded-2xl border border-border/50 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-semibold">
-                Add {userType === 'agents' ? 'Agent' : 'User'}
+                Add {isAgentsList ? 'Agent' : 'User'}
               </h3>
               <button onClick={() => setOpenCreate(false)} className="text-muted-foreground hover:text-foreground">
                 ✕
               </button>
             </div>
 
-            {userType === 'agents' ? (
+            {isAgentsList ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input className="input" placeholder="Full Name" value={createForm.fullName} onChange={(e) => setCreateForm((f) => ({ ...f, fullName: e.target.value }))} />
                 <input className="input" placeholder="Email" value={createForm.email} onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))} />
@@ -728,18 +844,178 @@ export default function UserManagement({ userType }: UserManagementProps) {
         </div>
       )}
 
+      {/* Details Modal */}
+      {details.open && details.item && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDetails({ open: false, loading: false })}>
+          <div className="w-full max-w-2xl bg-card rounded-2xl border border-border/50 p-6 space-y-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-semibold">{detailsTitle}</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (details.item) {
+                      handleEditOpen(details.item);
+                      setDetails((prev) => ({ ...prev, open: false }));
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg border border-border/50 hover:bg-muted/30 text-sm flex items-center gap-1"
+                  title="Edit"
+                >
+                  <Edit className="w-4 h-4" />
+                  Edit
+                </button>
+                <button onClick={() => setDetails({ open: false, loading: false })} className="text-muted-foreground hover:text-foreground">
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Header with avatar */}
+            <div className="flex items-center gap-4">
+              <div
+                className={`w-12 h-12 bg-gradient-to-r rounded-full flex items-center justify-center border-2 shadow-md ${
+                  isAgentsList
+                    ? 'from-[#8D153A]/20 to-[#FF5722]/20 border-[#8D153A]/30'
+                    : 'from-[#008060]/20 to-[#FFC72C]/20 border-[#008060]/30'
+                }`}
+              >
+                <span className="text-base font-bold text-foreground">
+                  {details.item.name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <div className="text-lg font-semibold">{details.item.name}</div>
+                <div className="text-sm text-muted-foreground">{details.item.email}</div>
+              </div>
+            </div>
+
+            {/* Body */}
+            {details.loading ? (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Loading details...
+              </div>
+            ) : details.error ? (
+              <div className="text-red-500">{details.error}</div>
+            ) : (
+              <div className="space-y-6">
+                {/* Status row */}
+                <div className="flex flex-wrap items-center gap-3">
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                      details.item.status === 'active'
+                        ? 'bg-[#008060]/10 text-[#008060] border-[#008060]/20'
+                        : details.item.status === 'pending'
+                        ? 'bg-[#FFC72C]/10 text-[#FFC72C] border-[#FFC72C]/20'
+                        : 'bg-[#FF5722]/10 text-[#FF5722] border-[#FF5722]/20'
+                    }`}
+                  >
+                    {details.item.status === 'active' && <CheckCircle className="w-3 h-3" />}
+                    {details.item.status === 'pending' && <Clock className="w-3 h-3" />}
+                    {details.item.status === 'suspended' && <XCircle className="w-3 h-3" />}
+                    {details.item.status.charAt(0).toUpperCase() + details.item.status.slice(1)}
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${
+                      details.item.verificationStatus === 'verified'
+                        ? 'bg-[#8D153A]/10 text-[#8D153A] border-[#8D153A]/20'
+                        : details.item.verificationStatus === 'pending'
+                        ? 'bg-[#FFC72C]/10 text-[#FFC72C] border-[#FFC72C]/20'
+                        : 'bg-[#FF5722]/10 text-[#FF5722] border-[#FF5722]/20'
+                    }`}
+                  >
+                    {details.item.verificationStatus === 'verified' && <ShieldCheck className="w-3 h-3" />}
+                    {details.item.verificationStatus === 'pending' && <Clock className="w-3 h-3" />}
+                    {details.item.verificationStatus === 'rejected' && <XCircle className="w-3 h-3" />}
+                    {details.item.verificationStatus.charAt(0).toUpperCase() + details.item.verificationStatus.slice(1)}
+                  </span>
+                </div>
+
+                {/* Info grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DetailRow label="Role" value={details.item.role.toUpperCase()} />
+                  <DetailRow label="Join Date" value={details.item.joinDate || '—'} />
+                  <DetailRow label="Last Active" value={details.item.lastActive || '—'} />
+
+                  {/* Extra fields if returned by backend */}
+                  {isAgentsList ? (
+                    <>
+                      <DetailRow label="Active" value={(details.raw as AgentDocument)?.isActive ? 'Yes' : 'No'} />
+                      <DetailRow label="Email Verified" value={(details.raw as AgentDocument)?.isEmailVerified ? 'Yes' : 'No'} />
+                      {(details.raw as AgentDocument)?.officerId && (
+                        <DetailRow label="Officer ID" value={(details.raw as AgentDocument).officerId!} />
+                      )}
+                      {(details.raw as AgentDocument)?.position && (
+                        <DetailRow label="Position" value={(details.raw as AgentDocument).position!} />
+                      )}
+                      {(details.raw as AgentDocument)?.phoneNumber && (
+                        <DetailRow label="Phone" value={(details.raw as AgentDocument).phoneNumber!} />
+                      )}
+                      {(details.raw as AgentDocument)?.nicNumber && (
+                        <DetailRow label="NIC" value={(details.raw as AgentDocument).nicNumber!} />
+                      )}
+                      {(details.raw as AgentDocument)?.officeName && (
+                        <DetailRow label="Office" value={(details.raw as AgentDocument).officeName!} />
+                      )}
+                      {(details.raw as AgentDocument)?.officeAddress && (
+                        <div className="md:col-span-2">
+                          <div className="text-sm text-muted-foreground mb-1">Office Address</div>
+                          <div className="rounded-lg border border-border/50 p-3 text-sm">
+                            <div>{(details.raw as AgentDocument).officeAddress?.addressLine1}</div>
+                            {(details.raw as AgentDocument).officeAddress?.addressLine2 && (
+                              <div>{(details.raw as AgentDocument).officeAddress?.addressLine2}</div>
+                            )}
+                            <div>
+                              {(details.raw as AgentDocument).officeAddress?.city}
+                              {', '}
+                              {(details.raw as AgentDocument).officeAddress?.district}
+                              {', '}
+                              {(details.raw as AgentDocument).officeAddress?.province}{' '}
+                              {(details.raw as AgentDocument).officeAddress?.postalCode}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {(details.raw as UserDocument)?.nicNumber && (
+                        <DetailRow label="NIC" value={(details.raw as UserDocument).nicNumber!} />
+                      )}
+                      {(details.raw as UserDocument)?.mobileNumber && (
+                        <DetailRow label="Mobile" value={(details.raw as UserDocument).mobileNumber!} />
+                      )}
+                      {(details.raw as UserDocument)?.dateOfBirth && (
+                        <DetailRow
+                          label="Date of Birth"
+                          value={new Date((details.raw as UserDocument).dateOfBirth!).toISOString().slice(0, 10)}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Edit Modal */}
       {openEdit.open && openEdit.item && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setOpenEdit({ open: false })}>
           <div className="w-full max-w-xl bg-card rounded-2xl border border-border/50 p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold">Edit {userType === 'agents' ? 'Agent' : 'User'}</h3>
+              <h3 className="text-xl font-semibold">Edit {isAgentsList ? 'Agent' : 'User'}</h3>
               <button onClick={() => setOpenEdit({ open: false })} className="text-muted-foreground hover:text-foreground">
                 ✕
               </button>
             </div>
 
-            {userType === 'agents' ? (
+            {isAgentsList ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input className="input" placeholder="Full Name" value={editForm.fullName || ''} onChange={(e) => setEditForm((f) => ({ ...f, fullName: e.target.value }))} />
                 <input className="input" placeholder="Email" value={editForm.email || ''} onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))} />
@@ -751,34 +1027,58 @@ export default function UserManagement({ userType }: UserManagementProps) {
                 </label>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input className="input" placeholder="Full Name" value={editForm.fullName || ''} onChange={(e) => setEditForm((f) => ({ ...f, fullName: e.target.value }))} />
-                <input className="input" placeholder="Email" value={editForm.email || ''} onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))} />
-                <select className="input" value={editForm.role || 'citizen'} onChange={(e) => setEditForm((f) => ({ ...f, role: e.target.value }))}>
-                  <option value="citizen">User (Citizen)</option>
-                  <option value="agent">Agent</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <select className="input" value={editForm.accountStatus || 'active'} onChange={(e) => setEditForm((f) => ({ ...f, accountStatus: e.target.value }))}>
-                  <option value="active">Active</option>
-                  <option value="pending_verification">Pending Verification</option>
-                  <option value="under_review">Under Review</option>
-                  <option value="suspended">Suspended</option>
-                  <option value="deactivated">Deactivated</option>
-                </select>
-                <select
-                  className="input"
-                  value={editForm.verificationStatus || 'unverified'}
-                  onChange={(e) => setEditForm((f) => ({ ...f, verificationStatus: e.target.value }))}
-                >
-                  <option value="unverified">Unverified</option>
-                  <option value="email_verified">Email Verified</option>
-                  <option value="phone_verified">Phone Verified</option>
-                  <option value="documents_submitted">Documents Submitted</option>
-                  <option value="partially_verified">Partially Verified</option>
-                  <option value="fully_verified">Fully Verified</option>
-                  <option value="verification_failed">Verification Failed</option>
-                </select>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <input className="input" placeholder="Full Name" value={editForm.fullName || ''} onChange={(e) => setEditForm((f) => ({ ...f, fullName: e.target.value }))} />
+                  <input className="input" placeholder="Email" value={editForm.email || ''} onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))} />
+                </div>
+                
+
+              
+
+                {/* Account Status pill group */}
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Account Status</div>
+                  <div className="flex flex-wrap gap-2">
+                    {ACCOUNT_STATUS_OPTIONS.map((opt) => {
+                      const active = editForm.accountStatus === opt.value || (!editForm.accountStatus && opt.value === 'active');
+                      return (
+                        <button
+                          type="button"
+                          key={opt.value}
+                          onClick={() => setEditForm((f) => ({ ...f, accountStatus: opt.value }))}
+                          className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
+                            active ? 'bg-[#008060]/10 border-[#008060]/30 text-foreground' : 'border-border/50 text-muted-foreground hover:bg-muted/30'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Verification Status pill group */}
+                <div>
+                  <div className="text-sm text-muted-foreground mb-2">Verification Status</div>
+                  <div className="flex flex-wrap gap-2">
+                    {VERIFICATION_STATUS_OPTIONS.map((opt) => {
+                      const active = editForm.verificationStatus === opt.value || (!editForm.verificationStatus && opt.value === 'unverified');
+                      return (
+                        <button
+                          type="button"
+                          key={opt.value}
+                          onClick={() => setEditForm((f) => ({ ...f, verificationStatus: opt.value }))}
+                          className={`px-3 py-1.5 rounded-full border text-sm transition-all ${
+                            active ? 'bg-[#FFC72C]/10 border-[#FFC72C]/30 text-foreground' : 'border-border/50 text-muted-foreground hover:bg-muted/30'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -799,6 +1099,15 @@ export default function UserManagement({ userType }: UserManagementProps) {
           @apply w-full px-3 py-2.5 bg-card/60 dark:bg-card/40 backdrop-blur-sm border border-border/50 rounded-xl focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]/50 transition-all duration-300 modern-card hover:shadow-md;
         }
       `}</style>
+    </div>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-border/50 p-3">
+      <div className="text-sm text-muted-foreground">{label}</div>
+      <div className="text-sm font-medium text-foreground text-right">{value || '—'}</div>
     </div>
   );
 }
