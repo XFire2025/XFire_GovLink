@@ -6,12 +6,13 @@ import Department, { DepartmentStatus } from '@/lib/models/departmentSchema';
 // GET /api/admin/departments/[id] - Get specific department
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     await connectDB();
 
-    const department = await Department.findById(params.id).select('-password');
+    const department = await Department.findById(id).select('-password');
 
     if (!department) {
       return NextResponse.json(
@@ -38,15 +39,16 @@ export async function GET(
 // PUT /api/admin/departments/[id] - Update department
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     await connectDB();
 
     const body = await request.json();
 
     // Find existing department
-    const existingDepartment = await Department.findById(params.id);
+    const existingDepartment = await Department.findById(id);
     if (!existingDepartment) {
       return NextResponse.json(
         { success: false, message: 'Department not found' },
@@ -58,7 +60,7 @@ export async function PUT(
     if (body.email && body.email !== existingDepartment.email) {
       const emailExists = await Department.findOne({ 
         email: body.email.toLowerCase(),
-        _id: { $ne: params.id }
+        _id: { $ne: id }
       });
       if (emailExists) {
         return NextResponse.json(
@@ -80,7 +82,7 @@ export async function PUT(
 
     // Update department
     const updatedDepartment = await Department.findByIdAndUpdate(
-      params.id,
+      id,
       {
         ...body,
         email: body.email?.toLowerCase(),
@@ -119,12 +121,13 @@ export async function PUT(
 // DELETE /api/admin/departments/[id] - Delete department
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     await connectDB();
 
-    const department = await Department.findById(params.id);
+    const department = await Department.findById(id);
     if (!department) {
       return NextResponse.json(
         { success: false, message: 'Department not found' },
@@ -133,7 +136,7 @@ export async function DELETE(
     }
 
     // Soft delete by setting status to INACTIVE
-    await Department.findByIdAndUpdate(params.id, {
+    await Department.findByIdAndUpdate(id, {
       status: DepartmentStatus.INACTIVE,
       updatedAt: new Date()
     });
@@ -155,8 +158,9 @@ export async function DELETE(
 // PATCH /api/admin/departments/[id] - Update department status
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     await connectDB();
 
@@ -175,7 +179,7 @@ export async function PATCH(
     }
 
     const updatedDepartment = await Department.findByIdAndUpdate(
-      params.id,
+      id,
       { status, updatedAt: new Date() },
       { new: true, select: '-password' }
     );
