@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import mongoose from 'mongoose';
-import Feedback, { FeedbackType } from '@/lib/models/feedbackSchema';
+import mongoose, { FilterQuery } from 'mongoose';
+import Feedback, { IFeedback, FeedbackType } from '@/lib/models/feedbackSchema';
 
 // Database connection function
 async function connectToMongoDB() {
@@ -17,6 +17,11 @@ async function connectToMongoDB() {
     console.error('MongoDB connection error:', error);
     throw new Error('Failed to connect to database');
   }
+}
+
+// Custom Error type for MongoDB errors
+interface MongoError extends Error {
+    code?: number;
 }
 
 // Types
@@ -185,7 +190,7 @@ export async function POST(request: NextRequest) {
     console.error('Feedback submission error:', error);
     
     // Handle duplicate key error
-    if (error instanceof Error && 'code' in error && (error as any).code === 11000) {
+    if (error instanceof Error && 'code' in error && (error as MongoError).code === 11000) {
       return NextResponse.json(
         { 
           success: false, 
@@ -225,12 +230,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const type = searchParams.get('type');
+    const type = searchParams.get('type') as FeedbackType | null;
     const status = searchParams.get('status');
     const priority = searchParams.get('priority');
 
     // Build query
-    const query: any = {};
+    const query: FilterQuery<IFeedback> = {};
     if (type) query.feedbackType = type;
     if (status) query.status = status;
     if (priority) query.priority = priority;

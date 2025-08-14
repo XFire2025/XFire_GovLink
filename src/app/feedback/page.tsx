@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Header } from "@/components/Header";
 import { Star, Send, MessageSquare, CheckCircle } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 // Types
 type Language = "en" | "si" | "ta";
@@ -178,7 +178,7 @@ const feedbackTranslations: Record<
   },
 };
 
-const ratingLabels = {
+const ratingLabels: Record<Rating, Record<Language, string>> = {
   1: { en: "Terrible", si: "භයානක", ta: "பயங்கரமான" },
   2: { en: "Poor", si: "දුර්වල", ta: "மோசமான" },
   3: { en: "Average", si: "සාමාන්‍ය", ta: "சராசரி" },
@@ -187,7 +187,7 @@ const ratingLabels = {
 };
 
 export default function FeedbackPage() {
-  const [currentLanguage, setCurrentLanguage] = useState<Language>("en");
+  const [currentLanguage] = useState<Language>("en");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FeedbackData>({
@@ -198,12 +198,12 @@ export default function FeedbackPage() {
     subject: "",
     message: "",
   });
-  const [errors, setErrors] = useState<Partial<FeedbackData>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FeedbackData, string>>>({});
 
   const t = feedbackTranslations[currentLanguage];
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<FeedbackData> = {};
+    const newErrors: Partial<Record<keyof FeedbackData, string>> = {};
 
     if (!formData.name.trim()) newErrors.name = t.required;
     if (!formData.email.trim()) newErrors.email = t.required;
@@ -249,10 +249,17 @@ export default function FeedbackPage() {
     }
   };
 
-  const handleInputChange = (field: keyof FeedbackData, value: any) => {
+  const handleInputChange = (
+    field: keyof FeedbackData,
+    value: string | Rating | FeedbackType | null
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
