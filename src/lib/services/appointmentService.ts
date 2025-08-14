@@ -40,6 +40,43 @@ export interface AppointmentStats {
   urgent: number;
 }
 
+// Define interfaces for populated citizen and agent data
+export interface PopulatedCitizen {
+  id: string;
+  fullName: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  mobileNumber?: string;
+  phoneNumber?: string;
+  nic?: string;
+  nicNumber?: string;
+  address?: string;
+  accountStatus: string;
+}
+
+export interface PopulatedAgent {
+  id: string;
+  fullName: string;
+  officerId: string;
+  position: string;
+  department: string;
+  officeName: string;
+  email: string;
+  phoneNumber?: string;
+  isActive: boolean;
+  specializations?: string[];
+}
+
+// Define interface for appointment updates
+export interface AppointmentUpdateData {
+  status?: AppointmentStatus;
+  agentNotes?: string;
+  priority?: 'normal' | 'urgent';
+  cancellationReason?: string;
+  agentId?: string;
+}
+
 class AppointmentService {
   private baseUrl = '/api/agent/appointments';
 
@@ -91,8 +128,8 @@ class AppointmentService {
   async getAppointment(id: string): Promise<{
     success: boolean;
     data?: Appointment & {
-      citizen?: any;
-      assignedAgent?: any;
+      citizen?: PopulatedCitizen;
+      assignedAgent?: PopulatedAgent;
       requirements?: string[];
       notificationsSent?: { email: boolean; sms: boolean };
     };
@@ -122,13 +159,7 @@ class AppointmentService {
   // Update appointment (status, notes, etc.)
   async updateAppointment(
     id: string, 
-    updates: {
-      status?: AppointmentStatus;
-      agentNotes?: string;
-      priority?: 'normal' | 'urgent';
-      cancellationReason?: string;
-      agentId?: string;
-    }
+    updates: AppointmentUpdateData
   ): Promise<{
     success: boolean;
     data?: Appointment;
@@ -238,7 +269,7 @@ class AppointmentService {
     message: string;
     errors?: string[];
   }> {
-    const updates: any = { status, agentId };
+    const updates: AppointmentUpdateData = { status, agentId };
     
     if (status === 'cancelled' && cancellationReason) {
       updates.cancellationReason = cancellationReason;

@@ -4,6 +4,63 @@ import mongoose from 'mongoose';
 import connect from '@/lib/db';
 import Appointment, { AppointmentStatus } from '@/lib/models/appointmentSchema';
 
+// Define interfaces for better type safety
+interface PopulatedCitizen {
+  _id: string;
+  fullName: string;
+  email: string;
+  mobileNumber?: string;
+  nicNumber?: string;
+}
+
+interface PopulatedAgent {
+  _id: string;
+  fullName: string;
+  officerId: string;
+  position: string;
+}
+
+interface AppointmentUpdateData {
+  status?: AppointmentStatus;
+  agentNotes?: string;
+  assignedAgent?: string;
+  priority?: 'normal' | 'urgent';
+  cancellationReason?: string;
+  requirements?: string[];
+  confirmedDate?: Date;
+  completedDate?: Date;
+  cancelledDate?: Date;
+  lastModifiedBy?: string;
+}
+
+interface ValidationError {
+  message: string;
+  path?: string;
+  value?: unknown;
+}
+
+interface MongooseValidationError extends Error {
+  errors: Record<string, ValidationError>;
+}
+
+// Helper function to validate status transitions
+function isValidStatusTransition(currentStatus: AppointmentStatus, newStatus: AppointmentStatus): boolean {
+  const validTransitions: Record<AppointmentStatus, AppointmentStatus[]> = {
+    'pending': ['confirmed', 'cancelled'],
+    'confirmed': ['completed', 'cancelled'],
+    'cancelled': [], // Cannot change from cancelled
+    'completed': [] // Cannot change from completed
+  };
+  
+  return validTransitions[currentStatus]?.includes(newStatus) ?? false;
+}
+
+// Helper function to validate appointment status
+function isValidAppointmentStatus(status: string): status is AppointmentStatus {
+  const validStatuses: AppointmentStatus[] = ['pending', 'confirmed', 'cancelled', 'completed'];
+  return validStatuses.includes(status as AppointmentStatus);
+}
+
 // Get single appointment
 export async function GET(
   request: NextRequest,
@@ -58,17 +115,17 @@ export async function GET(
       cancelledDate: appointment.cancelledDate?.toISOString().split('T')[0],
       cancellationReason: appointment.cancellationReason,
       assignedAgent: appointment.assignedAgent ? {
-        id: appointment.assignedAgent._id,
-        name: appointment.assignedAgent.fullName,
-        officerId: appointment.assignedAgent.officerId,
-        position: appointment.assignedAgent.position
+        id: (appointment.assignedAgent as PopulatedAgent)._id,
+        name: (appointment.assignedAgent as PopulatedAgent).fullName,
+        officerId: (appointment.assignedAgent as PopulatedAgent).officerId,
+        position: (appointment.assignedAgent as PopulatedAgent).position
       } : null,
       citizen: appointment.citizenId ? {
-        id: appointment.citizenId._id,
-        fullName: appointment.citizenId.fullName,
-        email: appointment.citizenId.email,
-        mobile: appointment.citizenId.mobileNumber,
-        nic: appointment.citizenId.nicNumber
+        id: (appointment.citizenId as PopulatedCitizen)._id,
+        fullName: (appointment.citizenId as PopulatedCitizen).fullName,
+        email: (appointment.citizenId as PopulatedCitizen).email,
+        mobile: (appointment.citizenId as PopulatedCitizen).mobileNumber,
+        nic: (appointment.citizenId as PopulatedCitizen).nicNumber
       } : null,
       requirements: appointment.requirements || [],
       notificationsSent: appointment.notificationsSent || { email: false, sms: false }
@@ -120,8 +177,17 @@ export async function PUT(
       }, { status: 404 });
     }
 
+    // Validate status if provided
+    if (body.status && !isValidAppointmentStatus(body.status)) {
+      return NextResponse.json({
+        success: false,
+        message: 'Invalid status',
+        errors: ['Status must be one of: pending, confirmed, cancelled, completed']
+      }, { status: 400 });
+    }
+
     // Prepare update object
-    const updateData: Record<string, unknown> = {};
+    const updateData: AppointmentUpdateData = {};
     const allowedUpdates = [
       'status', 'agentNotes', 'assignedAgent', 'priority', 
       'cancellationReason', 'requirements'
@@ -130,15 +196,15 @@ export async function PUT(
     // Only update allowed fields
     for (const field of allowedUpdates) {
       if (body[field] !== undefined) {
-        updateData[field] = body[field];
+        updateData[field as keyof AppointmentUpdateData] = body[field];
       }
     }
 
     // Handle status-specific updates
     if (body.status && body.status !== existingAppointment.status) {
-      updateData.status = body.status;
+      updateData.status = body.status as AppointmentStatus;
       
-      switch (body.status) {
+      switch (body.status as AppointmentStatus) {
         case 'confirmed':
           updateData.confirmedDate = new Date();
           break;
@@ -158,20 +224,15 @@ export async function PUT(
     updateData.lastModifiedBy = body.agentId || 'system';
 
     // Validate status transition
-    const validTransitions: Record<string, string[]> = {
-      'pending': ['confirmed', 'cancelled'],
-      'confirmed': ['completed', 'cancelled'],
-      'cancelled': [], // Cannot change from cancelled
-      'completed': [] // Cannot change from completed
-    };
-
     if (body.status && body.status !== existingAppointment.status) {
-      const currentStatus = existingAppointment.status;
-      if (!validTransitions[currentStatus]?.includes(body.status)) {
+      const currentStatus = existingAppointment.status as AppointmentStatus;
+      const newStatus = body.status as AppointmentStatus;
+      
+      if (!isValidStatusTransition(currentStatus, newStatus)) {
         return NextResponse.json({
           success: false,
           message: 'Invalid status transition',
-          errors: [`Cannot change status from ${currentStatus} to ${body.status}`]
+          errors: [`Cannot change status from ${currentStatus} to ${newStatus}`]
         }, { status: 400 });
       }
     }
@@ -218,9 +279,10 @@ export async function PUT(
   } catch (error) {
     console.error('Update appointment API error:', error);
     
-    // Handle validation errors
-    if (error.name === 'ValidationError') {
-      const errors = Object.values(error.errors).map((err: any) => err.message);
+    // Handle validation errors with proper typing
+    if (error instanceof Error && error.name === 'ValidationError') {
+      const validationError = error as MongooseValidationError;
+      const errors = Object.values(validationError.errors).map((err: ValidationError) => err.message);
       return NextResponse.json({
         success: false,
         message: 'Validation failed',
@@ -253,6 +315,15 @@ export async function POST(
         success: false,
         message: 'Invalid action',
         errors: ['Only sendNotification action is supported']
+      }, { status: 400 });
+    }
+
+    // Validate notification type
+    if (!['email', 'sms', 'both'].includes(notificationType)) {
+      return NextResponse.json({
+        success: false,
+        message: 'Invalid notification type',
+        errors: ['Notification type must be email, sms, or both']
       }, { status: 400 });
     }
 

@@ -8,6 +8,58 @@ import User from '@/lib/models/userSchema';
 import { uploadFileToR2 } from '@/lib/r2';
 import { verifyAccessToken } from '@/lib/auth/user-jwt';
 
+// Define interfaces for better type safety
+interface AppointmentFormData {
+  departmentId: string;
+  serviceId: string;
+  agentId: string;
+  date: string;
+  time: string;
+  notes: string;
+  priority: string;
+}
+
+interface AuthenticatedUser {
+  _id: string;
+  fullName?: string;
+  firstName?: string;
+  lastName?: string;
+  nic?: string;
+  nicNumber?: string;
+  email: string;
+  mobileNumber?: string;
+  phoneNumber?: string;
+  accountStatus: string;
+}
+
+interface AppointmentFilter {
+  citizenId: string;
+  status?: string;
+}
+
+interface PopulatedAgent {
+  _id: string;
+  fullName: string;
+  position: string;
+  officeName: string;
+}
+
+interface AuthResult {
+  success: boolean;
+  message: string;
+  user?: AuthenticatedUser;
+  statusCode: number;
+}
+
+interface UploadedDocument {
+  name: string;
+  originalName: string;
+  url: string;
+  type: string;
+  size: number;
+  uploadedAt: Date;
+}
+
 // Generate unique booking reference with collision detection
 async function generateUniqueBookingReference(): Promise<string> {
   let attempts = 0;
@@ -37,7 +89,7 @@ async function generateUniqueBookingReference(): Promise<string> {
 }
 
 // Cookie-based authentication helper (matches your existing /me endpoint)
-const authenticateWithCookies = async (request: NextRequest) => {
+const authenticateWithCookies = async (request: NextRequest): Promise<AuthResult> => {
   try {
     // Get access token from cookies (same as /me endpoint)
     const accessToken = request.cookies.get('access_token')?.value;
@@ -97,7 +149,7 @@ const authenticateWithCookies = async (request: NextRequest) => {
     return {
       success: true,
       message: 'Authentication successful',
-      user,
+      user: user.toObject() as AuthenticatedUser,
       statusCode: 200
     };
 
@@ -113,8 +165,8 @@ const authenticateWithCookies = async (request: NextRequest) => {
 
 // POST /api/user/appointments - Create new appointment with file uploads
 export async function POST(request: NextRequest) {
-  let appointmentData: any = {};
-  let user: any = null;
+  let appointmentData: Partial<AppointmentFormData> = {};
+  let user: AuthenticatedUser | null = null;
   
   try {
     // Authenticate user using cookies (same method as /me endpoint)
@@ -148,8 +200,8 @@ export async function POST(request: NextRequest) {
     console.log('📝 Extracted appointment data:', appointmentData);
 
     // Validate required fields
-    const requiredFields = ['departmentId', 'serviceId', 'agentId', 'date', 'time'];
-    const missingFields = requiredFields.filter(field => !appointmentData[field as keyof typeof appointmentData]);
+    const requiredFields: (keyof AppointmentFormData)[] = ['departmentId', 'serviceId', 'agentId', 'date', 'time'];
+    const missingFields = requiredFields.filter(field => !appointmentData[field]);
     
     if (missingFields.length > 0) {
       console.error('❌ Missing required fields:', missingFields);
@@ -213,7 +265,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ Agent found:', agent.fullName);
 
     // Validate appointment date is in the future
-    const appointmentDate = new Date(appointmentData.date);
+    const appointmentDate = new Date(appointmentData.date!);
     const now = new Date();
     now.setHours(0, 0, 0, 0); // Set to start of today
     
@@ -240,14 +292,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Process file uploads
-    const uploadedDocuments: Array<{
-      name: string;
-      originalName: string;
-      url: string;
-      type: string;
-      size: number;
-      uploadedAt: Date;
-    }> = [];
+    const uploadedDocuments: UploadedDocument[] = [];
 
     // Get all files from formData
     const files = formData.getAll('files') as File[];
@@ -457,7 +502,7 @@ export async function POST(request: NextRequest) {
 
 // GET /api/user/appointments - Get user's appointments
 export async function GET(request: NextRequest) {
-  let user: any = null;
+  let user: AuthenticatedUser | null = null;
   
   try {
     // Authenticate user using cookies (same method as /me endpoint)
@@ -480,7 +525,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
 
     // Build filter
-    const filter: any = { citizenId: user._id };
+    const filter: AppointmentFilter = { citizenId: user._id };
     if (status && status !== 'all') {
       filter.status = status;
     }
@@ -514,9 +559,9 @@ export async function GET(request: NextRequest) {
       priority: apt.priority,
       notes: apt.notes,
       assignedAgent: apt.assignedAgent ? {
-        name: (apt.assignedAgent as any).fullName,
-        position: (apt.assignedAgent as any).position,
-        office: (apt.assignedAgent as any).officeName
+        name: (apt.assignedAgent as PopulatedAgent).fullName,
+        position: (apt.assignedAgent as PopulatedAgent).position,
+        office: (apt.assignedAgent as PopulatedAgent).officeName
       } : null,
       submittedDate: apt.submittedDate.toISOString().split('T')[0]
     }));

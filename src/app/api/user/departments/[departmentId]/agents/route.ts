@@ -4,6 +4,16 @@ import connectDB from '@/lib/db';
 import Agent from '@/lib/models/agentSchema';
 import Department from '@/lib/models/departmentSchema';
 
+// Type for MongoDB query filter
+interface AgentFilter {
+  department: string;
+  isActive: boolean;
+  position?: {
+    $regex: string;
+    $options: string;
+  };
+}
+
 // GET /api/user/departments/[departmentId]/agents - Fetch agents for a specific department (public endpoint)
 export async function GET(
   request: NextRequest,
@@ -33,7 +43,7 @@ export async function GET(
     }
 
     // Build agent filter
-    const agentFilter: any = {
+    const agentFilter: AgentFilter = {
       department: department.departmentId, // Match using department code
       isActive: true
     };

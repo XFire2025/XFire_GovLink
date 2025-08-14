@@ -1,6 +1,6 @@
 // components/agent/appointments/AppointmentModal.tsx
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import appointmentService from '@/lib/services/appointmentService';
 
 // Types
@@ -23,6 +23,12 @@ interface Appointment {
   submittedDate: string;
   bookingReference?: string;
   agentNotes?: string;
+}
+
+interface AppointmentUpdateData {
+  status?: AppointmentStatus;
+  agentId?: string;
+  cancellationReason?: string;
 }
 
 interface AppointmentModalProps {
@@ -134,7 +140,7 @@ const modalTranslations: Record<Language, {
   },
   si: {
     appointmentDetails: 'නියමයන් විස්තර',
-    citizenInformation: 'පුරවැසි තොරතුරු',
+    citizenInformation: 'පුරවසි තොරතුරු',
     serviceDetails: 'සේවා විස්තර',
     contactInformation: 'සම්බන්ධතා තොරතුරු',
     statusHistory: 'තත්ත්ව ඉතිහාසය',
@@ -143,11 +149,11 @@ const modalTranslations: Record<Language, {
     updateStatus: 'තත්ත්වය යාවත්කාලීන කරන්න',
     reschedule: 'නව කාල නියම කරන්න',
     sendNotification: 'දැනුම්දීම යවන්න',
-    viewHistory: 'පුරවැසි ඉතිහාසය බලන්න',
+    viewHistory: 'පුරවසි ඉතිහාසය බලන්න',
     addNotes: 'සටහන් එක් කරන්න',
     saveChanges: 'වෙනස්කම් සුරකින්න',
     name: 'සම්පූර්ණ නම',
-    citizenId: 'පුරවැසි හැඳුනුම්පත',
+    citizenId: 'පුරවසි හැඳුනුම්පත',
     email: 'විද්‍යුත් ලිපිනය',
     phone: 'දුරකථන අංකය',
     serviceType: 'සේවාවේ වර්ගය',
@@ -158,12 +164,12 @@ const modalTranslations: Record<Language, {
     currentStatus: 'වර්තමාන තත්ත්වය',
     notes: 'සටහන්',
     agentNotes: 'නිලධාරි සටහන්',
-    notificationSent: 'දැනුම්දීම සාර්ථකව යවන ලදී!',
+    notificationSent: 'දැනුම්දීම සාර්ථකව යවන ලදි!',
     notificationFailed: 'දැනුම්දීම යවීමට අසමත් විය. නොවත උත්සාහ කරන්න.',
     updatingStatus: 'තත්ත්වය යාවත්කාලීන කරමින්...',
     sendingNotification: 'දැනුම්දීම යවමින්...',
     savingNotes: 'සටහන් සුරකිමින්...',
-    bookingReference: 'වෙන්කරගැනීම් අදත්ත',
+    bookingReference: 'වෙන්කරගනුම් අදත්ත',
     cancellationReason: 'අවලංගු කිරීමේ හේතුව',
     notificationTypes: {
       sms: 'SMS පමණක්',
@@ -185,7 +191,7 @@ const modalTranslations: Record<Language, {
     },
     priorities: {
       normal: 'සාමාන්‍ය',
-      urgent: 'ගඩ'
+      urgent: 'ගඟ'
     }
   },
   ta: {
@@ -227,7 +233,7 @@ const modalTranslations: Record<Language, {
       both: 'SMS மற்றும் மின்னஞ்சல்'
     },
     statuses: {
-      pending: 'மதிப்பாய்வு நிலையில்',
+      pending: 'மதிப்பாய்வு நிலவையில்',
       confirmed: 'உறுதிப்படுத்தப்பட்டது',
       cancelled: 'ரத்துசெய்யப்பட்டது',
       completed: 'முடிக்கப்பட்டது'
@@ -269,33 +275,27 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   
   const [activeTab, setActiveTab] = useState<'details' | 'history'>('details');
-  const [appointmentDetails, setAppointmentDetails] = useState<any>(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   const t = modalTranslations[language];
 
-  // Load detailed appointment data when modal opens
-  useEffect(() => {
-    if (isOpen && appointment.id) {
-      loadAppointmentDetails();
-    }
-  }, [isOpen, appointment.id]);
-
-  const loadAppointmentDetails = async () => {
+  // Load detailed appointment data when modal opens (using useCallback to fix dependency issue)
+  const loadAppointmentDetails = useCallback(async () => {
     try {
-      setIsLoadingDetails(true);
       const result = await appointmentService.getAppointment(appointment.id);
       
       if (result.success && result.data) {
-        setAppointmentDetails(result.data);
         setAdditionalNotes(result.data.agentNotes || '');
       }
     } catch (error) {
       console.error('Error loading appointment details:', error);
-    } finally {
-      setIsLoadingDetails(false);
     }
-  };
+  }, [appointment.id]);
+
+  useEffect(() => {
+    if (isOpen && appointment.id) {
+      loadAppointmentDetails();
+    }
+  }, [isOpen, appointment.id, loadAppointmentDetails]);
 
   // Reset states when appointment changes
   useEffect(() => {
@@ -316,7 +316,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       setIsUpdatingStatus(true);
       setErrorMessage('');
 
-      const updates: any = { 
+      const updates: AppointmentUpdateData = { 
         status: newStatus,
         agentId: 'CURRENT_AGENT' // Replace with actual agent ID
       };
@@ -504,13 +504,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 </svg>
                 <span className="font-medium">{errorMessage || t.notificationFailed}</span>
               </div>
-            </div>
-          )}
-
-          {isLoadingDetails && (
-            <div className="flex items-center justify-center py-8">
-              <div className="w-6 h-6 border-2 border-[#FFC72C]/20 border-t-[#FFC72C] rounded-full animate-spin mr-3"></div>
-              <span className="text-muted-foreground">Loading appointment details...</span>
             </div>
           )}
 

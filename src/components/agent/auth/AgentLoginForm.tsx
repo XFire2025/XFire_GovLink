@@ -66,22 +66,22 @@ const loginTranslations: Record<Language, LoginTranslation> = {
   si: {
     employeeId: 'සේවක හැඳුනුම්පත',
     employeeIdPlaceholder: 'ඔබගේ සේවක හැඳුනුම්පත ඇතුළත් කරන්න (උදා: ABC1234)',
-    employeeIdHelp: 'ඔබගේ රාජ්‍ය-නිකුත් සේවක හැඳුනුම්පත',
+    employeeIdHelp: 'ඔබගේ රජය-නිකුත් සේවක හැඳුනුම්පත',
     employeeIdRequired: 'සේවක හැඳුනුම්පත අවශ්‍යයි',
     employeeIdInvalid: 'වලංගු නොවන සේවක හැඳුනුම්පත් ආකෘතිය (උදා: ABC1234)',
     department: 'දෙපාර්තමේන්තුව',
     selectDepartment: 'දෙපාර්තමේන්තුව තෝරන්න',
     departmentRequired: 'කරුණාකර ඔබගේ දෙපාර්තමේන්තුව තෝරන්න',
     password: 'මුර පදය',
-    passwordPlaceholder: 'ඔබගේ ආරක්ෂිත මුර පදය ඇතුළත් කරන්න',
-    passwordHelp: 'අවම අක්ෂර 8ක් අවශ්‍යයි',
+    passwordPlaceholder: 'ඔබගේ ආරක්‍ෂිත මුර පදය ඇතුළත් කරන්න',
+    passwordHelp: 'අවම අක්‍ෂර 8ක් අවශ්‍යයි',
     passwordRequired: 'මුර පදය අවශ්‍යයි',
-    passwordMinLength: 'මුර පදය අවම වශයෙන් අක්ෂර 8කින් සමන්විත විය යුතුය',
+    passwordMinLength: 'මුර පදය අවම වායෙන් අක්‍ෂර 8කින් සමන්විත විය යුතුය',
     keepMeSignedIn: 'මා පුරනය වී සිටවන්න',
-    accessAgentPortal: 'නිලධාරි පෝට්ල් වෙත ප්‍රවේශ වන්න',
+    accessAgentPortal: 'නිලධාරි පෝටල් වෙත ප්‍රවේශ වන්න',
     authenticating: 'සත්‍යාපනය කරමින්...',
-    invalidCredentials: 'වලංගු නොවන අක්තපත්‍ර. කරුණාකර ඔබගේ සේවක හැඳුනුම්පත සහ මුර පදය පරීක්ෂා කරන්න.',
-    loginFailed: 'පුරනය වීම අසමත්. කරුණාකර නැවත උත්සාහ කරන්න හෝ තාක්ෂණික සහාය අමතන්න.',
+    invalidCredentials: 'වලංගු නොවන අක්තපත්‍ර. කරුණාකර ඔබගේ සේවක හැඳුනුම්පත සහ මුර පදය පරීක්‍ෂා කරන්න.',
+    loginFailed: 'පුරනය වීම අසමත්. කරුණාකර නවත උත්සාහ කරන්න හෝ තාක්‍ෂණික සහාය අමතන්න.',
     departments: {
       '': 'දෙපාර්තමේන්තුව තෝරන්න',
       'immigration': 'ආගමන සහ විගමන දෙපාර්තමේන්තුව',
@@ -109,7 +109,7 @@ const loginTranslations: Record<Language, LoginTranslation> = {
     passwordHelp: 'குறைந்தது 8 எழுத்துகள் தேவை',
     passwordRequired: 'கடவுச்சொல் தேவை',
     passwordMinLength: 'கடவுச்சொல் குறைந்தது 8 எழுத்துகளாக இருக்க வேண்டும்',
-    keepMeSignedIn: 'என்னை உள்நுழைய வைத்திருக்கவும்',
+    keepMeSignedIn: 'என்னை உள்நுழை வைத்திருக்கவும்',
     accessAgentPortal: 'அதிகாரி போர்டலை அணுகவும்',
     authenticating: 'அங்கீகரித்துக்கொண்டிருக்கிறது...',
     invalidCredentials: 'தவறான நற்சான்றிதழ்கள். தயவுசெய்து உங்கள் பணியாளர் அடையாள எண் மற்றும் கடவுச்சொல்லை சரிபார்க்கவும்.',
@@ -230,7 +230,8 @@ const AgentLoginForm: React.FC<AgentLoginFormProps> = ({ language = 'en' }) => {
       // Simulate authentication (replace with actual API call)
       // For demo purposes, you can implement actual authentication logic here
       router.push('/agent/dashboard');
-    } catch (error) {
+    } catch {
+      // Fixed: Removed unused error parameter and used underscore or no parameter
       setErrors({
         general: t.loginFailed
       });

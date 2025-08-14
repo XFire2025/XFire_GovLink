@@ -1,7 +1,58 @@
 // lib/utils/appointmentUtils.ts
+import React from 'react';
+
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 type ServiceType = 'passport' | 'license' | 'certificate' | 'registration' | 'visa';
 type PriorityLevel = 'normal' | 'urgent';
+
+// Define interfaces for better type safety
+export interface AppointmentData {
+  id: string;
+  citizenName: string;
+  citizenId: string;
+  serviceType: ServiceType;
+  date: string;
+  time: string;
+  status: AppointmentStatus;
+  priority: PriorityLevel;
+  notes?: string;
+  contactEmail: string;
+  contactPhone: string;
+  submittedDate: string;
+  bookingReference?: string;
+  agentNotes?: string;
+}
+
+export interface AppointmentFilters {
+  search?: string;
+  status?: string;
+  serviceType?: string;
+  priority?: string;
+  dateFrom?: string;
+  dateTo?: string;
+}
+
+export interface AppointmentStats {
+  total: number;
+  pending: number;
+  confirmed: number;
+  completed: number;
+  cancelled: number;
+  today: number;
+  urgent: number;
+  overdue?: number;
+}
+
+export interface FormattedAppointment extends AppointmentData {
+  formattedDate: string;
+  formattedTime: string;
+  isToday: boolean;
+  isOverdue: boolean;
+  daysUntil: number;
+  statusColor: string;
+  priorityColor: string;
+  serviceIcon: React.ReactElement;
+}
 
 /**
  * Get the appropriate color class for appointment status
@@ -19,50 +70,92 @@ export const getStatusColor = (status: AppointmentStatus): string => {
 /**
  * Get the icon for a service type
  */
-export const getServiceIcon = (serviceType: ServiceType): JSX.Element => {
+export const getServiceIcon = (serviceType: ServiceType): React.ReactElement => {
   const icons = {
-    passport: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-        <path d="M16 2v4"/>
-        <path d="M8 2v4"/>
-        <path d="M3 10h18"/>
-      </svg>
-    ),
-    license: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="14" y="14" width="4" height="6" rx="2"/>
-        <rect x="6" y="4" width="4" height="6" rx="2"/>
-        <path d="M6 20h4"/>
-        <path d="M14 10h4"/>
-        <path d="M6 14h2m6 0h2"/>
-      </svg>
-    ),
-    certificate: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>
-    ),
-    registration: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 21h18"/>
-        <path d="M5 21V7l8-4v18"/>
-        <path d="M19 21V11l-6-4"/>
-      </svg>
-    ),
-    visa: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-      </svg>
-    )
+    passport: React.createElement('svg', {
+      width: "20",
+      height: "20",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, [
+      React.createElement('rect', { key: '1', x: "3", y: "4", width: "18", height: "18", rx: "2", ry: "2" }),
+      React.createElement('path', { key: '2', d: "M16 2v4" }),
+      React.createElement('path', { key: '3', d: "M8 2v4" }),
+      React.createElement('path', { key: '4', d: "M3 10h18" })
+    ]),
+    license: React.createElement('svg', {
+      width: "20",
+      height: "20",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, [
+      React.createElement('rect', { key: '1', x: "14", y: "14", width: "4", height: "6", rx: "2" }),
+      React.createElement('rect', { key: '2', x: "6", y: "4", width: "4", height: "6", rx: "2" }),
+      React.createElement('path', { key: '3', d: "M6 20h4" }),
+      React.createElement('path', { key: '4', d: "M14 10h4" }),
+      React.createElement('path', { key: '5', d: "M6 14h2m6 0h2" })
+    ]),
+    certificate: React.createElement('svg', {
+      width: "20",
+      height: "20",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, [
+      React.createElement('path', { key: '1', d: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" }),
+      React.createElement('polyline', { key: '2', points: "14 2 14 8 20 8" })
+    ]),
+    registration: React.createElement('svg', {
+      width: "20",
+      height: "20",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, [
+      React.createElement('path', { key: '1', d: "M3 21h18" }),
+      React.createElement('path', { key: '2', d: "M5 21V7l8-4v18" }),
+      React.createElement('path', { key: '3', d: "M19 21V11l-6-4" })
+    ]),
+    visa: React.createElement('svg', {
+      width: "20",
+      height: "20",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }, [
+      React.createElement('path', { key: '1', d: "M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" })
+    ])
   };
   
-  return icons[serviceType] || (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-    </svg>
-  );
+  return icons[serviceType] || React.createElement('svg', {
+    width: "20",
+    height: "20",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }, [
+    React.createElement('rect', { key: '1', x: "3", y: "4", width: "18", height: "18", rx: "2", ry: "2" })
+  ]);
 };
 
 /**
@@ -182,7 +275,7 @@ export const getPriorityColor = (priority: PriorityLevel): string => {
 /**
  * Sort appointments by priority and date
  */
-export const sortAppointments = (appointments: any[], sortBy: 'date' | 'priority' | 'status' = 'date'): any[] => {
+export const sortAppointments = (appointments: AppointmentData[], sortBy: 'date' | 'priority' | 'status' = 'date'): AppointmentData[] => {
   return [...appointments].sort((a, b) => {
     switch (sortBy) {
       case 'priority':
@@ -210,16 +303,9 @@ export const sortAppointments = (appointments: any[], sortBy: 'date' | 'priority
  * Filter appointments by various criteria
  */
 export const filterAppointments = (
-  appointments: any[], 
-  filters: {
-    search?: string;
-    status?: string;
-    serviceType?: string;
-    priority?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  }
-): any[] => {
+  appointments: AppointmentData[], 
+  filters: AppointmentFilters
+): AppointmentData[] => {
   return appointments.filter(appointment => {
     // Search filter
     if (filters.search) {
@@ -264,7 +350,7 @@ export const filterAppointments = (
 /**
  * Export appointments to CSV
  */
-export const exportAppointmentsToCSV = (appointments: any[], filename?: string): void => {
+export const exportAppointmentsToCSV = (appointments: AppointmentData[], filename?: string): void => {
   const headers = [
     'ID',
     'Citizen Name',
@@ -328,7 +414,7 @@ export const generateBookingReference = (): string => {
 /**
  * Calculate appointment statistics
  */
-export const calculateAppointmentStats = (appointments: any[]) => {
+export const calculateAppointmentStats = (appointments: AppointmentData[]): AppointmentStats => {
   const today = new Date().toISOString().split('T')[0];
   
   return {
@@ -350,7 +436,7 @@ export const calculateAppointmentStats = (appointments: any[]) => {
 /**
  * Group appointments by date
  */
-export const groupAppointmentsByDate = (appointments: any[]): Record<string, any[]> => {
+export const groupAppointmentsByDate = (appointments: AppointmentData[]): Record<string, AppointmentData[]> => {
   return appointments.reduce((groups, appointment) => {
     const date = appointment.date;
     if (!groups[date]) {
@@ -358,13 +444,13 @@ export const groupAppointmentsByDate = (appointments: any[]): Record<string, any
     }
     groups[date].push(appointment);
     return groups;
-  }, {} as Record<string, any[]>);
+  }, {} as Record<string, AppointmentData[]>);
 };
 
 /**
  * Get appointment conflicts (same date/time)
  */
-export const getAppointmentConflicts = (appointments: any[], newDate: string, newTime: string, excludeId?: string): any[] => {
+export const getAppointmentConflicts = (appointments: AppointmentData[], newDate: string, newTime: string, excludeId?: string): AppointmentData[] => {
   return appointments.filter(apt => 
     apt.id !== excludeId &&
     apt.date === newDate && 
@@ -377,7 +463,7 @@ export const getAppointmentConflicts = (appointments: any[], newDate: string, ne
 /**
  * Format appointment for display
  */
-export const formatAppointmentForDisplay = (appointment: any, language: 'en' | 'si' | 'ta' = 'en') => {
+export const formatAppointmentForDisplay = (appointment: AppointmentData, language: 'en' | 'si' | 'ta' = 'en'): FormattedAppointment => {
   return {
     ...appointment,
     formattedDate: formatAppointmentDate(appointment.date, language),

@@ -155,6 +155,12 @@ interface DocumentRequirement {
     description?: string;
 }
 
+// Error interface for proper typing
+interface ApiError extends Error {
+  status?: number;
+  code?: string;
+}
+
 // Custom Dropdown Component (keeping existing)
 const CustomDropdown = ({ 
     id, 
@@ -571,8 +577,8 @@ export default function NewBookingPage() {
         }
     };
 
-    const loadDepartments = async () => {
-        console.log('🔄 Loading departments...');
+    const loadDepartments = useCallback(async () => {
+        console.log('📄 Loading departments...');
         setLoadingDepartments(true);
         setError(null);
         try {
@@ -586,14 +592,15 @@ export default function NewBookingPage() {
                 console.error('❌ API Error:', response.message);
                 setError(response.message || t.errorLoadingData);
             }
-        } catch (err: any) {
-            console.error('💥 Load departments error:', err);
-            setError(t.errorLoadingData);
+        } catch (error: unknown) {
+            console.error('💥 Load departments error:', error);
+            const errorMessage = error instanceof Error ? error.message : t.errorLoadingData;
+            setError(errorMessage);
         }
         setLoadingDepartments(false);
-    };
+    }, [t.errorLoadingData]);
 
-    const loadServices = async (departmentId: string) => {
+    const loadServices = useCallback(async (departmentId: string) => {
         setLoadingServices(true);
         setError(null);
         try {
@@ -603,13 +610,14 @@ export default function NewBookingPage() {
             } else {
                 setError(response.message || t.errorLoadingData);
             }
-        } catch (err: any) {
+        } catch (error: unknown) {
+            console.error('Error loading services:', error);
             setError(t.errorLoadingData);
         }
         setLoadingServices(false);
-    };
+    }, [t.errorLoadingData]);
 
-    const loadAgents = async (departmentId: string, position?: string) => {
+    const loadAgents = useCallback(async (departmentId: string, position?: string) => {
         setLoadingAgents(true);
         setError(null);
         try {
@@ -622,28 +630,30 @@ export default function NewBookingPage() {
             } else {
                 setError(response.message || t.errorLoadingData);
             }
-        } catch (err: any) {
+        } catch (error: unknown) {
+            console.error('Error loading agents:', error);
             setError(t.errorLoadingData);
         }
         setLoadingAgents(false);
-    };
+    }, [t.errorLoadingData]);
 
-    const loadAvailableSlots = async (agentId: string, date: string) => {
+    const loadAvailableSlots = useCallback(async (agentId: string, date: string) => {
         setLoadingSlots(true);
         try {
             // For now using mock data - replace with real API call
             const mockSlots = mockAvailableSlots(agentId, date, timeSlots);
             setAvailableSlots(mockSlots);
-        } catch (err) {
+        } catch (error) {
+            console.error('Error loading slots:', error);
             setAvailableSlots(new Set());
         }
         setLoadingSlots(false);
-    };
+    }, [timeSlots]);
 
     // Load departments on mount
     useEffect(() => {
         loadDepartments();
-    }, []);
+    }, [loadDepartments]);
 
     // Load services when department changes
     useEffect(() => {
@@ -652,7 +662,7 @@ export default function NewBookingPage() {
         } else {
             setServices([]);
         }
-    }, [form.department]);
+    }, [form.department, loadServices]);
 
     // Load agents when department changes
     useEffect(() => {
@@ -661,7 +671,7 @@ export default function NewBookingPage() {
         } else {
             setAgents([]);
         }
-    }, [form.department, form.position]);
+    }, [form.department, form.position, loadAgents]);
 
     // Load available slots when agent and day change
     useEffect(() => {
@@ -670,7 +680,7 @@ export default function NewBookingPage() {
         } else {
             setAvailableSlots(new Set());
         }
-    }, [form.agent, form.day]);
+    }, [form.agent, form.day, loadAvailableSlots]);
 
     // Dynamic options
     const departmentOptions = departments.map(dept => ({
@@ -830,9 +840,10 @@ export default function NewBookingPage() {
             } else {
                 throw new Error(result.message || 'Failed to create appointment');
             }
-        } catch (err: any) {
-            console.error('💥 Appointment submission error:', err);
-            setError(err.message || 'Failed to create appointment. Please try again.');
+        } catch (error: unknown) {
+            console.error('💥 Appointment submission error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create appointment. Please try again.';
+            setError(errorMessage);
         }
         
         setSubmitting(false);

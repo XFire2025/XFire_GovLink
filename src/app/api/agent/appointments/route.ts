@@ -3,6 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import connect from '@/lib/db';
 import Appointment, { ServiceType, AppointmentStatus } from '@/lib/models/appointmentSchema';
 
+// Helper function to validate service type
+function isValidServiceType(value: string): value is ServiceType {
+  const validTypes: ServiceType[] = ['passport', 'license', 'certificate', 'registration', 'visa'];
+  return validTypes.includes(value as ServiceType);
+}
+
+// Helper function to validate appointment status
+function isValidAppointmentStatus(value: string): value is AppointmentStatus {
+  const validStatuses: AppointmentStatus[] = ['pending', 'confirmed', 'cancelled', 'completed'];
+  return validStatuses.includes(value as AppointmentStatus);
+}
+
 export async function GET(request: NextRequest) {
   try {
     await connect();
@@ -30,19 +42,43 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Status filter
+    // Status filter with validation
     if (status !== 'all') {
-      filter.status = status;
+      if (isValidAppointmentStatus(status)) {
+        filter.status = status;
+      } else {
+        return NextResponse.json({
+          success: false,
+          message: 'Invalid status parameter',
+          errors: ['Status must be one of: pending, confirmed, cancelled, completed']
+        }, { status: 400 });
+      }
     }
 
-    // Service type filter
+    // Service type filter with validation
     if (serviceType !== 'all') {
-      filter.serviceType = serviceType;
+      if (isValidServiceType(serviceType)) {
+        filter.serviceType = serviceType;
+      } else {
+        return NextResponse.json({
+          success: false,
+          message: 'Invalid serviceType parameter',
+          errors: ['Service type must be one of: passport, license, certificate, registration, visa']
+        }, { status: 400 });
+      }
     }
 
     // Priority filter
     if (priority !== 'all') {
-      filter.priority = priority;
+      if (priority === 'normal' || priority === 'urgent') {
+        filter.priority = priority;
+      } else {
+        return NextResponse.json({
+          success: false,
+          message: 'Invalid priority parameter',
+          errors: ['Priority must be either normal or urgent']
+        }, { status: 400 });
+      }
     }
 
     // Date range filter
@@ -76,10 +112,10 @@ export async function GET(request: NextRequest) {
       id: appointment._id.toString(),
       citizenName: appointment.citizenName,
       citizenId: appointment.citizenNIC,
-      serviceType: appointment.serviceType,
+      serviceType: appointment.serviceType as ServiceType,
       date: appointment.date.toISOString().split('T')[0], // YYYY-MM-DD format
       time: appointment.time,
-      status: appointment.status,
+      status: appointment.status as AppointmentStatus,
       priority: appointment.priority,
       notes: appointment.notes || appointment.agentNotes,
       contactEmail: appointment.contactEmail,
@@ -139,7 +175,7 @@ export async function POST(request: NextRequest) {
     const { action } = body;
 
     if (action === 'getStats') {
-      // Get appointment statistics
+      // Get appointment statistics using proper type assertions
       const [
         totalCount,
         pendingCount,
@@ -150,10 +186,10 @@ export async function POST(request: NextRequest) {
         urgentCount
       ] = await Promise.all([
         Appointment.countDocuments(),
-        Appointment.countDocuments({ status: 'pending' }),
-        Appointment.countDocuments({ status: 'confirmed' }),
-        Appointment.countDocuments({ status: 'completed' }),
-        Appointment.countDocuments({ status: 'cancelled' }),
+        Appointment.countDocuments({ status: 'pending' as AppointmentStatus }),
+        Appointment.countDocuments({ status: 'confirmed' as AppointmentStatus }),
+        Appointment.countDocuments({ status: 'completed' as AppointmentStatus }),
+        Appointment.countDocuments({ status: 'cancelled' as AppointmentStatus }),
         Appointment.countDocuments({
           date: {
             $gte: new Date(new Date().setHours(0, 0, 0, 0)),
@@ -215,7 +251,7 @@ export async function POST(request: NextRequest) {
           serviceBreakdown: serviceStats.reduce((acc, item) => {
             acc[item._id] = item.count;
             return acc;
-          }, {}),
+          }, {} as Record<ServiceType, number>),
           dailyStats: dailyStats.map(item => ({
             date: item._id,
             count: item.count

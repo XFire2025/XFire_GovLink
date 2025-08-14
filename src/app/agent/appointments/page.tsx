@@ -38,6 +38,17 @@ interface AppointmentStats {
   urgent: number;
 }
 
+// Define proper filter interface
+interface AppointmentFilters {
+  search?: string;
+  serviceType?: ServiceType;
+  status?: AppointmentStatus;
+  priority?: 'normal' | 'urgent';
+  dateFrom?: string;
+  dateTo?: string;
+  limit?: number;
+}
+
 // Page translations
 const pageTranslations: Record<Language, {
   title: string;
@@ -68,18 +79,18 @@ const pageTranslations: Record<Language, {
     retry: 'Retry'
   },
   si: {
-    title: 'නියමයන් කළමනාකරණය',
-    subtitle: 'පුරවැසි නියමයන් සහ කාල සැහැන් කළමනාකරණය කරන්න',
+    title: 'නියමයන් කළමණාකරණය',
+    subtitle: 'පුරවසි නියමයන් සහ කාල සහයන් කළමණාකරණය කරන්න',
     totalAppointments: 'සම්පූර්ණ නියමයන්',
     pendingAppointments: 'සමාලෝචනය අපේක්ෂිත',
-    todayAppointments: 'අද දිනයේ කාල සැහැන',
-    overview: 'සංඛ්‍යාලේඛන දළ විශ්ලේෂණය',
+    todayAppointments: 'අද දිනයේ කාල සහයන',
+    overview: 'සංඛ්‍යාලේඛන දළ විස්ලේෂණය',
     quickFilters: 'ඉක්මන් පෙරහන්',
     noAppointments: 'නියමයන් හමු නොවීය',
-    noAppointmentsDesc: 'ඔබ සොයන දේ සොයා ගැනීමට ඔබේ සේවුම් පෙරහන් සකසන්න',
-    loading: 'නියමයන් පූරණය වෙමින්...',
-    error: 'නියමයන් පූරණය කිරීමට අසමත්',
-    retry: 'නැවත උත්සාහ කරන්න'
+    noAppointmentsDesc: 'ඔබ සොයන දේ සොයාගනුමට ඔබේ සේවීම් පෙරහන් සකසන්න',
+    loading: 'නියමයන් පුරණය වෙමින්...',
+    error: 'නියමයන් පුරණය කිරීමට අසමත්',
+    retry: 'නොවත උත්සාහ කරන්න'
   },
   ta: {
     title: 'சந்திப்பு மேலாண்மை',
@@ -113,8 +124,8 @@ const filterTranslations: Record<Language, {
     export: 'Export',
   },
   si: {
-    searchPlaceholder: 'නම, හැඳුනුම්පත, හෝ සේවා අනුව සොයන්න...',
-    allServices: 'සියලුම සේවා වර්ග',
+    searchPlaceholder: 'නම, හැඳුනුම්පත, හො සේව අනුව සොයන්න...',
+    allServices: 'සියලුම සේව වර්ග',
     allStatuses: 'සියලුම තත්ත්ව',
     clearFilters: 'පෙරහන් ඉවත් කරන්න',
     export: 'නිර්යාත කරන්න',
@@ -130,7 +141,7 @@ const filterTranslations: Record<Language, {
 
 // --- START: AppointmentFilters Component ---
 const AppointmentFilters = ({ onFilterChange, language, isLoading }: {
-  onFilterChange: (filters: any) => void;
+  onFilterChange: (filters: AppointmentFilters) => void;
   language: Language;
   isLoading: boolean;
 }) => {
@@ -144,11 +155,11 @@ const AppointmentFilters = ({ onFilterChange, language, isLoading }: {
   const t = filterTranslations[language];
 
   const applyFilters = useCallback(() => {
-    const filters = {
+    const filters: AppointmentFilters = {
       search: searchTerm || undefined,
-      serviceType: serviceType !== 'all' ? serviceType : undefined,
-      status: status !== 'all' ? status : undefined,
-      priority: priority !== 'all' ? priority : undefined,
+      serviceType: serviceType !== 'all' ? serviceType as ServiceType : undefined,
+      status: status !== 'all' ? status as AppointmentStatus : undefined,
+      priority: priority !== 'all' ? priority as 'normal' | 'urgent' : undefined,
       dateFrom: dateFrom || undefined,
       dateTo: dateTo || undefined,
     };
@@ -174,15 +185,17 @@ const AppointmentFilters = ({ onFilterChange, language, isLoading }: {
 
   const handleExport = async () => {
     try {
-      const result = await appointmentService.getAppointments({
+      const filters: AppointmentFilters = {
         search: searchTerm || undefined,
-        serviceType: serviceType !== 'all' ? serviceType : undefined,
-        status: status !== 'all' ? status : undefined,
-        priority: priority !== 'all' ? priority : undefined,
+        serviceType: serviceType !== 'all' ? serviceType as ServiceType : undefined,
+        status: status !== 'all' ? status as AppointmentStatus : undefined,
+        priority: priority !== 'all' ? priority as 'normal' | 'urgent' : undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
         limit: 1000 // Get all results for export
-      });
+      };
+
+      const result = await appointmentService.getAppointments(filters);
 
       if (result.success && result.data) {
         const dataStr = JSON.stringify(result.data.appointments, null, 2);
@@ -349,12 +362,12 @@ export default function AppointmentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFilterLoading, setIsFilterLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentFilters, setCurrentFilters] = useState<any>({});
+  const [currentFilters, setCurrentFilters] = useState<AppointmentFilters>({});
 
   const t = pageTranslations[currentLanguage];
 
   // Load initial appointments and stats
-  const loadAppointments = useCallback(async (filters = {}) => {
+  const loadAppointments = useCallback(async (filters: AppointmentFilters = {}) => {
     try {
       setIsFilterLoading(true);
       setError(null);
@@ -392,7 +405,7 @@ export default function AppointmentsPage() {
     setCurrentLanguage(newLanguage);
   };
 
-  const handleFilterChange = useCallback(async (filters: any) => {
+  const handleFilterChange = useCallback(async (filters: AppointmentFilters) => {
     setCurrentFilters(filters);
     try {
       setIsFilterLoading(true);

@@ -102,7 +102,7 @@ const formTranslations: Record<Language, FormTranslation> = {
     email: 'විද්‍යුත් ලිපිනය',
     phone: 'දුරකථන අංකය',
     department: 'දෙපාර්තමේන්තුව',
-    agentId: 'නිලධාරි හැඳුනුම්පත',
+    agentId: 'නිලධාරි හඳුනුම්පත',
     preferredLanguage: 'කැමති භාෂාව',
     workingHours: 'වැඩ කරන වේලාවන්',
     startTime: 'ආරම්භක වේලාව',
@@ -125,7 +125,7 @@ const formTranslations: Record<Language, FormTranslation> = {
       si: 'සිංහල',
       ta: 'දෙමළ'
     },
-    successMessage: 'පැතිකඩ සාර්ථකව යාවත්කාලීන කරන ලදී!'
+    successMessage: 'පැතිකඩ සාර්ථකව යාවත්කාලීන කරන ලදි!'
   },
   ta: {
     contactInformation: 'தொடர்பு தகவல்',
@@ -218,7 +218,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ language = 'en', onSave, isLo
 
   const inputStyles = "w-full bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl px-4 py-3.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-[#FFC72C] focus:ring-2 focus:ring-[#FFC72C]/20 transition-all duration-300 backdrop-blur-sm hover:border-[#FFC72C]/50";
   const labelStyles = "block text-sm font-semibold text-foreground mb-3 flex items-center gap-2";
-  const sectionStyles = "space-y-6 p-6 bg-card/30 rounded-xl border border-border/30";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
