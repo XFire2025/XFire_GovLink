@@ -30,7 +30,7 @@ export async function GET(
       );
     }
 
-    const service = department.services.find(service => service.id === id);
+    const service = department.services.find((service: { id: string }) => service.id === id);
 
     if (!service) {
       return NextResponse.json(
@@ -84,7 +84,7 @@ export async function PUT(
       );
     }
 
-    const serviceIndex = department.services.findIndex(service => service.id === id);
+    const serviceIndex = department.services.findIndex((service: { id: string }) => service.id === id);
 
     if (serviceIndex === -1) {
       return NextResponse.json(
@@ -150,7 +150,7 @@ export async function DELETE(
       );
     }
 
-    const serviceIndex = department.services.findIndex(service => service.id === id);
+    const serviceIndex = department.services.findIndex((service: { id: string }) => service.id === id);
 
     if (serviceIndex === -1) {
       return NextResponse.json(
@@ -220,7 +220,7 @@ export async function PATCH(
       );
     }
 
-    const serviceIndex = department.services.findIndex(service => service.id === id);
+    const serviceIndex = department.services.findIndex((service: { id: string }) => service.id === id);
 
     if (serviceIndex === -1) {
       return NextResponse.json(

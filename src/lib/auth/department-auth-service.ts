@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import jwt, { JwtPayload } from 'jsonwebtoken'; // Import JwtPayload
+import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
 import Department from '@/lib/models/departmentSchema';
 
@@ -29,14 +29,6 @@ export interface DepartmentAuthResult {
   };
   tokens?: DepartmentTokens;
   errors?: string[];
-}
-
-// Define a specific type for the JWT payload
-interface DepartmentJwtPayload extends JwtPayload {
-  departmentId: string;
-  departmentCode: string;
-  email: string;
-  role: 'department';
 }
 
 class DepartmentAuthService {
@@ -180,13 +172,14 @@ class DepartmentAuthService {
         };
       }
 
-      // Replace 'as any' with the specific JWT payload type
-      const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as DepartmentJwtPayload;
-
+      // Verify refresh token
+      const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as { departmentId: string; email: string };
+      
       await connectDB();
-
+      
+      // Find department
       const department = await Department.findById(decoded.departmentId);
-
+      
       if (!department || department.status !== 'ACTIVE') {
         return {
           success: false,
@@ -195,6 +188,7 @@ class DepartmentAuthService {
         };
       }
 
+      // Generate new access token
       const accessToken = jwt.sign(
         {
           departmentId: department._id,
@@ -276,12 +270,11 @@ class DepartmentAuthService {
   /**
    * Verify department token
    */
-  static verifyDepartmentToken(token: string): { valid: boolean; decoded?: string | DepartmentJwtPayload; error?: string } {
+  static verifyDepartmentToken(token: string): { valid: boolean; decoded?: jwt.JwtPayload; error?: string } {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET) as DepartmentJwtPayload;
+      const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
       return { valid: true, decoded };
-    } catch (_error) {
-      console.error('Token verification error:', _error); // Log the error
+    } catch {
       return { valid: false, error: 'Invalid or expired token' };
     }
   }

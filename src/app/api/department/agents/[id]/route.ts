@@ -141,7 +141,7 @@ export async function PUT(
   } catch (error) {
     console.error('Update agent error:', error);
     
-    if (error.code === 11000) {
+    if (error && typeof error === 'object' && 'code' in error && (error as { code: number }).code === 11000) {
       return NextResponse.json(
         { 
           success: false, 

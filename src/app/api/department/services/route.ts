@@ -40,13 +40,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (category) {
-      services = services.filter(service => 
+      services = services.filter((service: { category: string }) => 
         service.category.toLowerCase().includes(category.toLowerCase())
       );
     }
 
     if (search) {
-      services = services.filter(service =>
+      services = services.filter((service: { name: string, description: string }) =>
         service.name.toLowerCase().includes(search.toLowerCase()) ||
         service.description.toLowerCase().includes(search.toLowerCase())
       );
@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find the newly created service
-    const createdService = updatedDepartment.services.find(service => service.id === serviceId);
+    const createdService = updatedDepartment.services.find((service: { id: string }) => service.id === serviceId);
 
     return NextResponse.json({
       success: true,

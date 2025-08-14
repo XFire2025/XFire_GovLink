@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Submission from '@/lib/models/submissionSchema';
-import Agent from '@/lib/models/agentSchema';
 import Department from '@/lib/models/departmentSchema';
 import { departmentAuthMiddleware } from '@/lib/auth/department-middleware';
 

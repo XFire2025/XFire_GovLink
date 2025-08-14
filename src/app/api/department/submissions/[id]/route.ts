@@ -6,8 +6,9 @@ import { departmentAuthMiddleware } from '@/lib/auth/department-middleware';
 // GET /api/department/submissions/[id] - Get specific submission
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Authenticate department
     const authResult = await departmentAuthMiddleware(request);
@@ -21,7 +22,7 @@ export async function GET(
     await connectDB();
 
     const submission = await Submission.findOne({
-      _id: params.id,
+      _id: id,
       departmentId: authResult.department!.departmentId
     });
 
@@ -50,8 +51,9 @@ export async function GET(
 // PUT /api/department/submissions/[id] - Update submission
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Authenticate department
     const authResult = await departmentAuthMiddleware(request);
@@ -68,7 +70,7 @@ export async function PUT(
 
     // Find submission and verify it belongs to this department
     const submission = await Submission.findOne({
-      _id: params.id,
+      _id: id,
       departmentId: authResult.department!.departmentId
     });
 
@@ -114,12 +116,13 @@ export async function PUT(
     };
 
     // Remove undefined values
-    Object.keys(updateFields).forEach(key => {
-      if (updateFields[key] === undefined) delete updateFields[key];
+    const fields = updateFields as Record<string, unknown>;
+    Object.keys(fields).forEach(key => {
+      if (fields[key] === undefined) delete fields[key];
     });
 
     const updatedSubmission = await Submission.findByIdAndUpdate(
-      params.id,
+      id,
       {
         ...updateFields,
         history: submission.history
@@ -145,8 +148,9 @@ export async function PUT(
 // DELETE /api/department/submissions/[id] - Cancel submission
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Authenticate department
     const authResult = await departmentAuthMiddleware(request);
@@ -160,7 +164,7 @@ export async function DELETE(
     await connectDB();
 
     const submission = await Submission.findOne({
-      _id: params.id,
+      _id: id,
       departmentId: authResult.department!.departmentId
     });
 

@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
-type ChatStatus = 'pending' | 'active' | 'transferred' | 'completed';
 
 interface ChatNotesProps {
   isOpen: boolean;
