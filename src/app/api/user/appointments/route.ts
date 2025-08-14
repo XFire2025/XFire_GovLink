@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Appointment from '@/lib/models/appointmentSchema';
+import type { IAppointment } from '@/lib/models/appointmentSchema';
+// LeanDocument import not used; prefer casting to IAppointment[] for mapping
 import Department from '@/lib/models/departmentSchema';
 import Agent from '@/lib/models/agentSchema';
 import User from '@/lib/models/userSchema';
@@ -58,6 +60,18 @@ interface UploadedDocument {
   type: string;
   size: number;
   uploadedAt: Date;
+}
+
+// Local service shape used in department documents
+interface ServiceItem {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  isActive?: boolean;
+  processingTime?: string;
+  fee?: number;
+  requirements?: string[];
 }
 
 // Generate unique booking reference with collision detection
@@ -236,8 +250,8 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Department found:', department.name);
 
-    // Verify service exists in department
-    const service = department.services?.find(s => s.id === appointmentData.serviceId && s.isActive);
+  // Verify service exists in department
+  const service = (department.services as ServiceItem[] | undefined)?.find((s: ServiceItem) => s.id === appointmentData.serviceId && s.isActive);
     if (!service) {
       console.error('❌ Service not found:', appointmentData.serviceId);
       return NextResponse.json(
@@ -373,7 +387,7 @@ export async function POST(request: NextRequest) {
 
     // Map service category to appointment serviceType enum
     let serviceType: string;
-    const categoryLower = service.category.toLowerCase();
+  const categoryLower = (service.category || '').toLowerCase();
     
     // Map categories to valid serviceType enum values
     if (categoryLower.includes('passport')) {
@@ -548,22 +562,22 @@ export async function GET(request: NextRequest) {
     console.log('✅ Found appointments:', appointments.length);
 
     // Transform appointments
-    const transformedAppointments = appointments.map(apt => ({
-      id: apt._id.toString(),
+  const transformedAppointments = (appointments as unknown as IAppointment[]).map((apt) => ({
+  id: (apt._id as { toString(): string }).toString(),
       bookingReference: apt.bookingReference,
       serviceType: apt.serviceType,
       department: apt.department,
-      date: apt.date.toISOString().split('T')[0],
+      date: (apt.date as Date).toISOString().split('T')[0],
       time: apt.time,
       status: apt.status,
       priority: apt.priority,
       notes: apt.notes,
       assignedAgent: apt.assignedAgent ? {
-        name: (apt.assignedAgent as PopulatedAgent).fullName,
-        position: (apt.assignedAgent as PopulatedAgent).position,
-        office: (apt.assignedAgent as PopulatedAgent).officeName
+  name: ((apt.assignedAgent as unknown) as PopulatedAgent).fullName,
+  position: ((apt.assignedAgent as unknown) as PopulatedAgent).position,
+  office: ((apt.assignedAgent as unknown) as PopulatedAgent).officeName
       } : null,
-      submittedDate: apt.submittedDate.toISOString().split('T')[0]
+      submittedDate: (apt.submittedDate as Date).toISOString().split('T')[0]
     }));
 
     return NextResponse.json({

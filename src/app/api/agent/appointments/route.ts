@@ -1,7 +1,24 @@
 // app/api/agent/appointments/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import connect from '@/lib/db';
-import Appointment, { ServiceType, AppointmentStatus } from '@/lib/models/appointmentSchema';
+import connect from '../../../../lib/db';
+import Appointment, { ServiceType, AppointmentStatus } from '../../../../lib/models/appointmentSchema';
+
+type RecordUnknown = Record<string, unknown>;
+const toIdString = (v: unknown): string | null => {
+  if (v == null) return null;
+  const obj = v as { _id?: unknown };
+  const id = obj._id ?? v;
+  if (typeof id === 'string') return id;
+  if (id && typeof (id as { toString?: unknown }).toString === 'function') return String(id);
+  return null;
+};
+const toDateString = (v: unknown): string | null => {
+  if (v == null) return null;
+  const d = v instanceof Date ? v : new Date(String(v));
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString().split('T')[0];
+};
+const toStringOrNull = (v: unknown): string | null => v == null ? null : String(v);
 
 // Helper function to validate service type
 function isValidServiceType(value: string): value is ServiceType {
@@ -83,13 +100,15 @@ export async function GET(request: NextRequest) {
 
     // Date range filter
     if (dateFrom || dateTo) {
-      filter.date = {};
+      type DateQuery = { $gte?: Date; $lte?: Date };
+      const dateQuery: DateQuery = {};
       if (dateFrom) {
-        filter.date.$gte = new Date(dateFrom);
+        dateQuery.$gte = new Date(dateFrom);
       }
       if (dateTo) {
-        filter.date.$lte = new Date(dateTo);
+        dateQuery.$lte = new Date(dateTo);
       }
+      filter.date = dateQuery;
     }
 
     // Calculate pagination
@@ -103,29 +122,29 @@ export async function GET(request: NextRequest) {
         .sort({ submittedDate: -1, date: 1, time: 1 })
         .skip(skip)
         .limit(limit)
-        .lean(),
+        .lean<RecordUnknown[]>(),
       Appointment.countDocuments(filter)
     ]);
 
     // Transform data to match frontend interface
-    const transformedAppointments = appointments.map(appointment => ({
-      id: appointment._id.toString(),
-      citizenName: appointment.citizenName,
-      citizenId: appointment.citizenNIC,
-      serviceType: appointment.serviceType as ServiceType,
-      date: appointment.date.toISOString().split('T')[0], // YYYY-MM-DD format
-      time: appointment.time,
-      status: appointment.status as AppointmentStatus,
-      priority: appointment.priority,
-      notes: appointment.notes || appointment.agentNotes,
-      contactEmail: appointment.contactEmail,
-      contactPhone: appointment.contactPhone,
-      submittedDate: appointment.submittedDate.toISOString().split('T')[0],
-      bookingReference: appointment.bookingReference,
+    const transformedAppointments = (appointments as RecordUnknown[]).map(appointment => ({
+      id: toIdString(appointment._id) ?? toStringOrNull(appointment._id),
+      citizenName: toStringOrNull(appointment.citizenName),
+      citizenId: toStringOrNull(appointment.citizenNIC),
+      serviceType: toStringOrNull(appointment.serviceType) as ServiceType | null,
+      date: toDateString(appointment.date), // YYYY-MM-DD format
+      time: toStringOrNull(appointment.time),
+      status: toStringOrNull(appointment.status) as AppointmentStatus | null,
+      priority: toStringOrNull(appointment.priority),
+      notes: toStringOrNull(appointment.notes) ?? toStringOrNull(appointment.agentNotes),
+      contactEmail: toStringOrNull(appointment.contactEmail),
+      contactPhone: toStringOrNull(appointment.contactPhone),
+      submittedDate: toDateString(appointment.submittedDate),
+      bookingReference: toStringOrNull(appointment.bookingReference),
       assignedAgent: appointment.assignedAgent ? {
-        id: appointment.assignedAgent._id,
-        name: appointment.assignedAgent.fullName,
-        officerId: appointment.assignedAgent.officerId
+        id: toIdString((appointment.assignedAgent as RecordUnknown)._id) ?? toStringOrNull((appointment.assignedAgent as RecordUnknown)._id),
+        name: toStringOrNull((appointment.assignedAgent as RecordUnknown)['fullName']),
+        officerId: toStringOrNull((appointment.assignedAgent as RecordUnknown)['officerId'])
       } : null
     }));
 
@@ -200,7 +219,7 @@ export async function POST(request: NextRequest) {
       ]);
 
       // Get service type breakdown
-      const serviceStats = await Appointment.aggregate([
+  const serviceStats = await Appointment.aggregate([
         {
           $group: {
             _id: '$serviceType',
@@ -213,7 +232,7 @@ export async function POST(request: NextRequest) {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       
-      const dailyStats = await Appointment.aggregate([
+  const dailyStats = await Appointment.aggregate([
         {
           $match: {
             date: { $gte: sevenDaysAgo }
@@ -234,6 +253,9 @@ export async function POST(request: NextRequest) {
           $sort: { _id: 1 }
         }
       ]);
+  // Narrow aggregation results to known shapes to avoid implicit any
+  const serviceStatsTyped = serviceStats as Array<{ _id: string; count: number }>;
+  const dailyStatsTyped = dailyStats as Array<{ _id: string; count: number }>;
 
       return NextResponse.json({
         success: true,
@@ -248,11 +270,11 @@ export async function POST(request: NextRequest) {
             today: todayCount,
             urgent: urgentCount
           },
-          serviceBreakdown: serviceStats.reduce((acc, item) => {
+          serviceBreakdown: (serviceStatsTyped).reduce((acc: Record<string, number>, item) => {
             acc[item._id] = item.count;
             return acc;
           }, {} as Record<ServiceType, number>),
-          dailyStats: dailyStats.map(item => ({
+          dailyStats: (dailyStatsTyped).map(item => ({
             date: item._id,
             count: item.count
           }))

@@ -5,33 +5,35 @@ import connect from '@/lib/db';
 import Appointment, { AppointmentStatus } from '@/lib/models/appointmentSchema';
 
 // Define interfaces for better type safety
-interface PopulatedCitizen {
-  _id: string;
-  fullName: string;
-  email: string;
-  mobileNumber?: string;
-  nicNumber?: string;
-}
+// Helper narrowers to avoid `any` usage in multiple handlers
+type RecordUnknown = Record<string, unknown>;
+const toIdString = (v: unknown): string | null => {
+  if (v == null) return null;
+  const obj = v as { _id?: unknown };
+  const id = obj._id ?? v;
+  if (typeof id === 'string') return id;
+  if (id && typeof (id as { toString?: unknown }).toString === 'function') return String(id);
+  return null;
+};
+const toDateString = (v: unknown): string | null => {
+  if (v == null) return null;
+  const d = v instanceof Date ? v : new Date(String(v));
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString().split('T')[0];
+};
+const toStringOrNull = (v: unknown): string | null => v == null ? null : String(v);
 
-interface PopulatedAgent {
-  _id: string;
-  fullName: string;
-  officerId: string;
-  position: string;
-}
+type RouteContext = { params: { id: string } } | unknown;
+const toArray = (v: unknown): unknown[] => Array.isArray(v) ? v : [];
+const toNotifications = (v: unknown): { email: boolean; sms: boolean } => {
+  const obj = (v as RecordUnknown | null) ?? null;
+  return {
+    email: !!(obj && typeof obj['email'] === 'boolean' ? obj['email'] : false),
+    sms: !!(obj && typeof obj['sms'] === 'boolean' ? obj['sms'] : false)
+  };
+};
 
-interface AppointmentUpdateData {
-  status?: AppointmentStatus;
-  agentNotes?: string;
-  assignedAgent?: string;
-  priority?: 'normal' | 'urgent';
-  cancellationReason?: string;
-  requirements?: string[];
-  confirmedDate?: Date;
-  completedDate?: Date;
-  cancelledDate?: Date;
-  lastModifiedBy?: string;
-}
+// (Previously had AppointmentUpdateData interface; not required because update payload is handled as Record<string, unknown>)
 
 interface ValidationError {
   message: string;
@@ -64,12 +66,13 @@ function isValidAppointmentStatus(status: string): status is AppointmentStatus {
 // Get single appointment
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     await connect();
 
-    const { id } = params;
+  const { params } = context as { params: { id: string } };
+  const { id } = params;
 
     // Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -95,40 +98,42 @@ export async function GET(
     }
 
     // Transform data to match frontend interface
+    const appt = appointment as unknown as Record<string, unknown>;
+
     const transformedAppointment = {
-      id: appointment._id.toString(),
-      citizenName: appointment.citizenName,
-      citizenId: appointment.citizenNIC,
-      serviceType: appointment.serviceType,
-      date: appointment.date.toISOString().split('T')[0],
-      time: appointment.time,
-      status: appointment.status,
-      priority: appointment.priority,
-      notes: appointment.notes,
-      agentNotes: appointment.agentNotes,
-      contactEmail: appointment.contactEmail,
-      contactPhone: appointment.contactPhone,
-      submittedDate: appointment.submittedDate.toISOString().split('T')[0],
-      bookingReference: appointment.bookingReference,
-      confirmedDate: appointment.confirmedDate?.toISOString().split('T')[0],
-      completedDate: appointment.completedDate?.toISOString().split('T')[0],
-      cancelledDate: appointment.cancelledDate?.toISOString().split('T')[0],
-      cancellationReason: appointment.cancellationReason,
-      assignedAgent: appointment.assignedAgent ? {
-        id: (appointment.assignedAgent as PopulatedAgent)._id,
-        name: (appointment.assignedAgent as PopulatedAgent).fullName,
-        officerId: (appointment.assignedAgent as PopulatedAgent).officerId,
-        position: (appointment.assignedAgent as PopulatedAgent).position
+      id: toIdString(appt._id) ?? toStringOrNull(appt._id),
+      citizenName: toStringOrNull(appt.citizenName),
+      citizenId: toStringOrNull(appt.citizenNIC),
+      serviceType: toStringOrNull(appt.serviceType),
+      date: toDateString(appt.date),
+      time: toStringOrNull(appt.time),
+      status: toStringOrNull(appt.status),
+      priority: toStringOrNull(appt.priority) as string | null,
+      notes: toStringOrNull(appt.notes),
+      agentNotes: toStringOrNull(appt.agentNotes),
+      contactEmail: toStringOrNull(appt.contactEmail),
+      contactPhone: toStringOrNull(appt.contactPhone),
+      submittedDate: toDateString(appt.submittedDate),
+      bookingReference: toStringOrNull(appt.bookingReference),
+      confirmedDate: toDateString(appt.confirmedDate),
+      completedDate: toDateString(appt.completedDate),
+      cancelledDate: toDateString(appt.cancelledDate),
+      cancellationReason: toStringOrNull(appt.cancellationReason),
+      assignedAgent: appt.assignedAgent ? {
+        id: toIdString(appt.assignedAgent),
+        name: toStringOrNull((appt.assignedAgent as Record<string, unknown>)['fullName']),
+        officerId: toStringOrNull((appt.assignedAgent as Record<string, unknown>)['officerId']),
+        position: toStringOrNull((appt.assignedAgent as Record<string, unknown>)['position'])
       } : null,
-      citizen: appointment.citizenId ? {
-        id: (appointment.citizenId as PopulatedCitizen)._id,
-        fullName: (appointment.citizenId as PopulatedCitizen).fullName,
-        email: (appointment.citizenId as PopulatedCitizen).email,
-        mobile: (appointment.citizenId as PopulatedCitizen).mobileNumber,
-        nic: (appointment.citizenId as PopulatedCitizen).nicNumber
+      citizen: appt.citizenId ? {
+        id: toIdString(appt.citizenId),
+        fullName: toStringOrNull((appt.citizenId as Record<string, unknown>)['fullName']),
+        email: toStringOrNull((appt.citizenId as Record<string, unknown>)['email']),
+        mobile: toStringOrNull((appt.citizenId as Record<string, unknown>)['mobileNumber']),
+        nic: toStringOrNull((appt.citizenId as Record<string, unknown>)['nicNumber'])
       } : null,
-      requirements: appointment.requirements || [],
-      notificationsSent: appointment.notificationsSent || { email: false, sms: false }
+      requirements: toArray(appt.requirements),
+      notificationsSent: toNotifications(appt.notificationsSent)
     };
 
     return NextResponse.json({
@@ -150,13 +155,15 @@ export async function GET(
 // Update appointment (status, notes, etc.)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     await connect();
 
-    const { id } = params;
-    const body = await request.json();
+  const { params } = context as { params: { id: string } };
+  const { id } = params;
+  const body = await request.json();
+  const bodyObj = body as RecordUnknown;
 
     // Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -186,17 +193,18 @@ export async function PUT(
       }, { status: 400 });
     }
 
-    // Prepare update object
-    const updateData: AppointmentUpdateData = {};
+  // Prepare update object
+  const updateData: Record<string, unknown> = {};
     const allowedUpdates = [
-      'status', 'agentNotes', 'assignedAgent', 'priority', 
+      'status', 'agentNotes', 'assignedAgent', 'priority',
       'cancellationReason', 'requirements'
-    ];
+    ] as const;
 
     // Only update allowed fields
     for (const field of allowedUpdates) {
-      if (body[field] !== undefined) {
-        updateData[field as keyof AppointmentUpdateData] = body[field];
+      const key = field as string;
+      if (bodyObj[key] !== undefined) {
+        updateData[key] = bodyObj[key] as unknown;
       }
     }
 
@@ -238,36 +246,45 @@ export async function PUT(
     }
 
     // Update appointment
-    const updatedAppointment = await Appointment.findByIdAndUpdate(
+  const updatedAppointment = await Appointment.findByIdAndUpdate(
       id,
       updateData,
-      { 
-        new: true, 
-        runValidators: true 
+      {
+        new: true,
+        runValidators: true
       }
     ).populate('citizenId', 'fullName email mobileNumber')
-     .populate('assignedAgent', 'fullName officerId');
+   .populate('assignedAgent', 'fullName officerId') as RecordUnknown | null;
+
+    if (!updatedAppointment) {
+      return NextResponse.json({
+        success: false,
+        message: 'Appointment not found after update',
+        errors: ['Appointment does not exist']
+      }, { status: 404 });
+    }
 
     // Transform response
+    const up = updatedAppointment as RecordUnknown;
     const transformedAppointment = {
-      id: updatedAppointment._id.toString(),
-      citizenName: updatedAppointment.citizenName,
-      citizenId: updatedAppointment.citizenNIC,
-      serviceType: updatedAppointment.serviceType,
-      date: updatedAppointment.date.toISOString().split('T')[0],
-      time: updatedAppointment.time,
-      status: updatedAppointment.status,
-      priority: updatedAppointment.priority,
-      notes: updatedAppointment.notes,
-      agentNotes: updatedAppointment.agentNotes,
-      contactEmail: updatedAppointment.contactEmail,
-      contactPhone: updatedAppointment.contactPhone,
-      submittedDate: updatedAppointment.submittedDate.toISOString().split('T')[0],
-      bookingReference: updatedAppointment.bookingReference,
-      confirmedDate: updatedAppointment.confirmedDate?.toISOString().split('T')[0],
-      completedDate: updatedAppointment.completedDate?.toISOString().split('T')[0],
-      cancelledDate: updatedAppointment.cancelledDate?.toISOString().split('T')[0],
-      cancellationReason: updatedAppointment.cancellationReason
+      id: toIdString(up._id) ?? toStringOrNull(up._id),
+      citizenName: toStringOrNull(up.citizenName),
+      citizenId: toStringOrNull(up.citizenNIC),
+      serviceType: toStringOrNull(up.serviceType),
+      date: toDateString(up.date),
+      time: toStringOrNull(up.time),
+      status: toStringOrNull(up.status),
+      priority: toStringOrNull(up.priority) as string | null,
+      notes: toStringOrNull(up.notes),
+      agentNotes: toStringOrNull(up.agentNotes),
+      contactEmail: toStringOrNull(up.contactEmail),
+      contactPhone: toStringOrNull(up.contactPhone),
+      submittedDate: toDateString(up.submittedDate),
+      bookingReference: toStringOrNull(up.bookingReference),
+      confirmedDate: toDateString(up.confirmedDate),
+      completedDate: toDateString(up.completedDate),
+      cancelledDate: toDateString(up.cancelledDate),
+      cancellationReason: toStringOrNull(up.cancellationReason)
     };
 
     return NextResponse.json({
@@ -301,12 +318,13 @@ export async function PUT(
 // Send notification for appointment
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     await connect();
 
-    const { id } = params;
+  const { params } = context as { params: { id: string } };
+  const { id } = params;
     const body = await request.json();
     const { action, notificationType = 'both' } = body;
 
