@@ -116,7 +116,7 @@ const formTranslations: Record<Language, FormTranslation> = {
     email: 'විද්‍යුත් ලිපිනය',
     phone: 'දුරකථන අංකය',
     department: 'දෙපාර්තමේන්තුව',
-    agentId: 'නිලධාරි හැඳුනුම්පත',
+    agentId: 'නිලධාරි හඳුනුම්පත',
     preferredLanguage: 'කැමති භාෂාව',
     workingHours: 'වැඩ කරන වේලාවන්',
     startTime: 'ආරම්භක වේලාව',
@@ -139,7 +139,7 @@ const formTranslations: Record<Language, FormTranslation> = {
       si: 'සිංහල',
       ta: 'දෙමළ'
     },
-    successMessage: 'පැතිකඩ සාර්ථකව යාවත්කාලීන කරන ලදී!'
+    successMessage: 'පැතිකඩ සාර්ථකව යාවත්කාලීන කරන ලදි!'
   },
   ta: {
     contactInformation: 'தொடர்பு தகவல்',

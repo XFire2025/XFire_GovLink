@@ -33,8 +33,8 @@ const translations: Record<Language, Translation> = {
   },
   si: {
     appointments: 'නියමයන්',
-    agentPortal: 'නිලධාරි පෝට්ලය',
-    backToDashboard: '← පාලනයට ආපසු',
+    agentPortal: 'නිලධාරි පෝර්ටලය',
+    backToDashboard: '← පැලනයට ආපසු',
     logout: 'ඉවත්වන්න',
     profile: 'පැතිකඩ',
     settings: 'සැකසුම්',
@@ -44,7 +44,7 @@ const translations: Record<Language, Translation> = {
   ta: {
     appointments: 'சந்திப்புகள்',
     agentPortal: 'அதிகாரி போர்டல்',
-    backToDashboard: '← டாஷ்போர்டுக்கு திரும்பு',
+    backToDashboard: '← டாஷ்போர்டுக்கு திரும்ப',
     logout: 'வெளியேறு',
     profile: 'சுயவிவரம்',
     settings: 'அமைப்புகள்',
@@ -57,7 +57,7 @@ const translations: Record<Language, Translation> = {
 const languageOptions = [
   { code: 'en', label: 'English', nativeLabel: 'English' },
   { code: 'si', label: 'Sinhala', nativeLabel: 'සිංහල' },
-  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ්' }
+  { code: 'ta', label: 'Tamil', nativeLabel: 'தமிழ்' }
 ];
 
 // EXACT SAME Lotus Icon as Dashboard with Sri Lankan Flag Colors
@@ -166,7 +166,8 @@ const AppointmentsLayout: React.FC<AppointmentsLayoutProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground relative overflow-hidden theme-transition-slow">
+    // FIXED: Changed from min-h-screen to full height with proper scrolling
+    <div className="w-full bg-background text-foreground relative theme-transition-slow">
       {/* EXACT SAME Sri Lankan Background as Dashboard */}
       <SriLankanBackground />
       
@@ -325,22 +326,30 @@ const AppointmentsLayout: React.FC<AppointmentsLayoutProps> = ({
         </nav>
       </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 relative z-10">
-        {/* Title Section */}
-        <div className="text-center mb-12 animate-fade-in-up">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight animate-title-wave">
-            {title}
-          </h1>
-          
-          {subtitle && (
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              {subtitle}
-            </p>
-          )}
-        </div>
+      {/* Main Content - FIXED: Proper scrollable container */}
+      <main className="w-full relative z-10 overflow-y-auto">
+        <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          {/* Title Section */}
+          <div className="text-center mb-12 animate-fade-in-up">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight animate-title-wave">
+              {title}
+            </h1>
+            
+            {subtitle && (
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                {subtitle}
+              </p>
+            )}
+          </div>
 
-        {children}
+          {/* Content */}
+          <div className="w-full">
+            {children}
+          </div>
+
+          {/* Bottom Padding for Better UX */}
+          <div className="h-16 sm:h-24"></div>
+        </div>
       </main>
     </div>
   );
