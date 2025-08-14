@@ -447,7 +447,7 @@ export async function POST(request: NextRequest) {
           time: savedAppointment.time,
           status: savedAppointment.status,
           notes: savedAppointment.notes,
-          uploadedDocuments: savedAppointment.documents.map(doc => ({
+          uploadedDocuments: savedAppointment.documents.map((doc: IAppointmentDocument) => ({
             name: doc.name,
             originalName: doc.fileName,
             size: doc.fileSize,
