@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import * as cdk from 'aws-cdk-lib';
-import { OpenNextStack } from '@opennextjs/aws';
+const cdk = require('aws-cdk-lib');
+const { OpenNextStack } = require('@opennextjs/aws');
 
 const app = new cdk.App();
 

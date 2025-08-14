@@ -1,5 +1,5 @@
 {
-  "app": "node deploy.mjs",
+  "app": "node deploy.js",
   "requireApproval": "never",
   "context": {
     "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
