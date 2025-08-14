@@ -69,7 +69,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: open-next-build
-          path: .open-next/
+          path: .open-next
           retention-days: 1
           if-no-files-found: error
 
@@ -100,7 +100,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: open-next-build
-          path: .open-next/
+          path: .open-next
           
       # Verify the artifact was downloaded correctly
       - name: Verify downloaded artifact
