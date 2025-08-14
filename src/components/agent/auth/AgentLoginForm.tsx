@@ -8,8 +8,41 @@ import AgentInputField from './AgentInputField';
 // Types
 type Language = 'en' | 'si' | 'ta';
 
+interface FormTranslations {
+  employeeId: string;
+  employeeIdPlaceholder: string;
+  employeeIdHelp: string;
+  employeeIdRequired: string;
+  employeeIdInvalid: string;
+  department: string;
+  selectDepartment: string;
+  departmentRequired: string;
+  password: string;
+  passwordPlaceholder: string;
+  passwordHelp: string;
+  passwordRequired: string;
+  passwordMinLength: string;
+  keepMeSignedIn: string;
+  accessAgentPortal: string;
+  authenticating: string;
+  invalidCredentials: string;
+  loginFailed: string;
+  departments: {
+    '': string;
+    'immigration': string;
+    'registration': string;
+    'motor_traffic': string;
+    'customs': string;
+    'inland_revenue': string;
+    'labor': string;
+    'police': string;
+    'health': string;
+    'education': string;
+  };
+}
+
 // Form translations
-const formTranslations: Record<Language, any> = {
+const formTranslations: Record<Language, FormTranslations> = {
   en: {
     employeeId: 'Employee ID',
     employeeIdPlaceholder: 'Enter your Employee ID (e.g., ABC1234)',
@@ -181,10 +214,9 @@ export default function AgentLoginForm({ language }: AgentLoginFormProps) {
 
     try {
       const result = await login({
-        employeeId: formData.employeeId,
-        department: formData.department,
+        email: formData.employeeId, // TODO: Form collects employeeId but API expects email
         password: formData.password,
-        rememberMe: formData.keepMeSignedIn // Assuming the auth hook uses 'rememberMe'
+        rememberMe: formData.keepMeSignedIn
       });
 
       if (result.success) {
