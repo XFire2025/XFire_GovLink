@@ -48,3 +48,5 @@ next-env.d.ts
 
 # open next cache
 /.open-next
+
+/cdk.out
