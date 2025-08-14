@@ -262,6 +262,104 @@ export const govLinkEmailTemplates = {
     `,
   }),
 
+  // Agent-specific password reset email
+  agentPasswordReset: (name: string, resetLink: string) => ({
+    subject: `Agent Password Reset - ${process.env.GOV_SERVICE_NAME}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #FFC72C; border-radius: 10px;">
+        <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="margin: 0; font-size: 24px;">🔐 Agent Password Reset</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">${process.env.GOV_SERVICE_NAME} - Agent Portal</p>
+        </div>
+        <div style="padding: 30px;">
+          <p>Dear Agent <strong>${name}</strong>,</p>
+          <p>You requested to reset your password for your agent account. Click the button below to create a new secure password:</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetLink}" 
+               style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+              🔑 Reset Agent Password
+            </a>
+          </div>
+          
+          <div style="background-color: #fee2e2; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #dc2626;">
+            <p style="margin: 0; color: #991b1b; font-size: 14px;">
+              <strong>Security Notice:</strong> This link will expire in 1 hour. As a government agent, please ensure you use a strong password with at least 8 characters including uppercase, lowercase, numbers, and special characters.
+            </p>
+          </div>
+
+          <div style="background-color: #fef3c7; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0; color: #92400e; font-size: 14px;">
+              <strong>Agent Responsibilities:</strong> Your account has access to sensitive citizen data. Please maintain the highest security standards and do not share your credentials.
+            </p>
+          </div>
+
+          <p style="font-size: 12px; color: #666; margin-top: 20px; word-break: break-all;">
+            If the button doesn't work, copy and paste this link:<br>
+            <span style="background: #f5f5f5; padding: 5px; border-radius: 3px;">${resetLink}</span>
+          </p>
+          
+          <hr style="border: none; height: 1px; background: #ddd; margin: 20px 0;">
+          <p style="font-size: 12px; color: #999; text-align: center; margin: 0;">
+            ${process.env.GOV_DEPARTMENT_NAME} - Agent Services<br>
+            <a href="${process.env.GOV_WEBSITE}" style="color: #1B365D;">${process.env.GOV_WEBSITE}</a>
+          </p>
+        </div>
+      </div>
+    `,
+  }),
+
+  // Agent email verification
+  agentEmailVerification: (name: string, verificationLink: string) => ({
+    subject: `Verify Your Agent Account Email - ${process.env.GOV_SERVICE_NAME}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #FFC72C; border-radius: 10px;">
+        <div style="background: linear-gradient(135deg, #1B365D 0%, #2E5F8A 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="margin: 0; font-size: 24px;">📧 Agent Email Verification</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">${process.env.GOV_SERVICE_NAME} - Agent Portal</p>
+        </div>
+        <div style="padding: 30px;">
+          <p>Dear Agent <strong>${name}</strong>,</p>
+          <p>To activate your agent account and access government services management tools, please verify your email address.</p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verificationLink}" 
+               style="background: linear-gradient(135deg, #FFC72C 0%, #FFB300 100%); color: #1B365D; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px;">
+              ✓ Verify Agent Email
+            </a>
+          </div>
+          
+          <div style="background-color: #e3f2fd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1976d2;">
+            <h3 style="color: #1565c0; margin-top: 0;">After verification, you'll be able to:</h3>
+            <ul style="color: #1565c0; line-height: 1.6;">
+              <li>Access the agent dashboard and analytics</li>
+              <li>Manage citizen appointments and requests</li>
+              <li>Process government service applications</li>
+              <li>Communicate with citizens through secure channels</li>
+            </ul>
+          </div>
+          
+          <div style="background-color: #fff3cd; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #ffc107;">
+            <p style="margin: 0; color: #856404; font-size: 14px;">
+              <strong>Important:</strong> This verification link will expire in 24 hours. Please complete verification promptly to maintain your agent access privileges.
+            </p>
+          </div>
+
+          <p style="font-size: 12px; color: #666; margin-top: 20px; word-break: break-all;">
+            If the button doesn't work, copy and paste this link:<br>
+            <span style="background: #f5f5f5; padding: 5px; border-radius: 3px;">${verificationLink}</span>
+          </p>
+          
+          <hr style="border: none; height: 1px; background: #ddd; margin: 20px 0;">
+          <p style="font-size: 12px; color: #999; text-align: center; margin: 0;">
+            ${process.env.GOV_DEPARTMENT_NAME} - Agent Services<br>
+            <a href="${process.env.GOV_WEBSITE}" style="color: #1B365D;">${process.env.GOV_WEBSITE}</a>
+          </p>
+        </div>
+      </div>
+    `,
+  }),
+
   // Appointment confirmation
   appointmentConfirmation: (name: string, appointmentDetails: { service: string; date: string; time: string; agent: string; location?: string }) => ({
     subject: `Appointment Confirmed - ${appointmentDetails.service} | ${process.env.GOV_SERVICE_NAME}`,
@@ -326,6 +424,26 @@ export const sendEmailVerification = async (name: string, email: string, verific
 export const sendPasswordResetEmail = async (name: string, email: string, resetToken: string) => {
   const resetLink = `${process.env.RESET_PASSWORD_URL_BASE}?token=${resetToken}`;
   const template = govLinkEmailTemplates.passwordReset(name, resetLink);
+  return await sendEmail({
+    to: email,
+    subject: template.subject,
+    html: template.html,
+  });
+};
+
+export const sendAgentPasswordResetEmail = async (name: string, email: string, resetToken: string) => {
+  const resetLink = `${process.env.NEXTAUTH_URL}/agent/reset-password?token=${resetToken}`;
+  const template = govLinkEmailTemplates.agentPasswordReset(name, resetLink);
+  return await sendEmail({
+    to: email,
+    subject: template.subject,
+    html: template.html,
+  });
+};
+
+export const sendAgentEmailVerification = async (name: string, email: string, verificationToken: string) => {
+  const verificationLink = `${process.env.NEXTAUTH_URL}/api/auth/agent/verify-email?token=${verificationToken}`;
+  const template = govLinkEmailTemplates.agentEmailVerification(name, verificationLink);
   return await sendEmail({
     to: email,
     subject: template.subject,

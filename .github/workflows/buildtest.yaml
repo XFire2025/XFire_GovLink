@@ -1,26 +1,15 @@
 name: Build and Test GovLink Frontend
 
 on:
-  pull_request:
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'next.config.ts'
-      - 'tsconfig.json'
-      - '.github/workflows/buildtest.yaml'
+  # Run on pushes to any branch
   push:
     branches:
-      - main # Or your primary branch
-    paths:
-      - 'src/**'
-      - 'public/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'next.config.ts'
-      - 'tsconfig.json'
-      - '.github/workflows/buildtest.yaml'
+      - '**'
+
+  # Run on pull requests targeting any branch
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   Build-Test:

@@ -1,6 +1,8 @@
 // src/app/agent/profile/page.tsx
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAgentAuth } from '@/lib/auth/useAgentAuthUtils';
 import ProfileLayout from '@/components/agent/profile/ProfileLayout';
 import ProfileSettings from '@/components/agent/profile/ProfileSettings';
 
@@ -27,9 +29,35 @@ const pageTranslations: Record<Language, {
 };
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const { agent, isLoading, isAuthenticated } = useAgentAuth();
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   
   const t = pageTranslations[currentLanguage];
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/agent/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-[#FFC72C]/30 border-t-[#FFC72C] rounded-full animate-spin"></div>
+          <p className="text-muted-foreground">Loading agent profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render profile if not authenticated
+  if (!isAuthenticated || !agent) {
+    return null;
+  }
 
   const handleLanguageChange = (newLanguage: Language) => {
     setCurrentLanguage(newLanguage);
@@ -47,7 +75,10 @@ export default function ProfilePage() {
       language={currentLanguage}
       onLanguageChange={handleLanguageChange}
     >
-      <ProfileSettings language={currentLanguage} />
+      <ProfileSettings 
+        language={currentLanguage} 
+        agent={agent}
+      />
     </ProfileLayout>
   );
 }

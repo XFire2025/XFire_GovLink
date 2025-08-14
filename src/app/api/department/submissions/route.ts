@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
-import Submission, { SubmissionStatus } from '@/lib/models/submissionSchema';
+import Submission from '@/lib/models/submissionSchema';
 import { departmentAuthMiddleware } from '@/lib/auth/department-middleware';
 
 // GET /api/department/submissions - Get department's submissions
@@ -46,9 +46,10 @@ export async function GET(request: NextRequest) {
 
     // Date range filter
     if (fromDate || toDate) {
-      filter.submittedAt = {};
-      if (fromDate) filter.submittedAt.$gte = new Date(fromDate);
-      if (toDate) filter.submittedAt.$lte = new Date(toDate);
+      const dateFilter: { $gte?: Date; $lte?: Date } = {};
+      if (fromDate) dateFilter.$gte = new Date(fromDate);
+      if (toDate) dateFilter.$lte = new Date(toDate);
+      filter.submittedAt = dateFilter;
     }
 
     // Calculate skip value for pagination

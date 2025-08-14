@@ -1,6 +1,8 @@
 // src/app/agent/dashboard/page.tsx
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAgentAuth } from '@/lib/auth/useAgentAuthUtils';
 import DashboardLayout from '@/components/agent/dashboard/DashboardLayout';
 import StatsOverview from '@/components/agent/dashboard/StatsOverview';
 import QuickActions from '@/components/agent/dashboard/QuickActions';
@@ -32,9 +34,35 @@ const dashboardTranslations: Record<Language, {
 };
 
 export default function AgentDashboardPage() {
+  const router = useRouter();
+  const { agent, isLoading, isAuthenticated } = useAgentAuth();
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   
   const t = dashboardTranslations[currentLanguage];
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/agent/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-[#FFC72C]/30 border-t-[#FFC72C] rounded-full animate-spin"></div>
+          <p className="text-muted-foreground">Loading agent dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render dashboard if not authenticated
+  if (!isAuthenticated || !agent) {
+    return null;
+  }
 
   const handleLanguageChange = (newLanguage: Language) => {
     setCurrentLanguage(newLanguage);
@@ -82,10 +110,13 @@ export default function AgentDashboardPage() {
                 </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 group-hover:text-[#FFC72C] transition-colors duration-300">
-                Welcome, Agent DEMO1234
+                Welcome, {agent.fullName}
               </h3>
+              <p className="text-sm text-muted-foreground mb-1">
+                {agent.position} - {agent.officeName}
+              </p>
               <p className="text-sm text-muted-foreground">
-                Department of Immigration & Emigration
+                {agent.department || 'Department of Immigration & Emigration'}
               </p>
               
               {/* Additional Status Indicators */}

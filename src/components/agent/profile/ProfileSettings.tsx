@@ -7,6 +7,40 @@ import PasswordChangeForm from './PasswordChangeForm';
 // Types
 type Language = 'en' | 'si' | 'ta';
 
+// Agent interface (matching auth utils)
+interface Agent {
+  id: string;
+  officerId: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  position: string;
+  department: string;
+  officeName: string;
+  isActive: boolean;
+  assignedDistricts: string[];
+}
+
+interface ProfileFormData {
+  fullName: string;
+  email: string;
+  phone: string;
+  department: string;
+  agentId: string;
+  preferredLanguage: string;
+  workingHours: {
+    start: string;
+    end: string;
+  };
+  timezone: string;
+  availability: string;
+  notifications: {
+    email: boolean;
+    sms: boolean;
+    inApp: boolean;
+  };
+}
+
 interface SettingsTranslation {
   personalInfo: string;
   security: string;
@@ -54,21 +88,114 @@ const settingsTranslations: Record<Language, SettingsTranslation> = {
 
 interface ProfileSettingsProps {
   language?: Language;
+  agent: Agent;
 }
 
-const ProfileSettings: React.FC<ProfileSettingsProps> = ({ language = 'en' }) => {
+const ProfileSettings: React.FC<ProfileSettingsProps> = ({ 
+  language = 'en', 
+  agent 
+}) => {
   const [activeTab, setActiveTab] = useState<'personal' | 'security'>('personal');
   const [isLoading, setIsLoading] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(new Date());
+  const [profileData, setProfileData] = useState<ProfileFormData | null>(null);
+  const [updateStatus, setUpdateStatus] = useState<{
+    type: 'success' | 'error' | null;
+    message: string;
+  }>({ type: null, message: '' });
 
   const t = settingsTranslations[language];
 
-  const handleSave = async () => {
+  const handleSave = async (formData?: ProfileFormData) => {
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setLastSaved(new Date());
-    setIsLoading(false);
+    setUpdateStatus({ type: null, message: '' });
+    
+    try {
+      // Use either passed formData or stored profileData
+      const dataToSend = formData || profileData;
+      
+      if (!dataToSend) {
+        setUpdateStatus({
+          type: 'error',
+          message: 'No data to update'
+        });
+        return;
+      }
+      
+      // Call the profile update API
+      const response = await fetch('/api/auth/agent/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          fullName: dataToSend.fullName,
+          phoneNumber: dataToSend.phone,
+          // Add other fields that can be updated
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setLastSaved(new Date());
+        setUpdateStatus({
+          type: 'success',
+          message: 'Profile updated successfully!'
+        });
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setUpdateStatus({ type: null, message: '' });
+        }, 3000);
+      } else {
+        console.error('Profile update failed:', result.message);
+        setUpdateStatus({
+          type: 'error',
+          message: result.message || 'Failed to update profile'
+        });
+      }
+    } catch (error) {
+      console.error('Profile update error:', error);
+      setUpdateStatus({
+        type: 'error',
+        message: 'Network error: Unable to update profile'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Function to receive form data from ProfileForm
+  const handleFormDataChange = (newData: ProfileFormData) => {
+    setProfileData(newData);
+  };
+
+  // Show update status
+  const renderUpdateStatus = () => {
+    if (!updateStatus.type) return null;
+    
+    return (
+      <div className={`p-4 rounded-xl mb-6 flex items-center gap-3 ${
+        updateStatus.type === 'success' 
+          ? 'bg-[#008060]/20 border border-[#008060]/30 text-[#008060]'
+          : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+      }`}>
+        {updateStatus.type === 'success' ? (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        ) : (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        )}
+        <span className="font-medium">{updateStatus.message}</span>
+      </div>
+    );
   };
 
   const formatLastUpdated = (date: Date | null) => {
@@ -99,12 +226,13 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ language = 'en' }) =>
               </div>
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-foreground group-hover:text-[#FFC72C] transition-colors duration-300">Agent DEMO1234</h3>
-              <p className="text-lg text-muted-foreground mb-2">Department of Immigration & Emigration</p>
+              <h3 className="text-2xl font-bold text-foreground group-hover:text-[#FFC72C] transition-colors duration-300">{agent.fullName}</h3>
+              <p className="text-lg text-muted-foreground mb-1">{agent.position} - {agent.officeName}</p>
+              <p className="text-lg text-muted-foreground mb-2">{agent.department || 'Department of Immigration & Emigration'}</p>
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-[#008060]/10 text-[#008060] rounded-full text-sm font-medium border border-[#008060]/20">
                   <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse"></div>
-                  <span>{t.activeStatus}</span>
+                  <span>{agent.isActive ? t.activeStatus : 'Inactive'}</span>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FFC72C]/10 text-[#FFC72C] rounded-full text-sm font-medium border border-[#FFC72C]/20">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -112,7 +240,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ language = 'en' }) =>
                     <circle cx="12" cy="16" r="1"/>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                   </svg>
-                  <span>Verified Account</span>
+                  <span>Agent ID: {agent.officerId}</span>
                 </div>
               </div>
             </div>
@@ -200,7 +328,16 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ language = 'en' }) =>
                 </div>
               </div>
               
-              <ProfileForm language={language} onSave={handleSave} isLoading={isLoading} />
+              {/* Update Status */}
+              {renderUpdateStatus()}
+              
+              <ProfileForm 
+                language={language} 
+                onSave={handleSave} 
+                isLoading={isLoading} 
+                agent={agent}
+                onDataChange={handleFormDataChange}
+              />
             </div>
           </div>
         )}
