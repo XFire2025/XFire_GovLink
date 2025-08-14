@@ -12,8 +12,9 @@ import {
   FileText,
   Settings,
   ChevronDown,
-  Building2,
+  Shield,
 } from "lucide-react";
+import { useAdminAuth } from "@/lib/auth/AdminAuthContext";
 
 interface MenuItem {
   id: string;
@@ -27,59 +28,72 @@ interface MenuItem {
   }[];
 }
 
-const menuItems: MenuItem[] = [
-  {
-    id: "dashboard",
-    label: "Admin Dashboard",
-    icon: LayoutDashboard,
-    href: "/admin/dashboard",
-  },
-  {
-    id: "user-management",
-    label: "User Management",
-    icon: Users,
-    submenu: [
-      { id: "normal-users", label: "Normal Users", href: "/admin/users" },
-      { id: "agents", label: "Agents", href: "/admin/agents" },
-    ],
-  },
-  {
-    id: "user-verification",
-    label: "User Verification",
-    icon: ShieldCheck,
-    href: "/admin/verification",
-  },
-  {
-    id: "account-suspension",
-    label: "Account Suspension",
-    icon: UserCog,
-    href: "/admin/suspension",
-  },
-  {
-    id: "customer-agent",
-    label: "Customer & Agent",
-    icon: UserCog,
-    href: "/admin/customer-agent",
-  },
-  {
-    id: "create-department",
-    label: "Departments",
-    icon: Building2,
-    href: "/admin/create-department",
-  },
-  {
-    id: "reports",
-    label: "Reports",
-    icon: FileText,
-    href: "/admin/reports",
-  },
-  {
-    id: "system-configuration",
-    label: "System Configuration",
-    icon: Settings,
-    href: "/admin/system-configuration",
-  },
-];
+// Function to get menu items based on admin role
+const getMenuItems = (adminRole: "ADMIN" | "SUPERADMIN" | null): MenuItem[] => {
+  const baseMenuItems: MenuItem[] = [
+    {
+      id: "dashboard",
+      label: "Admin Dashboard",
+      icon: LayoutDashboard,
+      href: "/admin/dashboard",
+    },
+  ];
+
+  // Add Admin Management for super admins only
+  if (adminRole === "SUPERADMIN") {
+    baseMenuItems.push({
+      id: "admin-management",
+      label: "Admin Management",
+      icon: Shield,
+      href: "/admin/admin-management",
+    });
+  }
+
+  // Add remaining menu items
+  baseMenuItems.push(
+    {
+      id: "user-management",
+      label: "User Management",
+      icon: Users,
+      submenu: [
+        { id: "normal-users", label: "Normal Users", href: "/admin/users" },
+        { id: "agents", label: "Agents", href: "/admin/agents" },
+      ],
+    },
+    {
+      id: "user-verification",
+      label: "User Verification",
+      icon: ShieldCheck,
+      href: "/admin/verification",
+    },
+    {
+      id: "account-suspension",
+      label: "Account Suspension",
+      icon: UserCog,
+      href: "/admin/suspension",
+    },
+    {
+      id: "customer-agent",
+      label: "Customer & Agent",
+      icon: UserCog,
+      href: "/admin/customer-agent",
+    },
+    {
+      id: "reports",
+      label: "Reports",
+      icon: FileText,
+      href: "/admin/reports",
+    },
+    {
+      id: "system-configuration",
+      label: "System Configuration",
+      icon: Settings,
+      href: "/admin/system-configuration",
+    }
+  );
+
+  return baseMenuItems;
+};
 
 export default function AdminSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -88,6 +102,10 @@ export default function AdminSidebar() {
     "user-management",
   ]);
   const pathname = usePathname();
+  const { admin } = useAdminAuth();
+
+  // Get menu items based on admin role
+  const menuItems = getMenuItems(admin?.role || null);
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -158,16 +176,16 @@ export default function AdminSidebar() {
       >
         {/* Background Image */}
         <div className="absolute inset-0 pointer-events-none">
-          <div 
+          <div
             className="absolute inset-0 opacity-25 dark:opacity-15 bg-center bg-no-repeat bg-cover transition-opacity duration-1000"
             style={{
               backgroundImage: 'url("/2.png")',
-              backgroundPosition: 'center center',
-              filter: 'saturate(1.1) brightness(1.05)',
+              backgroundPosition: "center center",
+              filter: "saturate(1.1) brightness(1.05)",
             }}
           ></div>
           {/* Gradient overlay for better readability */}
-                    {/* Background overlay */}
+          {/* Background overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/70 dark:via-background/50 dark:to-background/80"></div>
         </div>
         {/* Enhanced Header */}
@@ -196,7 +214,7 @@ export default function AdminSidebar() {
         {/* Enhanced Navigation */}
         <nav className="relative z-10 flex-1 overflow-y-auto py-3 scrollbar-thin scrollbar-thumb-[#8D153A]/30 scrollbar-track-transparent">
           <ul className="space-y-2 px-3">
-            {menuItems.map((item) => {
+            {menuItems.map((item: MenuItem) => {
               const IconComponent = item.icon;
               const hasSubmenu = item.submenu && item.submenu.length > 0;
               const isExpanded = expandedMenus.includes(item.id);
@@ -230,9 +248,11 @@ export default function AdminSidebar() {
                         }
                       `}
                         >
-                          <IconComponent className={`w-5 h-5 transition-all duration-300 ${
-                            isActive ? "text-[#8D153A]" : ""
-                          }`} />
+                          <IconComponent
+                            className={`w-5 h-5 transition-all duration-300 ${
+                              isActive ? "text-[#8D153A]" : ""
+                            }`}
+                          />
                         </div>
                         {!isCollapsed && (
                           <span className="text-sm font-medium ml-3 whitespace-nowrap transition-colors duration-300">
@@ -282,9 +302,11 @@ export default function AdminSidebar() {
                         }
                       `}
                         >
-                          <IconComponent className={`w-5 h-5 transition-all duration-300 ${
-                            isActive ? "text-[#8D153A]" : ""
-                          }`} />
+                          <IconComponent
+                            className={`w-5 h-5 transition-all duration-300 ${
+                              isActive ? "text-[#8D153A]" : ""
+                            }`}
+                          />
                         </div>
                         {!isCollapsed && (
                           <span className="text-sm font-medium ml-3 whitespace-nowrap transition-colors duration-300">
@@ -303,12 +325,17 @@ export default function AdminSidebar() {
                   {/* Submenu */}
                   {hasSubmenu && !isCollapsed && isExpanded && (
                     <ul className="mt-1 ml-6 space-y-1 border-l border-border/30 pl-3">
-                      {item.submenu!.map((subItem) => (
-                        <li key={subItem.id}>
-                          <Link
-                            href={subItem.href}
-                            onClick={() => handleItemClick(false)}
-                            className={`
+                      {item.submenu!.map(
+                        (subItem: {
+                          id: string;
+                          label: string;
+                          href: string;
+                        }) => (
+                          <li key={subItem.id}>
+                            <Link
+                              href={subItem.href}
+                              onClick={() => handleItemClick(false)}
+                              className={`
                             w-full flex items-center px-3 py-2 rounded-lg text-sm transition-all duration-200
                             hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/10
                             ${
@@ -317,9 +344,9 @@ export default function AdminSidebar() {
                                 : "text-muted-foreground hover:text-foreground"
                             }
                           `}
-                          >
-                            <div
-                              className={`
+                            >
+                              <div
+                                className={`
                             w-2 h-2 rounded-full mr-3 transition-all duration-200
                             ${
                               isActiveSubmenuItem(subItem.href)
@@ -327,11 +354,12 @@ export default function AdminSidebar() {
                                 : "bg-muted-foreground/40 group-hover:bg-muted-foreground/60"
                             }
                           `}
-                            ></div>
-                            {subItem.label}
-                          </Link>
-                        </li>
-                      ))}
+                              ></div>
+                              {subItem.label}
+                            </Link>
+                          </li>
+                        )
+                      )}
                     </ul>
                   )}
 
