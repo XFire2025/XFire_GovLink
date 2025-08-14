@@ -2,7 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import connect from '@/lib/db';
-import Appointment, { AppointmentStatus } from '@/lib/models/appointmentSchema';
+import Appointment, { AppointmentStatus, IAppointmentDocument } from '@/lib/models/appointmentSchema';
+import { getPresignedUrlForR2 } from '@/lib/r2';
 
 // Define interfaces for better type safety
 // Helper narrowers to avoid `any` usage in multiple handlers
@@ -23,7 +24,9 @@ const toDateString = (v: unknown): string | null => {
 };
 const toStringOrNull = (v: unknown): string | null => v == null ? null : String(v);
 
-type RouteContext = { params: { id: string } } | unknown;
+// REMOVED: This type is no longer needed with the correct function signature.
+// type RouteContext = { params: { id: string } } | unknown;
+
 const toArray = (v: unknown): unknown[] => Array.isArray(v) ? v : [];
 const toNotifications = (v: unknown): { email: boolean; sms: boolean } => {
   const obj = (v as RecordUnknown | null) ?? null;
@@ -32,8 +35,6 @@ const toNotifications = (v: unknown): { email: boolean; sms: boolean } => {
     sms: !!(obj && typeof obj['sms'] === 'boolean' ? obj['sms'] : false)
   };
 };
-
-// (Previously had AppointmentUpdateData interface; not required because update payload is handled as Record<string, unknown>)
 
 interface ValidationError {
   message: string;
@@ -66,13 +67,12 @@ function isValidAppointmentStatus(status: string): status is AppointmentStatus {
 // Get single appointment
 export async function GET(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connect();
 
-  const { params } = context as { params: { id: string } };
-  const { id } = params;
+    const { id } = await params;
 
     // Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -99,6 +99,26 @@ export async function GET(
 
     // Transform data to match frontend interface
     const appt = appointment as unknown as Record<string, unknown>;
+
+    // NEW LOGIC BLOCK: Generate presigned URLs for all documents
+    const documentsWithPresignedUrls = await Promise.all(
+      (toArray(appt.documents) as IAppointmentDocument[]).map(async (doc) => {
+        // 'doc.url' currently holds the R2 object key
+        const presignedUrlResult = await getPresignedUrlForR2(doc.url); 
+        // Fixed: Use proper type assertion instead of any
+        const docWithId = doc as IAppointmentDocument & { _id?: unknown };
+        return {
+          id: toIdString(docWithId._id),
+          name: toStringOrNull(doc.name),
+          label: toStringOrNull(doc.label),
+          url: presignedUrlResult.success ? presignedUrlResult.url : null, // Use the new temporary URL
+          fileName: toStringOrNull(doc.fileName),
+          fileType: toStringOrNull(doc.fileType),
+          fileSize: typeof doc.fileSize === 'number' ? doc.fileSize : 0,
+          uploadedAt: toDateString(doc.uploadedAt)
+        };
+      })
+    );
 
     const transformedAppointment = {
       id: toIdString(appt._id) ?? toStringOrNull(appt._id),
@@ -133,7 +153,8 @@ export async function GET(
         nic: toStringOrNull((appt.citizenId as Record<string, unknown>)['nicNumber'])
       } : null,
       requirements: toArray(appt.requirements),
-      notificationsSent: toNotifications(appt.notificationsSent)
+      notificationsSent: toNotifications(appt.notificationsSent),
+      documents: documentsWithPresignedUrls // UPDATED: Use the array with secure, temporary URLs
     };
 
     return NextResponse.json({
@@ -155,15 +176,14 @@ export async function GET(
 // Update appointment (status, notes, etc.)
 export async function PUT(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connect();
 
-  const { params } = context as { params: { id: string } };
-  const { id } = params;
-  const body = await request.json();
-  const bodyObj = body as RecordUnknown;
+    const { id } = await params;
+    const body = await request.json();
+    const bodyObj = body as RecordUnknown;
 
     // Validate MongoDB ObjectId
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -193,8 +213,8 @@ export async function PUT(
       }, { status: 400 });
     }
 
-  // Prepare update object
-  const updateData: Record<string, unknown> = {};
+    // Prepare update object
+    const updateData: Record<string, unknown> = {};
     const allowedUpdates = [
       'status', 'agentNotes', 'assignedAgent', 'priority',
       'cancellationReason', 'requirements'
@@ -246,7 +266,7 @@ export async function PUT(
     }
 
     // Update appointment
-  const updatedAppointment = await Appointment.findByIdAndUpdate(
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
       id,
       updateData,
       {
@@ -254,7 +274,7 @@ export async function PUT(
         runValidators: true
       }
     ).populate('citizenId', 'fullName email mobileNumber')
-   .populate('assignedAgent', 'fullName officerId') as RecordUnknown | null;
+     .populate('assignedAgent', 'fullName officerId') as RecordUnknown | null;
 
     if (!updatedAppointment) {
       return NextResponse.json({
@@ -318,13 +338,12 @@ export async function PUT(
 // Send notification for appointment
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connect();
 
-  const { params } = context as { params: { id: string } };
-  const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { action, notificationType = 'both' } = body;
 
