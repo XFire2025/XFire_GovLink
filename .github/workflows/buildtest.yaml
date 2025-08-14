@@ -29,7 +29,7 @@ jobs:
   # JOB 2: A more rigorous check using the ACTUAL deployment build command (runs on main and dev branches only)
   Build-Test-Deploy:
     needs: Build-Test-Standard
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/CI-CD'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
