@@ -11,27 +11,27 @@ export async function POST() {
       { status: 200 }
     );
 
-    // Clear authentication cookies
-    response.cookies.set('department_access_token', '', {
+    // Clear agent auth cookies
+    response.cookies.set('agent_access_token', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 0,
+      maxAge: 0, // Expire immediately
       path: '/'
     });
 
-    response.cookies.set('department_refresh_token', '', {
+    response.cookies.set('agent_refresh_token', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 0,
+      maxAge: 0, // Expire immediately
       path: '/'
     });
 
     return response;
 
   } catch (error) {
-    console.error('Department logout API error:', error);
+    console.error('Agent logout API error:', error);
     return NextResponse.json(
       { 
         success: false, 
@@ -45,6 +45,20 @@ export async function POST() {
 
 // Handle unsupported methods
 export async function GET() {
+  return NextResponse.json(
+    { success: false, message: 'Method not allowed' },
+    { status: 405 }
+  );
+}
+
+export async function PUT() {
+  return NextResponse.json(
+    { success: false, message: 'Method not allowed' },
+    { status: 405 }
+  );
+}
+
+export async function DELETE() {
   return NextResponse.json(
     { success: false, message: 'Method not allowed' },
     { status: 405 }

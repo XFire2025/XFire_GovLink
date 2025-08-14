@@ -3,14 +3,22 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import AddServiceForm, { NewServiceData } from './AddServiceForm'; // Import the form and its data type
-import { Service } from "@/lib/services/departmentApiService";
 
 // This is the interface for the MODAL. It needs to know if it's open.
 interface AddServiceModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (serviceData: NewServiceData) => void;
-  serviceToEdit?: Service | null; // Replace 'any' with 'Service | null'
+  serviceToEdit?: {
+    _id?: string;
+    name: string;
+    description: string;
+    category: string;
+    processingTime: string;
+    fee: number;
+    requirements: string[];
+    isActive: boolean;
+  } | null; // Service object when editing
   loading?: boolean;
 }
 

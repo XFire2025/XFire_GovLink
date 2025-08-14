@@ -62,9 +62,11 @@ export async function POST(request: NextRequest) {
     // Generate new access token
     const newAccessToken = generateAccessToken(user);
 
-    // Update last login
-    user.lastLoginAt = new Date();
-    await user.save();
+    // Update last login without triggering full document validation
+    await User.updateOne(
+      { _id: user._id },
+      { lastLoginAt: new Date() }
+    );
 
     // Set new access token cookie
     const response = NextResponse.json(

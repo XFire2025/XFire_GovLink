@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/db';
 import Department from '@/lib/models/departmentSchema';
 import { departmentAuthMiddleware } from '@/lib/auth/department-middleware';

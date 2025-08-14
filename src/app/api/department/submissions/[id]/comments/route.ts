@@ -6,8 +6,9 @@ import { departmentAuthMiddleware } from '@/lib/auth/department-middleware';
 // GET /api/department/submissions/[id]/comments - Get submission comments
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Authenticate department
     const authResult = await departmentAuthMiddleware(request);
@@ -21,7 +22,7 @@ export async function GET(
     await connectDB();
 
     const submission = await Submission.findOne({
-      _id: params.id,
+      _id: id,
       departmentId: authResult.department!.departmentId
     }).select('comments');
 
@@ -33,7 +34,7 @@ export async function GET(
     }
 
     // Sort comments by timestamp (newest first)
-    const comments = submission.comments.sort((a, b) => 
+    const comments = submission.comments.sort((a: { timestamp: Date }, b: { timestamp: Date }) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
 
@@ -55,8 +56,9 @@ export async function GET(
 // POST /api/department/submissions/[id]/comments - Add comment to submission
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Authenticate department
     const authResult = await departmentAuthMiddleware(request);
@@ -83,7 +85,7 @@ export async function POST(
     }
 
     const submission = await Submission.findOne({
-      _id: params.id,
+      _id: id,
       departmentId: authResult.department!.departmentId
     });
 
