@@ -45,18 +45,7 @@ const getMenuItems = (adminRole: "ADMIN" | "SUPERADMIN" | null): MenuItem[] => {
       id: "admin-management",
       label: "Admin Management",
       icon: Shield,
-      submenu: [
-        {
-          id: "admin-list",
-          label: "All Admins",
-          href: "/admin/admin-management",
-        },
-        {
-          id: "create-admin",
-          label: "Create Admin",
-          href: "/admin/admin-management/create",
-        },
-      ],
+      href: "/admin/admin-management",
     });
   }
 

@@ -27,9 +27,14 @@ export const authenticateAdmin = async (
   request: NextRequest
 ): Promise<AdminMiddlewareResponse> => {
   try {
-    // Extract token from Authorization header
+    // Extract token from Authorization header or cookies
     const authHeader = request.headers.get("Authorization");
-    const token = extractTokenFromHeader(authHeader);
+    let token = extractTokenFromHeader(authHeader);
+
+    // If no token in header, try cookies
+    if (!token) {
+      token = request.cookies.get("admin_access_token")?.value || null;
+    }
 
     if (!token) {
       return {

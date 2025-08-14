@@ -19,12 +19,14 @@ interface AdminAuthContextType {
   admin: Admin | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  accessToken: string | null;
   login: (
     email: string,
     password: string
   ) => Promise<{ success: boolean; message: string; admin?: Admin }>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
+  getAuthHeaders: () => { [key: string]: string };
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(
@@ -49,29 +51,48 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  // Get authorization headers for API calls
+  const getAuthHeaders = useCallback(() => {
+    const headers: { [key: string]: string } = {
+      "Content-Type": "application/json",
+    };
+
+    // Note: With httpOnly cookies, we don't need to manually set Authorization headers
+    // The cookies will be automatically included with credentials: 'include'
+
+    return headers;
+  }, []);
 
   // Refresh admin token
   const refreshToken = useCallback(async (): Promise<boolean> => {
     try {
       const response = await fetch("/api/auth/admin/refresh", {
         method: "POST",
-        credentials: "include",
+        credentials: "include", // Include cookies
       });
 
       if (response.ok) {
         const data = await response.json();
         setAdmin(data.admin);
         setIsAuthenticated(true);
+        // Note: New tokens are set as httpOnly cookies by the endpoint
+
         return true;
       } else {
         setAdmin(null);
+        setAccessToken(null);
         setIsAuthenticated(false);
+
         return false;
       }
     } catch (error) {
       console.error("Admin token refresh failed:", error);
       setAdmin(null);
+      setAccessToken(null);
       setIsAuthenticated(false);
+
       return false;
     }
   }, []);
@@ -80,9 +101,10 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
+        // Try to get admin profile using cookies
         const response = await fetch("/api/auth/admin/me", {
           method: "GET",
-          credentials: "include",
+          credentials: "include", // Include cookies
         });
 
         if (response.ok) {
@@ -94,12 +116,14 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({
           const refreshed = await refreshToken();
           if (!refreshed) {
             setAdmin(null);
+            setAccessToken(null);
             setIsAuthenticated(false);
           }
         }
       } catch (error) {
         console.error("Admin auth check failed:", error);
         setAdmin(null);
+        setAccessToken(null);
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
@@ -126,6 +150,9 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({
       if (response.ok) {
         setAdmin(data.admin);
         setIsAuthenticated(true);
+        // Note: Access token is now stored in httpOnly cookie
+        // We don't need to manage it in localStorage
+
         return { success: true, message: data.message, admin: data.admin };
       } else {
         return {
@@ -150,7 +177,9 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({
       console.error("Admin logout error:", error);
     } finally {
       setAdmin(null);
+      setAccessToken(null);
       setIsAuthenticated(false);
+      // Note: Cookies are cleared by the logout endpoint
     }
   };
 
@@ -158,9 +187,11 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({
     admin,
     isLoading,
     isAuthenticated,
+    accessToken,
     login,
     logout,
     refreshToken,
+    getAuthHeaders,
   };
 
   return (
