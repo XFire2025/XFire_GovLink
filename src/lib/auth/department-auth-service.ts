@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import connectDB from '@/lib/db';
-import Department, { IDepartment } from '@/lib/models/departmentSchema';
+import Department from '@/lib/models/departmentSchema';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret';
@@ -173,7 +173,7 @@ class DepartmentAuthService {
       }
 
       // Verify refresh token
-      const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as any;
+      const decoded = jwt.verify(refreshToken, REFRESH_SECRET) as { departmentId: string; email: string };
       
       await connectDB();
       
@@ -270,11 +270,11 @@ class DepartmentAuthService {
   /**
    * Verify department token
    */
-  static verifyDepartmentToken(token: string): { valid: boolean; decoded?: any; error?: string } {
+  static verifyDepartmentToken(token: string): { valid: boolean; decoded?: jwt.JwtPayload; error?: string } {
     try {
-      const decoded = jwt.verify(token, JWT_SECRET);
+      const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
       return { valid: true, decoded };
-    } catch (error) {
+    } catch {
       return { valid: false, error: 'Invalid or expired token' };
     }
   }

@@ -13,6 +13,7 @@ interface Agent {
   officerId: string;
   fullName: string;
   email: string;
+  phoneNumber: string;
   position: string;
   department: string;
   officeName: string;

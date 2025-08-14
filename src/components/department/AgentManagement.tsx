@@ -167,7 +167,7 @@ export default function DepartmentAgentManagement() {
                 try {
                   await refetchAgents();
                   toast.success('🔄 Agents refreshed!', { id: loadingToast });
-                } catch (error) {
+                } catch {
                   toast.error('❌ Failed to refresh agents', { id: loadingToast });
                 }
               }}

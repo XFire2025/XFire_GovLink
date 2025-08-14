@@ -259,6 +259,7 @@ export default function AgentLoginForm({ language }: AgentLoginFormProps) {
 
           <button
             type="button"
+            onClick={() => router.push('/agent/forgot-password')}
             className="text-sm text-[#FFC72C] hover:text-[#FF5722] transition-colors font-medium"
           >
             {t.forgotPassword}

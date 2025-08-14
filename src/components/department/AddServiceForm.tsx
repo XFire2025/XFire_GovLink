@@ -14,10 +14,24 @@ export interface NewServiceData {
   status: 'active' | 'inactive';
 }
 
+// Interface for existing services from database
+interface ExistingServiceData {
+  _id?: string;
+  name: string;
+  description: string;
+  category: string;
+  processingTime: string;
+  fee: number;
+  requirements: string[];
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 interface AddServiceFormProps {
   onSave: (serviceData: NewServiceData) => void;
   onClose: () => void;
-  serviceToEdit?: any; // Service object when editing
+  serviceToEdit?: ExistingServiceData | null; // Service object when editing
   loading?: boolean;
 }
 

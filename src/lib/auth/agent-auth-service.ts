@@ -25,6 +25,7 @@ export interface AgentAuthResult {
     officerId: string;
     fullName: string;
     email: string;
+    phoneNumber: string;
     position: string;
     department: string;
     officeName: string;
@@ -74,6 +75,15 @@ class AgentAuthService {
           success: false,
           message: 'Account is not active',
           errors: ['Agent account is deactivated']
+        };
+      }
+
+      // Check if email is verified (optional - can be enforced later)
+      if (!agent.isEmailVerified) {
+        return {
+          success: false,
+          message: 'Email verification required. Please check your email and verify your account.',
+          errors: ['Email not verified']
         };
       }
 
@@ -132,6 +142,7 @@ class AgentAuthService {
           officerId: agent.officerId,
           fullName: agent.fullName,
           email: agent.email,
+          phoneNumber: agent.phoneNumber,
           position: agent.position,
           department: agent.department || '',
           officeName: agent.officeName,
@@ -234,6 +245,7 @@ class AgentAuthService {
           officerId: agent.officerId,
           fullName: agent.fullName,
           email: agent.email,
+          phoneNumber: agent.phoneNumber,
           position: agent.position,
           department: agent.department || '',
           officeName: agent.officeName,
@@ -277,6 +289,7 @@ class AgentAuthService {
           officerId: agent.officerId,
           fullName: agent.fullName,
           email: agent.email,
+          phoneNumber: agent.phoneNumber,
           position: agent.position,
           department: agent.department || '',
           officeName: agent.officeName,

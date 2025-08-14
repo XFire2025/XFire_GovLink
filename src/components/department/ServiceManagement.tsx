@@ -59,7 +59,15 @@ export default function ServiceManagement() {
 
   const filteredServices = services || [];
 
-  const handleSaveService = async (serviceData: any) => {
+  const handleSaveService = async (serviceData: {
+    name: string;
+    description: string;
+    category: string;
+    processingTime: string;
+    fee: number;
+    requirements: string[];
+    status: 'active' | 'inactive';
+  }) => {
     const loadingToast = toast.loading(editingService ? 'Updating service...' : 'Creating service...');
     
     try {

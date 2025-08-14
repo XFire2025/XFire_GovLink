@@ -9,7 +9,16 @@ interface AddServiceModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (serviceData: NewServiceData) => void;
-  serviceToEdit?: any; // Service object when editing
+  serviceToEdit?: {
+    _id?: string;
+    name: string;
+    description: string;
+    category: string;
+    processingTime: string;
+    fee: number;
+    requirements: string[];
+    isActive: boolean;
+  } | null; // Service object when editing
   loading?: boolean;
 }
 

@@ -11,6 +11,7 @@ interface Agent {
   officerId: string;
   fullName: string;
   email: string;
+  phoneNumber: string;
   position: string;
   department: string;
   officeName: string;
@@ -194,7 +195,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({
   const [profileData, setProfileData] = useState<ProfileData>({
     fullName: agent.fullName,
     email: agent.email,
-    phone: '+94 77 123 4567', // This would come from agent schema in future
+    phone: agent.phoneNumber || '',
     department: agent.department || 'Department of Immigration & Emigration',
     agentId: agent.officerId,
     preferredLanguage: language,

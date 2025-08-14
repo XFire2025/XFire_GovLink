@@ -15,7 +15,6 @@ import {
   Phone,
   Mail,
   Download,
-  MessageCircle,
   AlertTriangle,
 } from "lucide-react";
 
