@@ -15,14 +15,14 @@ interface AgentFilter {
 }
 
 // GET /api/user/departments/[departmentId]/agents - Fetch agents for a specific department (public endpoint)
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { departmentId: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
-    const { departmentId } = params;
+  // Extract departmentId from the pathname to avoid relying on the second handler param
+  const url = new URL(request.url);
+  const match = url.pathname.match(/\/api\/user\/departments\/([^\/]+)\/agents/);
+  const departmentId = match ? decodeURIComponent(match[1]) : '';
     const { searchParams } = new URL(request.url);
     const position = searchParams.get('position'); // Filter by position/designation
 

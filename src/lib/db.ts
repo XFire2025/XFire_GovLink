@@ -18,9 +18,10 @@ if (!MONGODB_URI) {
  * during API Route usage.
  */
 declare global {
+  // Use import type to avoid recursive "typeof mongoose" resolution
   var mongoose: {
-    conn: typeof mongoose | null;
-    promise: Promise<typeof mongoose> | null;
+    conn: typeof import('mongoose') | null;
+    promise: Promise<typeof import('mongoose')> | null;
   };
 }
 

@@ -3,15 +3,27 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Department from '@/lib/models/departmentSchema';
 
+// Local type for service items returned from the department document
+interface ServiceItem {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  isActive?: boolean;
+  processingTime?: string;
+  fee?: number;
+  requirements?: string[];
+}
+
 // GET /api/user/departments/[departmentId]/services - Fetch services for a specific department (public endpoint)
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { departmentId: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
-    const { departmentId } = params;
+  // Extract departmentId from the pathname
+  const url = new URL(request.url);
+  const match = url.pathname.match(/\/api\/user\/departments\/([^\/]+)\/services/);
+  const departmentId = match ? decodeURIComponent(match[1]) : '';
 
    // Find department by either _id or departmentId (code)
 const department = await Department.findOne({
@@ -29,11 +41,11 @@ if (!department) {
   );
 }
 
-    // Filter only active services
-    const activeServices = department.services?.filter(service => service.isActive) || [];
+  // Filter only active services
+  const activeServices = (department.services as ServiceItem[] | undefined)?.filter((service: ServiceItem) => service.isActive) || [];
 
     // Transform services for frontend
-    const transformedServices = activeServices.map(service => ({
+  const transformedServices = activeServices.map((service: ServiceItem) => ({
       id: service.id,
       name: service.name,
       description: service.description,
