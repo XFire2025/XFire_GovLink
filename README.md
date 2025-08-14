@@ -1,5 +1,9 @@
 # GovLink
 
+[![Build, Test, and Deploy GovLink Frontend](https://github.com/XFire2025/XFire_GovLink/actions/workflows/buildtest.yaml/badge.svg)](https://github.com/XFire2025/XFire_GovLink/actions/workflows/buildtest.yaml)
+[![Build Status - Dev Branch](https://github.com/XFire2025/XFire_GovLink/actions/workflows/buildtest.yaml/badge.svg?branch=Dev)](https://github.com/XFire2025/XFire_GovLink/actions/workflows/buildtest.yaml)
+[![Build Status - CI-CD Branch](https://github.com/XFire2025/XFire_GovLink/actions/workflows/buildtest.yaml/badge.svg?branch=CI-CD)](https://github.com/XFire2025/XFire_GovLink/actions/workflows/buildtest.yaml)
+
 GovLink is a Next.js-based web application designed to streamline government-related services for users. It provides a user-friendly interface for citizens, agents, and administrators to interact with various functionalities such as booking, chat, profile management, and system configuration.
 
 ## Project Overview
