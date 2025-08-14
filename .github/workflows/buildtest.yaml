@@ -29,6 +29,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Add error handling and better logging
       - name: Build with OpenNext
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
@@ -42,26 +43,40 @@ jobs:
           R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           NODE_ENV: production
-          NEXT_PUBLIC_APP_URL: "https://your-production-url.com" # Replace with your actual URL
-        run: npm run build:deploy
+          NEXT_PUBLIC_APP_URL: "https://your-production-url.com"
+        run: |
+          echo "Starting build process..."
+          npm run build:deploy
+          echo "Build completed successfully"
 
-      # --- NEW DEBUGGING STEP ---
-      # This step will show us all the files and folders in the workspace
-      # AFTER the build command has run.
-      - name: Verify build output
-        run: ls -laR
+      - name: Verify build output exists
+        run: |
+          echo "Checking if .open-next directory exists..."
+          if [ -d ".open-next" ]; then
+            echo "✅ .open-next directory found"
+            echo "Contents of .open-next:"
+            ls -la .open-next/
+          else
+            echo "❌ .open-next directory not found"
+            echo "Current directory contents:"
+            ls -la
+            exit 1
+          fi
 
+      # Only upload artifact if build was successful
       - name: Upload OpenNext build artifact
         id: upload_artifact
         uses: actions/upload-artifact@v4
         with:
           name: open-next-build
-          path: .open-next
-          
-  # The deploy job remains the same
+          path: .open-next/
+          retention-days: 1
+          if-no-files-found: error
+
   deploy-to-aws:
     needs: build
-    if: needs.build.outputs.build_success == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI-CD')
+    # More specific condition checking
+    if: needs.build.outputs.build_success == 'true' && needs.build.result == 'success' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI-CD')
     runs-on: ubuntu-latest
     permissions:
       id-token: write 
@@ -69,28 +84,49 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: package-lock.json
+          
       - name: Install All Dependencies (including dev for CDK)
         run: npm ci
+        
+      # Download to the correct path
       - name: Download OpenNext build artifact
         uses: actions/download-artifact@v4
         with:
           name: open-next-build
-          path: . 
+          path: .open-next/
+          
+      # Verify the artifact was downloaded correctly
+      - name: Verify downloaded artifact
+        run: |
+          echo "Verifying downloaded artifact..."
+          if [ -d ".open-next" ]; then
+            echo "✅ .open-next directory found after download"
+            echo "Contents:"
+            ls -la .open-next/
+          else
+            echo "❌ .open-next directory not found after download"
+            exit 1
+          fi
+          
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
+          
       - name: Install AWS CDK CLI
         run: npm install -g aws-cdk
+        
       - name: Bootstrap CDK (if needed)
         run: cdk bootstrap --require-approval never
+        
       - name: Deploy with CDK
         run: cdk deploy --all --require-approval never
