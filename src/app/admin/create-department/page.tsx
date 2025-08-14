@@ -25,24 +25,9 @@ import {
   Clock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DepartmentStatus, DepartmentType } from "@/types/department";
 
-// ---------------------------
-// Schema-aligned enums/types
-// ---------------------------
 
-export enum DepartmentStatus {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  SUSPENDED = "SUSPENDED",
-}
-
-export enum DepartmentType {
-  MINISTRY = "MINISTRY",
-  DEPARTMENT = "DEPARTMENT",
-  AGENCY = "AGENCY",
-  STATUTORY_BOARD = "STATUTORY_BOARD",
-  CORPORATION = "CORPORATION",
-}
 
 // Sri Lankan Provinces and Districts (as const for TS type inference)
 const SRI_LANKAN_PROVINCES = [
