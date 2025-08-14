@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# GitHub Actions local secrets
+.secrets
+
 # vercel
 .vercel
 
@@ -42,3 +45,6 @@ next-env.d.ts
 
 # AWS Setup Files
 /aws
+
+# open next cache
+/.open-next

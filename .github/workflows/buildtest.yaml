@@ -114,10 +114,26 @@ jobs:
         env:
           NODE_ENV: production
       
-      - name: Deploy with OpenNext
-        run: npx open-next deploy
+      - name: Install AWS CDK
+        run: npm install -g aws-cdk
+      
+      - name: Bootstrap CDK (if needed)
+        run: |
+          # Check if CDK is already bootstrapped
+          aws cloudformation describe-stacks --stack-name CDKToolkit --region us-east-1 || cdk bootstrap aws://$(aws sts get-caller-identity --query Account --output text)/us-east-1
         env:
           AWS_REGION: us-east-1
+      
+      - name: Deploy with CDK
+        run: cdk deploy --require-approval never
+        env:
+          AWS_REGION: us-east-1
+      
+      - name: Get AWS Account ID
+        id: get-account
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          echo "account-id=$ACCOUNT_ID" >> $GITHUB_OUTPUT
       
       - name: Get CloudFormation Outputs
         id: cf-outputs
