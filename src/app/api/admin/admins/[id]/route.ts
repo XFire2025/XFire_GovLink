@@ -1,13 +1,24 @@
-import { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Admin, { AdminRole, AccountStatus } from "@/lib/models/adminSchema";
 import { authenticateAdmin } from "@/lib/auth/admin-middleware";
 import bcrypt from "bcryptjs";
 
+type Params = { id: string };
+
+interface AdminUpdatePayload {
+  fullName?: string;
+  email?: string;
+  role?: AdminRole;
+  accountStatus?: AccountStatus;
+  password?: string;
+}
+
 // GET: Get specific admin (Super Admin only)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Params }
 ) {
   try {
     // Authenticate admin
@@ -64,10 +75,10 @@ export async function GET(
   }
 }
 
-// PUT: Update admin (Super Admin only)
-export async function PUT(
+// PATCH: Update admin (Super Admin only)
+export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Params }
 ) {
   try {
     // Authenticate admin
@@ -124,7 +135,7 @@ export async function PUT(
     }
 
     // Update fields
-    const updateData: any = {};
+    const updateData: AdminUpdatePayload = {};
 
     if (fullName !== undefined) updateData.fullName = fullName;
     if (email !== undefined) {
@@ -188,7 +199,7 @@ export async function PUT(
 // DELETE: Delete admin (Super Admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Params }
 ) {
   try {
     // Authenticate admin

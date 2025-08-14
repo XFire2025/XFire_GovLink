@@ -225,7 +225,13 @@ export default function AdminManagement() {
     setFormLoading(true);
 
     try {
-      const updateData: any = {
+      const updateData: {
+        fullName: string;
+        email: string;
+        role: "ADMIN" | "SUPERADMIN";
+        accountStatus?: "ACTIVE" | "SUSPENDED" | "DEACTIVATED";
+        password?: string;
+      } = {
         fullName: formData.fullName,
         email: formData.email,
         role: formData.role,
