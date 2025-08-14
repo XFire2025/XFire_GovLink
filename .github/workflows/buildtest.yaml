@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      build_success: ${{ steps.upload_artifact.outcome == 'success' }}
+      build_success: ${{ steps.build_check.outputs.success }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,7 +29,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Add error handling and better logging
       - name: Build with OpenNext
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
@@ -49,33 +48,35 @@ jobs:
           npm run build:deploy
           echo "Build completed successfully"
 
-      - name: Verify build output exists
+      - name: Verify build output and set success flag
+        id: build_check
         run: |
           echo "Checking if .open-next directory exists..."
           if [ -d ".open-next" ]; then
             echo "✅ .open-next directory found"
             echo "Contents of .open-next:"
             ls -la .open-next/
+            echo "success=true" >> $GITHUB_OUTPUT
           else
             echo "❌ .open-next directory not found"
             echo "Current directory contents:"
             ls -la
+            echo "success=false" >> $GITHUB_OUTPUT
             exit 1
           fi
 
-      # Only upload artifact if build was successful
       - name: Upload OpenNext build artifact
-        id: upload_artifact
+        if: steps.build_check.outputs.success == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: open-next-build
-          path: .open-next
+          path: |
+            .open-next/**
           retention-days: 1
           if-no-files-found: error
 
   deploy-to-aws:
     needs: build
-    # More specific condition checking
     if: needs.build.outputs.build_success == 'true' && needs.build.result == 'success' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI-CD')
     runs-on: ubuntu-latest
     permissions:
@@ -95,23 +96,25 @@ jobs:
       - name: Install All Dependencies (including dev for CDK)
         run: npm ci
         
-      # Download to the correct path
       - name: Download OpenNext build artifact
         uses: actions/download-artifact@v4
         with:
           name: open-next-build
-          path: .open-next
+          path: .
           
-      # Verify the artifact was downloaded correctly
       - name: Verify downloaded artifact
         run: |
           echo "Verifying downloaded artifact..."
+          echo "Current directory contents:"
+          ls -la
           if [ -d ".open-next" ]; then
             echo "✅ .open-next directory found after download"
             echo "Contents:"
             ls -la .open-next/
           else
             echo "❌ .open-next directory not found after download"
+            echo "Looking for any open-next related files:"
+            find . -name "*open-next*" -type f -o -name "*open-next*" -type d
             exit 1
           fi
           
