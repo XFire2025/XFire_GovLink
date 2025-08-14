@@ -7,19 +7,23 @@ import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await connect();
-  if (!mongoose.isValidObjectId(params.id))
+  const { id } = await params;
+  
+  if (!mongoose.isValidObjectId(id))
     return NextResponse.json({ message: 'Invalid ID' }, { status: 400 });
 
-  const agent = await Agent.findById(params.id);
+  const agent = await Agent.findById(id);
   if (!agent) return NextResponse.json({ message: 'Not found' }, { status: 404 });
   return NextResponse.json(agent);
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await connect();
-  if (!mongoose.isValidObjectId(params.id))
+  const { id } = await params;
+  
+  if (!mongoose.isValidObjectId(id))
     return NextResponse.json({ message: 'Invalid ID' }, { status: 400 });
 
   const payload = await req.json();
@@ -48,7 +52,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   try {
-    const updated = await Agent.findByIdAndUpdate(params.id, updates, { new: true });
+    const updated = await Agent.findByIdAndUpdate(id, updates, { new: true });
     if (!updated) return NextResponse.json({ message: 'Not found' }, { status: 404 });
     return NextResponse.json(updated);
   } catch (err) {
@@ -57,11 +61,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await connect();
-  if (!params.id) return NextResponse.json({ message: 'ID required' }, { status: 400 });
+  const { id } = await params;
+  
+  if (!id) return NextResponse.json({ message: 'ID required' }, { status: 400 });
+  
   try {
-    const deleted = await Agent.findByIdAndDelete(params.id);
+    const deleted = await Agent.findByIdAndDelete(id);
     if (!deleted) return NextResponse.json({ message: 'Not found' }, { status: 404 });
     return NextResponse.json({ ok: true });
   } catch (err) {

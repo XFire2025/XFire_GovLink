@@ -121,7 +121,6 @@ interface CreateFormData {
   phoneNumber: string;
 }
 
-type RoleOption = 'citizen' | 'agent' | 'admin';
 type AccountStatusOption =
   | 'active'
   | 'pending_verification'
@@ -265,11 +264,6 @@ interface DetailsState {
   error?: string | null;
 }
 
-const ROLE_OPTIONS: Array<{ value: RoleOption; label: string }> = [
-  { value: 'citizen', label: 'User (Citizen)' },
-  { value: 'agent', label: 'Agent' },
-  { value: 'admin', label: 'Admin' },
-];
 
 const ACCOUNT_STATUS_OPTIONS: Array<{ value: AccountStatusOption; label: string }> = [
   { value: 'active', label: 'Active' },
@@ -525,7 +519,7 @@ export default function UserManagement({ userType }: UserManagementProps) {
 
       let doc: UserDocument | AgentDocument;
       if (typeof rawJson === 'object' && rawJson !== null && 'data' in rawJson) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        
         doc = (rawJson as { data: UserDocument | AgentDocument }).data;
       } else {
         doc = rawJson as UserDocument | AgentDocument;
