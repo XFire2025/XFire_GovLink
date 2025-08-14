@@ -48,7 +48,6 @@ export default function AdminManagement() {
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [showActions, setShowActions] = useState<string | null>(null);
 
@@ -335,11 +334,9 @@ export default function AdminManagement() {
     const matchesSearch =
       adminItem.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       adminItem.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || adminItem.accountStatus === statusFilter;
     const matchesRole = roleFilter === "all" || adminItem.role === roleFilter;
 
-    return matchesSearch && matchesStatus && matchesRole;
+    return matchesSearch && matchesRole;
   });
 
   // Helper functions for badges
@@ -435,17 +432,6 @@ export default function AdminManagement() {
               />
             </div>
           </div>
-
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-[#8D153A]/20 focus:border-[#8D153A]"
-          >
-            <option value="all">All Status</option>
-            <option value="ACTIVE">Active</option>
-            <option value="SUSPENDED">Suspended</option>
-            <option value="DEACTIVATED">Deactivated</option>
-          </select>
 
           <select
             value={roleFilter}
