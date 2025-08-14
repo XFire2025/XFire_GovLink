@@ -3,148 +3,127 @@ name: Build, Test, and Deploy GovLink Frontend
 on:
   push:
     branches:
-      - '**'
+      - main
+      - dev
+      - CI-CD
   pull_request:
     branches:
       - '**'
 
 jobs:
-  # JOB 1: A quick check using the standard developer build (runs on all branches)
-  Build-Test-Standard:
+  # JOB 1: Build the application and store it as an artifact.
+  # This runs for all pushes and PRs to ensure the build is always healthy.
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Set up Node.js with dependency caching
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      
-      - name: Cache Next.js build cache
+
+      - name: Cache Next.js build
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.npm
-            ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          path: ${{ github.workspace }}/.next/cache
+          # Use the same key for all branches to share cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
-      
+            ${{ runner.os }}-nextjs-
+
       - name: Install dependencies
         run: npm ci
-      
-      - name: Run Standard Build Command
-        run: npm run build
 
-  # JOB 2: A more rigorous check using the ACTUAL deployment build command (runs on main and dev branches only)
-  Build-Test-Deploy:
-    needs: Build-Test-Standard
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/CI-CD'
+      - name: Build with OpenNext
+        # Provide all necessary build-time environment variables
+        env:
+          # These secrets are required for `next build` to succeed without errors
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
+          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+          # Add any other build-time secrets here
+        run: npm run build:deploy # This command should run `open-next build`
+
+      - name: Upload OpenNext build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: open-next-build
+          path: .open-next # This is the output directory for `open-next build`
+
+  # JOB 2: Deploy the application to AWS.
+  # This job ONLY runs on pushes to specific branches and depends on a successful build.
+  deploy-to-aws:
+    needs: build # This job depends on the 'build' job completing successfully
+    # Condition: Run only on a push (not a PR) to the main or CI-CD branch
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI-CD')
     runs-on: ubuntu-latest
+    environment: production # Use GitHub environments for protection rules and secrets
+    permissions:
+      id-token: write # Required for OIDC, a more secure way to authenticate with AWS
+      contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: Set up Node.js with dependency caching
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-      
-      - name: Cache Next.js build cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.npm
-            ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-deploy-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-deploy-${{ hashFiles('**/package-lock.json') }}-
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run Deployment Build for Testing
-        run: npm run build:deploy
 
-  # JOB 3: Deploys the application to AWS (runs on main and CI-CD branches only)
-  Deploy-to-AWS:
-    needs: Build-Test-Deploy
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI-CD'
-    runs-on: ubuntu-latest
-    environment: production # Add environment protection
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: package-lock.json
-      
-      - name: Cache Next.js build cache
-        uses: actions/cache@v4
+
+      # We don't need to install all dependencies, just the ones for deployment (CDK)
+      - name: Install deployment dependencies
+        run: npm ci --omit=dev # Installs only production dependencies if needed, but we'll run full ci for cdk dev deps
+
+      - name: Download OpenNext build artifact
+        uses: actions/download-artifact@v4
         with:
-          path: |
-            ~/.npm
-            ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-production-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-production-${{ hashFiles('**/package-lock.json') }}-
-      
+          name: open-next-build
+          path: . # Download to the root directory
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1 # Change to your desired AWS region
-          role-duration-seconds: 3600
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build with OpenNext
-        run: npm run build:deploy
-        env:
-          NODE_ENV: production
-      
-      - name: Install AWS CDK
+          aws-region: us-east-1
+
+      - name: Install AWS CDK CLI
         run: npm install -g aws-cdk
-      
+
       - name: Bootstrap CDK (if needed)
-        run: |
-          # Check if CDK is already bootstrapped
-          aws cloudformation describe-stacks --stack-name CDKToolkit --region us-east-1 || cdk bootstrap aws://$(aws sts get-caller-identity --query Account --output text)/us-east-1
+        run: cdk bootstrap --require-approval never
         env:
           AWS_REGION: us-east-1
-      
+
       - name: Deploy with CDK
-        run: cdk deploy --require-approval never
+        run: cdk deploy --all --require-approval never
         env:
           AWS_REGION: us-east-1
-      
-      - name: Get AWS Account ID
-        id: get-account
-        run: |
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          echo "account-id=$ACCOUNT_ID" >> $GITHUB_OUTPUT
-      
+          # Pass any deployment-time secrets your CDK stack needs
+          # EXAMPLE_SECRET: ${{ secrets.EXAMPLE_SECRET }}
+
       - name: Get CloudFormation Outputs
         id: cf-outputs
         run: |
-          STACK_NAME=$(aws cloudformation list-stacks --query "StackSummaries[?contains(StackName, 'govlink') && StackStatus=='CREATE_COMPLETE'].StackName" --output text | head -1)
+          # A more robust way to get the stack name from cdk.out
+          STACK_NAME=$(cat cdk.out/manifest.json | jq -r '.artifacts | to_entries[] | select(.value.type == "aws:cloudformation:stack") | .key' | head -n 1)
           if [ ! -z "$STACK_NAME" ]; then
             DOMAIN=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='DomainName'].OutputValue" --output text)
             echo "domain=$DOMAIN" >> $GITHUB_OUTPUT
             echo "stack-name=$STACK_NAME" >> $GITHUB_OUTPUT
+          else
+            echo "Could not determine CloudFormation stack name."
           fi
-      
+
       - name: Display Deployment Info
         if: steps.cf-outputs.outputs.domain
         run: |
