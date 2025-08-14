@@ -77,39 +77,39 @@ const submissionTranslations: Record<Language, {
   si: {
     title: 'සේවා ඉදිරිපත් කිරීම',
     subtitle: 'රජයේ සේවා සඳහා ලේඛන සහ අයදුම්පත් ඉදිරිපත් කරන්න',
-    backToDashboard: 'පාලනයට ආපසු',
+    backToDashboard: 'පැලනයට ආපසු',
     selectService: 'සේවා වර්ගය තෝරන්න',
     selectServicePlaceholder: 'සේවා කාර්යයක් තෝරන්න',
     whatHappensNext: 'ඊළඟට සිදුවන්නේ කුමක්ද?',
     nextSteps: {
-      step1: 'ඔබගේ සමුද්දේශ අංකය සමඟ ඔබට විද්‍යුත් තැපෑලක් ලැබෙනු ඇත',
-      step2: 'අපගේ නිලධාරීන් ලේඛන සත්‍යාපනය කර පැහැදිලි කිරීම් ඉල්ලා සිටිය හැක',
-      step3: 'ඔබට පාලනය > ඉදිරිපත්කිරීම් කොටසෙහි ප්‍රගතිය නිරීක්ෂණය කළ හැක'
+      step1: 'ඔබගේ සමුද්දේශ අංකය සමඟ ඔබට විදුත් තැපිලක් ලැබෙනු ඇත',
+      step2: 'අපගේ නිලධාරීන් ලේඛන සත්යාපනය කර පහදිලි කිරීම් ඉල්ලා සිටිය හැක',
+      step3: 'ඔබට පැලනය > ඉදිරිපත්කිරීම් කොටසේහි ප්රගතිය නිරීක්ෂණය කළ හැක'
     },
-    requiredUploads: 'අවශ්‍ය උඩුගත කිරීම්',
+    requiredUploads: 'අවශ්ය උඩුගත කිරීම්',
     none: 'කිසිවක් නැත',
     editSubmission: 'ඉදිරිපත්කිරීම සංස්කරණය කරන්න',
     submit: 'ඉදිරිපත් කරන්න',
     submitting: 'ඉදිරිපත් කරමින්...',
-    resubmit: 'නැවත ඉදිරිපත් කරන්න',
+    resubmit: 'නවත ඉදිරිපත් කරන්න',
     submissionSummary: 'ඉදිරිපත්කිරීම සාරාංශය',
     reference: 'සමුද්දේශය',
     service: 'සේවාව',
     uploadedDocuments: 'උඩුගත කළ ලේඛන',
     optional: 'විකල්ප',
     notProvided: 'සපයා නොමැත',
-    dashboard: 'පාලනය',
+    dashboard: 'පැලනය',
     clickToUpload: 'උඩුගත කිරීමට ක්ලික් කරන්න',
     remove: 'ඉවත් කරන්න',
     allowed: 'අනුමතයි',
-    missingField: 'අවශ්‍ය ක්ෂේත්‍රය අස්ථානගත වී ඇත',
+    missingField: 'අවශ්ය ක්ෂේත්රය අස්ථානගත වී ඇත',
     pleaseUpload: 'කරුණාකර උඩුගත කරන්න',
     pleaseSelectTask: 'කරුණාකර කාර්ය වර්ගයක් තෝරන්න',
     submissionReceived: 'ඔබගේ ඉදිරිපත්කිරීම ලැබී ඇත. සමුද්දේශය'
   },
   ta: {
     title: 'சேவை சமர்ப்பணை',
-    subtitle: 'அரசு சேவைகளுக்கான ஆவணங்கள் மற்றும் விண்ணப்பங்களை சமர்ப்பிக்கவும்',
+    subtitle: 'அரச சேவைகளுக்கான ஆவணங்கள் மற்றும் விண்ணப்பங்களை சமர்ப்பிக்கவும்',
     backToDashboard: 'டாஷ்போர்டுக்கு திரும்பவும்',
     selectService: 'சேவை வகையைத் தேர்ந்தெடுக்கவும்',
     selectServicePlaceholder: 'ஒரு சேவை பணியைத் தேர்ந்தெடுக்கவும்',
@@ -117,7 +117,7 @@ const submissionTranslations: Record<Language, {
     nextSteps: {
       step1: 'உங்கள் குறிப்பு எண்ணுடன் நீங்கள் மின்னஞ்சல் பெறுவீர்கள்',
       step2: 'எங்கள் அதிகாரிகள் ஆவணங்களை சரிபார்த்து விளக்கங்களைக் கோரலாம்',
-      step3: 'டாஷ்போர்டு > சமர்ப்பிப்புகள் பிரிவில் முன்னேற்றத்தைக் கண்காணிக்கலாம்'
+      step3: 'டாஷ்போர்ட் > சமர்ப்பிப்புகள் பிரிவில் முன்னேற்றத்தைக் கண்காணிக்கலாம்'
     },
     requiredUploads: 'தேவையான பதிவேற்றங்கள்',
     none: 'எதுவுமில்லை',
@@ -131,7 +131,7 @@ const submissionTranslations: Record<Language, {
     uploadedDocuments: 'பதிவேற்றப்பட்ட ஆவணங்கள்',
     optional: 'விருப்பமானது',
     notProvided: 'வழங்கப்படவில்லை',
-    dashboard: 'டாஷ்போர்டு',
+    dashboard: 'டாஷ்போர்ட்',
     clickToUpload: 'பதிவேற்ற கிளிக் செய்யவும்',
     remove: 'அகற்று',
     allowed: 'அனுமதிக்கப்பட்டது',
@@ -275,7 +275,6 @@ const TASK_SCHEMAS: TaskSchema[] = [
 // Custom Dropdown Component
 const CustomDropdown = ({ 
     id, 
-    name,
     value, 
     onChange, 
     disabled, 
@@ -285,7 +284,6 @@ const CustomDropdown = ({
     required
 }: {
     id: string;
-    name?: string;
     value: string;
     onChange: (value: string) => void;
     disabled?: boolean;

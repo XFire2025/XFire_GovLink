@@ -1,175 +1,167 @@
 // src/app/User/Booking/New/page.tsx
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
-
-// Types
-type Language = 'en' | 'si' | 'ta';
+import { useAuth } from '@/lib/auth/AuthContext';
 
 // New booking translations
-const newBookingTranslations: Record<Language, {
-  title: string;
-  subtitle: string;
-  backToBookings: string;
-  step1Title: string;
-  step1Desc: string;
-  step2Title: string;
-  step2Desc: string;
-  step3Title: string;
-  step3Desc: string;
-  agentDesignation: string;
-  agentName: string;
-  selectDesignation: string;
-  selectAgent: string;
-  selectDesignationFirst: string;
-  pickDay: string;
-  availableSlots: string;
-  selectAgentAndDay: string;
-  availableSlotsWillAppear: string;
-  availableTimesFor: string;
-  slotsAvailable: string;
-  noSlotsAvailable: string;
-  tryDifferentDay: string;
-  notes: string;
-  notesPlaceholder: string;
-  cancel: string;
-  requestBooking: string;
-  submitting: string;
-  booked: string;
+const newBookingTranslations = {
+  title: 'Book Appointment',
+  subtitle: 'Schedule your meeting with government officials and submit required documents',
+  backToBookings: 'Back to Bookings',
+  step1Title: 'Step 1: Service',
+  step1Desc: 'Select the department and service you need assistance with.',
+  step2Title: 'Step 2: Agent',
+  step2Desc: 'Choose the type of official you need to meet.',
+  step3Title: 'Step 3: Schedule', 
+  step3Desc: 'Pick an available day and time slot for your appointment.',
+  step4Title: 'Step 4: Documents',
+  step4Desc: 'Upload required documents for your appointment.',
+  step5Title: 'Step 5: Details',
+  step5Desc: 'Provide any additional notes for your appointment.',
+  department: 'Department',
+  service: 'Service',
+  selectDepartment: 'Select a department...',
+  selectService: 'Select a service...',
+  selectDepartmentFirst: 'Select a department first',
+  agentDesignation: 'Agent Position',
+  agentName: 'Agent Name',
+  selectDesignation: 'Select a position...',
+  selectAgent: 'Select an agent...',
+  selectDesignationFirst: 'Select a position first',
+  pickDay: 'Pick a Day',
+  availableSlots: 'Available Slots',
+  selectAgentAndDay: 'Select an agent and a day first',
+  availableSlotsWillAppear: 'Available time slots will appear here',
+  availableTimesFor: 'Available Times for',
+  slotsAvailable: 'slots available',
+  noSlotsAvailable: 'No slots available',
+  tryDifferentDay: 'Please try a different day or agent',
+  requiredDocuments: 'Required Documents',
+  optionalDocuments: 'Optional Documents', 
+  documentNote: 'Upload clear, color scans/photos less than 5MB each (JPEG/PNG/PDF)',
+  clickToUpload: 'Click to upload',
+  dragToUpload: 'or drag and drop files here',
+  remove: 'Remove',
+  allowed: 'Allowed',
+  notes: 'Notes (Optional)',
+  notesPlaceholder: 'Add any specific details, questions, or required documents...',
+  appointmentSummary: 'Appointment Summary',
+  reference: 'Reference',
+  agent: 'Agent',
+  dateTime: 'Date & Time',
+  uploadedDocuments: 'Uploaded Documents',
+  notProvided: 'Not Provided',
+  optional: 'Optional',
+  cancel: 'Cancel',
+  requestBooking: 'Request Booking',
+  submitting: 'Submitting...',
+  booked: 'Booked!',
+  editBooking: 'Edit Booking',
+  resubmit: 'Resubmit',
+  whatHappensNext: 'What Happens Next?',
+  nextSteps: {
+    step1: 'You will receive an email confirmation with your appointment details',
+    step2: 'Our staff will review your documents and may request clarifications',
+    step3: 'You can track your appointment status in the Dashboard > Bookings section'
+  },
+  dashboard: 'Dashboard',
+  bookingReceived: 'Your booking request has been received. Reference',
   errors: {
-    selectDesignation: string;
-    selectAgent: string;
-    pickDay: string;
-    chooseTimeSlot: string;
-  };
-}> = {
-  en: {
-    title: 'Book Appointment',
-    subtitle: 'Schedule your meeting with government officials',
-    backToBookings: 'Back to Bookings',
-    step1Title: 'Step 1: Agent',
-    step1Desc: 'Select the type of official you need to meet.',
-    step2Title: 'Step 2: Schedule',
-    step2Desc: 'Pick an available day and time slot for your appointment.',
-    step3Title: 'Step 3: Details',
-    step3Desc: 'Provide any additional notes for your appointment.',
-    agentDesignation: 'Agent Designation',
-    agentName: 'Agent Name',
-    selectDesignation: 'Select a designation...',
-    selectAgent: 'Select an agent...',
-    selectDesignationFirst: 'Select a designation first',
-    pickDay: 'Pick a Day',
-    availableSlots: 'Available Slots',
-    selectAgentAndDay: 'Select an agent and a day first',
-    availableSlotsWillAppear: 'Available time slots will appear here',
-    availableTimesFor: 'Available Times for',
-    slotsAvailable: 'slots available',
-    noSlotsAvailable: 'No slots available',
-    tryDifferentDay: 'Please try a different day or agent',
-    notes: 'Notes (Optional)',
-    notesPlaceholder: 'Add any specific details, questions, or required documents...',
-    cancel: 'Cancel',
-    requestBooking: 'Request Booking',
-    submitting: 'Submitting...',
-    booked: 'Booked!',
-    errors: {
-      selectDesignation: 'Please select an agent designation',
-      selectAgent: 'Please select an agent',
-      pickDay: 'Please pick a day for your appointment',
-      chooseTimeSlot: 'Please choose an available time slot'
-    }
+    selectDepartment: 'Please select a department',
+    selectService: 'Please select a service',
+    selectDesignation: 'Please select an agent position',
+    selectAgent: 'Please select an agent',
+    pickDay: 'Please pick a day for your appointment',
+    chooseTimeSlot: 'Please choose an available time slot',
+    missingField: 'Missing required field',
+    pleaseUpload: 'Please upload'
   },
-  si: {
-    title: 'හමුවීම් වෙන්කිරීම',
-    subtitle: 'රජයේ නිලධාරීන් සමඟ ඔබගේ හමුවීම සකස් කරන්න',
-    backToBookings: 'වෙන්කිරීම් වෙත ආපසු',
-    step1Title: 'පියවර 1: නිලධාරි',
-    step1Desc: 'ඔබට හමුවීමට අවශ්‍ය නිලධාරියාගේ වර්ගය තෝරන්න.',
-    step2Title: 'පියවර 2: කාලසටහන',
-    step2Desc: 'ඔබගේ හමුවීම සඳහා පවතින දිනයක් සහ වේලාවක් තෝරන්න.',
-    step3Title: 'පියවර 3: විස්තර',
-    step3Desc: 'ඔබගේ හමුවීම සඳහා අමතර සටහන් සපයන්න.',
-    agentDesignation: 'නිලධාරි තනතුර',
-    agentName: 'නිලධාරි නම',
-    selectDesignation: 'තනතුරක් තෝරන්න...',
-    selectAgent: 'නිලධාරියෙකු තෝරන්න...',
-    selectDesignationFirst: 'මුලින්ම තනතුරක් තෝරන්න',
-    pickDay: 'දිනයක් තෝරන්න',
-    availableSlots: 'පවතින වේලාවන්',
-    selectAgentAndDay: 'මුලින්ම නිලධාරියෙකු සහ දිනයක් තෝරන්න',
-    availableSlotsWillAppear: 'පවතින වේලාවන් මෙහි පෙන්වනු ඇත',
-    availableTimesFor: 'සඳහා පවතින වේලාවන්',
-    slotsAvailable: 'වේලාවන් පවතී',
-    noSlotsAvailable: 'වේලාවන් නොමැත',
-    tryDifferentDay: 'කරුණාකර වෙනත් දිනයක් හෝ නිලධාරියෙකු උත්සාහ කරන්න',
-    notes: 'සටහන් (විකල්ප)',
-    notesPlaceholder: 'විශේෂ විස්තර, ප්‍රශ්න, හෝ අවශ්‍ය ලේඛන එක් කරන්න...',
-    cancel: 'අවලංගු කරන්න',
-    requestBooking: 'වෙන්කිරීම ඉල්ලන්න',
-    submitting: 'ඉදිරිපත් කරමින්...',
-    booked: 'වෙන් කරන ලදී!',
-    errors: {
-      selectDesignation: 'කරුණාකර නිලධාරි තනතුරක් තෝරන්න',
-      selectAgent: 'කරුණාකර නිලධාරියෙකු තෝරන්න',
-      pickDay: 'කරුණාකර ඔබගේ හමුවීම සඳහා දිනයක් තෝරන්න',
-      chooseTimeSlot: 'කරුණාකර පවතින වේලාවක් තෝරන්න'
-    }
-  },
-  ta: {
-    title: 'சந்திப்பு முன்பதிவு',
-    subtitle: 'அரசு அதிகாரிகளுடன் உங்கள் சந்திப்பை திட்டமிடுங்கள்',
-    backToBookings: 'முன்பதிவுகளுக்கு திரும்பவும்',
-    step1Title: 'படி 1: அதிகாரி',
-    step1Desc: 'நீங்கள் சந்திக்க வேண்டிய அதிகாரியின் வகையைத் தேர்ந்தெடுக்கவும்.',
-    step2Title: 'படி 2: அட்டவணை',
-    step2Desc: 'உங்கள் சந்திப்புக்கு கிடைக்கும் நாள் மற்றும் நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்.',
-    step3Title: 'படி 3: விவரங்கள்',
-    step3Desc: 'உங்கள் சந்திப்புக்கான கூடுதல் குறிப்புகளை வழங்கவும்.',
-    agentDesignation: 'அதிகாரி பதவி',
-    agentName: 'அதிகாரி பெயர்',
-    selectDesignation: 'ஒரு பதவியைத் தேர்ந்தெடுக்கவும்...',
-    selectAgent: 'ஒரு அதிகாரியைத் தேர்ந்தெடுக்கவும்...',
-    selectDesignationFirst: 'முதலில் ஒரு பதவியைத் தேர்ந்தெடுக்கவும்',
-    pickDay: 'ஒரு நாளைத் தேர்ந்தெடுக்கவும்',
-    availableSlots: 'கிடைக்கும் நேரங்கள்',
-    selectAgentAndDay: 'முதலில் ஒரு அதிகாரி மற்றும் நாளைத் தேர்ந்தெடுக்கவும்',
-    availableSlotsWillAppear: 'கிடைக்கும் நேர இடைவெளிகள் இங்கே தோன்றும்',
-    availableTimesFor: 'க்கு கிடைக்கும் நேரங்கள்',
-    slotsAvailable: 'இடைவெளிகள் கிடைக்கின்றன',
-    noSlotsAvailable: 'இடைவெளிகள் கிடைக்கவில்லை',
-    tryDifferentDay: 'தயவுசெய்து வேறு நாள் அல்லது அதிகாரியை முயற்சிக்கவும்',
-    notes: 'குறிப்புகள் (விருப்பமானது)',
-    notesPlaceholder: 'குறிப்பிட்ட விவரங்கள், கேள்விகள், அல்லது தேவையான ஆவணங்களைச் சேர்க்கவும்...',
-    cancel: 'ரத்துசெய்',
-    requestBooking: 'முன்பதிவு கோரிக்கை',
-    submitting: 'சமர்ப்பிக்கிறது...',
-    booked: 'முன்பதிவு செய்யப்பட்டது!',
-    errors: {
-      selectDesignation: 'தயவுசெய்து ஒரு அதிகாரி பதவியைத் தேர்ந்தெடுக்கவும்',
-      selectAgent: 'தயவுசெய்து ஒரு அதிகாரியைத் தேர்ந்தெடுக்கவும்',
-      pickDay: 'தயவுசெய்து உங்கள் சந்திப்புக்கு ஒரு நாளைத் தேர்ந்தெடுக்கவும்',
-      chooseTimeSlot: 'தயவுசெய்து கிடைக்கும் நேர இடைவெளியைத் தேர்ந்தெடுக்கவும்'
-    }
-  }
+  loading: 'Loading...',
+  loadingDepartments: 'Loading departments...',
+  loadingServices: 'Loading services...',
+  loadingAgents: 'Loading agents...',
+  errorLoadingData: 'Error loading data. Please try again.',
+  retry: 'Retry',
+  authRequired: 'Please login to create an appointment',
+  sessionExpired: 'Your session has expired. Please login again.'
 };
 
-// --- PAGE-SPECIFIC COMPONENTS & ICONS ---
-
-// Icons
+// Icons (keeping existing icons)
 const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
 const UserCheckIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>;
 const CalendarClockIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.25V14"/><circle cx="16" cy="16" r="5.5"/></svg>;
+const FileUploadIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 11v7"/><path d="M9 15l3-3 3 3"/></svg>;
 const ClipboardIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>;
 const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
 const AlertTriangleIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>;
 const InfoIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>;
 const ClockIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>;
 const ChevronDownIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>;
+const UploadIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
+const FileIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>;
+const HomeIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>;
+const RefreshIcon = (props: React.SVGProps<SVGSVGElement>) => <svg {...props} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>;
 
-// Custom Dropdown Component
+// Data interfaces
+interface Department {
+  id: string;
+  code: string;
+  name: string;
+  shortName: string;
+  description: string;
+  email: string;
+  phone: string;
+  allowOnlineServices: boolean;
+  requiresAppointment: boolean;
+  services?: Service[];
+}
+
+interface Service {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  processingTime: string;
+  fee: number;
+  requirements: string[];
+  departmentId?: string;
+  departmentName?: string;
+}
+
+interface Agent {
+  id: string;
+  name: string;
+  officerId: string;
+  position: string;
+  officeName: string;
+  email: string;
+  phone: string;
+  specialization: string[];
+  duties: string[];
+  departmentCode: string;
+  departmentName: string;
+}
+
+// Document requirement interface
+interface DocumentRequirement {
+    name: string;
+    label: string;
+    required: boolean;
+    accept: string;
+    description?: string;
+}
+
+// Error interface for proper typing
+interface ApiError extends Error {
+  status?: number;
+  code?: string;
+}
+
+// Custom Dropdown Component (keeping existing)
 const CustomDropdown = ({ 
     id, 
     name, 
@@ -177,7 +169,8 @@ const CustomDropdown = ({
     onChange, 
     disabled, 
     placeholder, 
-    options 
+    options,
+    loading = false
 }: {
     id: string;
     name: string;
@@ -186,6 +179,7 @@ const CustomDropdown = ({
     disabled?: boolean;
     placeholder: string;
     options: { value: string; label: string }[];
+    loading?: boolean;
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedLabel, setSelectedLabel] = useState(placeholder);
@@ -205,7 +199,6 @@ const CustomDropdown = ({
 
     return (
         <div className="relative">
-            {/* Hidden select for form compatibility */}
             <select
                 id={id}
                 name={name}
@@ -223,14 +216,13 @@ const CustomDropdown = ({
                 ))}
             </select>
 
-            {/* Custom dropdown button */}
             <button
                 type="button"
-                onClick={() => !disabled && setIsOpen(!isOpen)}
-                disabled={disabled}
+                onClick={() => !disabled && !loading && setIsOpen(!isOpen)}
+                disabled={disabled || loading}
                 className={`
                     w-full text-left px-4 py-3 rounded-xl border transition-all duration-300 flex items-center justify-between backdrop-blur-md
-                    ${disabled 
+                    ${disabled || loading
                         ? 'opacity-60 cursor-not-allowed bg-card/20 dark:bg-card/30 border-border/30' 
                         : 'bg-card/50 dark:bg-card/70 border-border/50 hover:border-[#FFC72C]/60 hover:bg-card/70 dark:hover:bg-card/80 focus:border-[#FFC72C] focus:ring-2 focus:ring-[#FFC72C]/30'
                     }
@@ -238,23 +230,20 @@ const CustomDropdown = ({
                 `}
             >
                 <span className={`${value ? 'text-foreground' : 'text-muted-foreground'} font-medium`}>
-                    {selectedLabel}
+                    {loading ? newBookingTranslations.loading : selectedLabel}
                 </span>
                 <ChevronDownIcon 
                     className={`w-5 h-5 text-[#FFC72C] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
                 />
             </button>
 
-            {/* Dropdown menu */}
-            {isOpen && (
+            {isOpen && !loading && (
                 <>
-                    {/* Backdrop */}
                     <div 
                         className="fixed inset-0 z-10" 
                         onClick={() => setIsOpen(false)}
                     />
                     
-                    {/* Options */}
                     <div className="absolute top-full left-0 right-0 mt-2 z-20">
                         <div className="bg-card/95 dark:bg-card/95 border border-border/50 rounded-xl shadow-glow backdrop-blur-md overflow-hidden modern-card">
                             <div className="max-h-60 overflow-y-auto">
@@ -285,7 +274,96 @@ const CustomDropdown = ({
     );
 };
 
-// Form Step component for visual structure
+// File Upload Component (keeping existing but enhanced)
+const FileUpload = ({ 
+    document: doc, 
+    file, 
+    onFileChange, 
+    onRemove 
+}: {
+    document: DocumentRequirement;
+    file: File | null;
+    onFileChange: (file: File | null) => void;
+    onRemove: () => void;
+}) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0] || null;
+        onFileChange(selectedFile);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        const droppedFile = e.dataTransfer.files?.[0] || null;
+        onFileChange(droppedFile);
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+    };
+
+    return (
+        <div className="space-y-2">
+            <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <UploadIcon className="w-4 h-4 text-[#FFC72C]" />
+                    {doc.label}
+                    {doc.required && <span className="text-red-400 ml-1">*</span>}
+                    {!doc.required && <span className="text-muted-foreground text-xs ml-1">(Optional)</span>}
+                </label>
+                {file && (
+                    <button 
+                        type="button" 
+                        onClick={onRemove} 
+                        className="text-xs text-[#FF5722] hover:text-[#FF5722]/80 transition-colors"
+                    >
+                        {newBookingTranslations.remove}
+                    </button>
+                )}
+            </div>
+            
+            {doc.description && (
+                <p className="text-xs text-muted-foreground">{doc.description}</p>
+            )}
+            
+            <div 
+                className="border-2 border-dashed rounded-xl p-4 bg-card/40 dark:bg-card/50 border-border/50 hover:border-[#FFC72C]/60 transition-colors backdrop-blur-md modern-card"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+            >
+                <input
+                    id={doc.name}
+                    type="file"
+                    accept={doc.accept}
+                    className="hidden"
+                    onChange={handleFileChange}
+                />
+                <label htmlFor={doc.name} className="flex flex-col items-center justify-center gap-2 cursor-pointer text-center">
+                    <div className="w-12 h-12 rounded-full bg-[#FFC72C]/15 flex items-center justify-center border border-[#FFC72C]/30">
+                        <FileIcon className="w-6 h-6 text-[#FFC72C]" />
+                    </div>
+                    {file ? (
+                        <div className="space-y-1">
+                            <span className="text-sm font-medium text-foreground">{file.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                                {(file.size / 1024 / 1024).toFixed(2)} MB
+                            </span>
+                        </div>
+                    ) : (
+                        <div className="space-y-1">
+                            <span className="text-sm text-muted-foreground">{newBookingTranslations.clickToUpload}</span>
+                            <span className="text-xs text-muted-foreground">{newBookingTranslations.dragToUpload}</span>
+                        </div>
+                    )}
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        {newBookingTranslations.allowed}: {doc.accept.replace(/\./g,'').replace(/,/g, ', ')} • Max 5MB
+                    </p>
+                </label>
+            </div>
+        </div>
+    );
+};
+
+// Form Step component (keeping existing)
 const Step = ({ icon: Icon, title, description, children }: { icon: React.ElementType; title: string; description: string; children: React.ReactNode }) => (
     <div className="animate-fade-in-up">
         <div className="mb-6">
@@ -301,21 +379,33 @@ const Step = ({ icon: Icon, title, description, children }: { icon: React.Elemen
     </div>
 );
 
-// Themed alert components
+// Alert components (keeping existing)
 const SuccessAlert = ({ message }: { message: string }) => (
     <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-4 rounded-2xl border border-[#008060]/30 flex items-center gap-3 shadow-glow modern-card animate-fade-in-up">
         <CheckCircleIcon className="w-6 h-6 text-[#008060] flex-shrink-0" />
         <p className="text-sm font-medium text-[#008060]">{message}</p>
     </div>
 );
-const ErrorAlert = ({ message }: { message: string }) => (
+
+const ErrorAlert = ({ message, onRetry }: { message: string; onRetry?: () => void }) => (
     <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-4 rounded-2xl border border-[#FF5722]/30 flex items-center gap-3 shadow-glow modern-card animate-fade-in-up">
         <AlertTriangleIcon className="w-6 h-6 text-[#FF5722] flex-shrink-0" />
-        <p className="text-sm font-medium text-[#FF5722]">{message}</p>
+        <div className="flex-1">
+            <p className="text-sm font-medium text-[#FF5722]">{message}</p>
+        </div>
+        {onRetry && (
+            <button
+                onClick={onRetry}
+                className="flex items-center gap-1 px-3 py-1 text-xs font-medium text-[#FF5722] hover:bg-[#FF5722]/10 rounded-lg transition-colors"
+            >
+                <RefreshIcon className="w-3 h-3" />
+                {newBookingTranslations.retry}
+            </button>
+        )}
     </div>
 );
 
-// Time Slot Card Component
+// Time Slot Card Component (keeping existing)
 const TimeSlotCard = ({ 
     slot, 
     isAvailable, 
@@ -334,14 +424,6 @@ const TimeSlotCard = ({
         const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
         return `${displayHour}:${minutes} ${ampm}`;
     };
-
-    const getSlotStatus = () => {
-        if (!isAvailable) return { text: 'Unavailable', color: 'text-[#FF5722]' };
-        if (isSelected) return { text: 'Selected', color: 'text-[#008060]' };
-        return { text: 'Available', color: 'text-[#FFC72C]' };
-    };
-
-    const status = getSlotStatus();
 
     return (
         <div
@@ -371,12 +453,6 @@ const TimeSlotCard = ({
                         <div className="font-semibold text-foreground text-lg transition-colors duration-300 group-hover:text-[#FFC72C]">
                             {formatTime(slot)}
                         </div>
-                        {/* Only show status text for available/selected slots, not unavailable ones */}
-                        {isAvailable && (
-                            <div className={`text-xs font-medium transition-colors duration-300 ${status.color}`}>
-                                {status.text}
-                            </div>
-                        )}
                     </div>
                 </div>
                 
@@ -394,298 +470,790 @@ const TimeSlotCard = ({
                     </span>
                 </div>
             )}
-            
-            {/* Hover Effect Gradient */}
-            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FFC72C]/5 via-transparent to-[#FF5722]/5 rounded-2xl"></div>
-            </div>
         </div>
     );
 };
 
-
-// --- MOCK DATA & GENERATORS (Unchanged logic) ---
-const DESIGNATIONS = [{ value: "officer", label: "Officer" }, { value: "senior-officer", label: "Senior Officer" }, { value: "manager", label: "Manager" }];
-const AGENTS_BY_DESIGNATION: Record<string, { value: string; label: string }[]> = {
-	officer: [{ value: "a_perera", label: "A. Perera" }, { value: "s_fernando", label: "S. Fernando" }],
-	"senior-officer": [{ value: "n_silva", label: "N. Silva" }, { value: "k_de_alwis", label: "K. De Alwis" }],
-	manager: [{ value: "r_jayasinghe", label: "R. Jayasinghe" }],
-};
-function generateDays(days = 7) {
-	const out: { key: string; date: Date; label: string }[] = [];
-	const now = new Date();
-	for (let i = 0; i < days; i++) {
-		const d = new Date(now);
-		d.setDate(now.getDate() + i);
-		out.push({ key: d.toISOString().slice(0, 10), date: d, label: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) });
-	}
-	return out;
-}
-function generateSlots() {
-	const slots: string[] = [];
-	for (let h = 9; h <= 16; h++) {
-		for (const m of [0, 30]) {
-			const timeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-			
-			// Skip lunch break: 12:30 PM to 2:00 PM (12:30 - 14:00)
-			if ((h === 12 && m === 30) || h === 13 || (h === 14 && m === 0)) {
-				continue;
-			}
-			
-			slots.push(timeSlot);
-		}
-	}
-	return slots;
-}
-function mockAvailability(dayKey: string, agent: string) {
-	const base = generateSlots();
-	const blocked = new Set<string>();
-	for (let i = 0; i < base.length; i++) {
-		const seed = (dayKey.charCodeAt(0) + (agent?.charCodeAt(0) || 0) + i) % 5;
-		if (seed === 0) blocked.add(base[i]);
-	}
-	return new Set(base.filter((s) => !blocked.has(s)));
+// Helper functions
+function generateDays(days = 14) {
+    const out: { key: string; date: Date; label: string }[] = [];
+    const now = new Date();
+    for (let i = 0; i < days; i++) {
+        const d = new Date(now);
+        d.setDate(now.getDate() + i);
+        out.push({ 
+            key: d.toISOString().slice(0, 10), 
+            date: d, 
+            label: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) 
+        });
+    }
+    return out;
 }
 
+function generateTimeSlots(): string[] {
+    const slots: string[] = [];
+    for (let h = 9; h <= 16; h++) {
+        for (const m of [0, 30]) {
+            const timeSlot = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+            
+            // Skip lunch break: 12:30 PM to 2:00 PM (12:30 - 14:00)
+            if ((h === 12 && m === 30) || h === 13 || (h === 14 && m === 0)) {
+                continue;
+            }
+            
+            slots.push(timeSlot);
+        }
+    }
+    return slots;
+}
 
-// --- MAIN PAGE COMPONENT ---
+function mockAvailableSlots(agentId: string, date: string, baseSlots: string[]): Set<string> {
+    const blocked = new Set<string>();
+    for (let i = 0; i < baseSlots.length; i++) {
+        const seed = (date.charCodeAt(0) + (agentId?.charCodeAt(0) || 0) + i) % 5;
+        if (seed === 0) blocked.add(baseSlots[i]);
+    }
+    return new Set(baseSlots.filter((s) => !blocked.has(s)));
+}
+
+// MAIN PAGE COMPONENT
 export default function NewBookingPage() {
-	const router = useRouter();
-	const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
-	const [form, setForm] = useState({ designation: "", agent: "", day: "", slot: "", notes: "" });
-	const [submitting, setSubmitting] = useState(false);
-	const [success, setSuccess] = useState<string | null>(null);
-	const [error, setError] = useState<string | null>(null);
-	const t = newBookingTranslations[currentLanguage];
+    const router = useRouter();
+    const { user, isAuthenticated, isLoading } = useAuth();
+    
+    const [form, setForm] = useState({ 
+        department: "",
+        service: "",
+        position: "", 
+        agent: "", 
+        day: "", 
+        slot: "", 
+        notes: "" 
+    });
+    const [files, setFiles] = useState<Record<string, File | null>>({});
+    const [submitting, setSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [reference, setReference] = useState('');
+    const [success, setSuccess] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-	const handleLanguageChange = (newLanguage: Language) => {
-		setCurrentLanguage(newLanguage);
-	};
+    // API state
+    const [departments, setDepartments] = useState<Department[]>([]);
+    const [services, setServices] = useState<Service[]>([]);
+    const [agents, setAgents] = useState<Agent[]>([]);
+    const [availableSlots, setAvailableSlots] = useState<Set<string>>(new Set());
+    
+    // Loading states
+    const [loadingDepartments, setLoadingDepartments] = useState(false);
+    const [loadingServices, setLoadingServices] = useState(false);
+    const [loadingAgents, setLoadingAgents] = useState(false);
+    const [loadingSlots, setLoadingSlots] = useState(false);
 
-	// Increase to 14 days
-	const days = useMemo(() => generateDays(14), []);
-	const slots = useMemo(() => generateSlots(), []);
-	const agents = useMemo(() => form.designation ? AGENTS_BY_DESIGNATION[form.designation] || [] : [], [form.designation]);
-	const availableSlots = useMemo(() => (!form.day || !form.agent) ? new Set<string>() : mockAvailability(form.day, form.agent), [form.day, form.agent]);
+    const t = newBookingTranslations;
+    const days = useMemo(() => generateDays(14), []);
+    const timeSlots = useMemo(() => generateTimeSlots(), []);
 
-	function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-		const { name, value } = e.target;
-		setForm((prev) => ({...prev, [name]: value, ...(name === "designation" ? { agent: "", slot: "" } : {}), ...(name === "agent" ? { slot: "" } : {}) }));
-	}
+    // API Functions using your existing auth pattern
+    const apiCall = async (endpoint: string, options: RequestInit = {}) => {
+        try {
+            const response = await fetch(endpoint, {
+                ...options,
+                credentials: 'include', // Use cookies for auth
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers,
+                },
+            });
 
-	function selectDay(dayKey: string) { setForm((prev) => ({ ...prev, day: dayKey, slot: "" })); }
-	function selectSlot(slot: string) { if (availableSlots.has(slot)) setForm((prev) => ({ ...prev, slot })); }
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP ${response.status}`);
+            }
 
-	function validate() {
-		if (!form.designation) return t.errors.selectDesignation;
-		if (!form.agent) return t.errors.selectAgent;
-		if (!form.day) return t.errors.pickDay;
-		if (!form.slot) return t.errors.chooseTimeSlot;
-		return null;
-	}
+            return await response.json();
+        } catch (error) {
+            console.error(`API call failed for ${endpoint}:`, error);
+            throw error;
+        }
+    };
 
-	async function handleSubmit(e: React.FormEvent) {
-		e.preventDefault();
-		setError(null);
+    const loadDepartments = useCallback(async () => {
+        console.log('📄 Loading departments...');
+        setLoadingDepartments(true);
+        setError(null);
+        try {
+            const response = await apiCall('/api/user/departments');
+            console.log('📥 Departments response:', response);
+            
+            if (response.success && response.data) {
+                console.log('✅ Departments loaded:', response.data.departments);
+                setDepartments(response.data.departments);
+            } else {
+                console.error('❌ API Error:', response.message);
+                setError(response.message || t.errorLoadingData);
+            }
+        } catch (error: unknown) {
+            console.error('💥 Load departments error:', error);
+            const errorMessage = error instanceof Error ? error.message : t.errorLoadingData;
+            setError(errorMessage);
+        }
+        setLoadingDepartments(false);
+    }, [t.errorLoadingData]);
+
+    const loadServices = useCallback(async (departmentId: string) => {
+        setLoadingServices(true);
+        setError(null);
+        try {
+            const response = await apiCall(`/api/user/departments/${departmentId}/services`);
+            if (response.success && response.data) {
+                setServices(response.data.services);
+            } else {
+                setError(response.message || t.errorLoadingData);
+            }
+        } catch (error: unknown) {
+            console.error('Error loading services:', error);
+            setError(t.errorLoadingData);
+        }
+        setLoadingServices(false);
+    }, [t.errorLoadingData]);
+
+    const loadAgents = useCallback(async (departmentId: string, position?: string) => {
+        setLoadingAgents(true);
+        setError(null);
+        try {
+            const endpoint = position 
+                ? `/api/user/departments/${departmentId}/agents?position=${encodeURIComponent(position)}`
+                : `/api/user/departments/${departmentId}/agents`;
+            const response = await apiCall(endpoint);
+            if (response.success && response.data) {
+                setAgents(response.data.agents);
+            } else {
+                setError(response.message || t.errorLoadingData);
+            }
+        } catch (error: unknown) {
+            console.error('Error loading agents:', error);
+            setError(t.errorLoadingData);
+        }
+        setLoadingAgents(false);
+    }, [t.errorLoadingData]);
+
+    const loadAvailableSlots = useCallback(async (agentId: string, date: string) => {
+        setLoadingSlots(true);
+        try {
+            // For now using mock data - replace with real API call
+            const mockSlots = mockAvailableSlots(agentId, date, timeSlots);
+            setAvailableSlots(mockSlots);
+        } catch (error) {
+            console.error('Error loading slots:', error);
+            setAvailableSlots(new Set());
+        }
+        setLoadingSlots(false);
+    }, [timeSlots]);
+
+    // Load departments on mount
+    useEffect(() => {
+        loadDepartments();
+    }, [loadDepartments]);
+
+    // Load services when department changes
+    useEffect(() => {
+        if (form.department) {
+            loadServices(form.department);
+        } else {
+            setServices([]);
+        }
+    }, [form.department, loadServices]);
+
+    // Load agents when department changes
+    useEffect(() => {
+        if (form.department) {
+            loadAgents(form.department, form.position);
+        } else {
+            setAgents([]);
+        }
+    }, [form.department, form.position, loadAgents]);
+
+    // Load available slots when agent and day change
+    useEffect(() => {
+        if (form.agent && form.day) {
+            loadAvailableSlots(form.agent, form.day);
+        } else {
+            setAvailableSlots(new Set());
+        }
+    }, [form.agent, form.day, loadAvailableSlots]);
+
+    // Dynamic options
+    const departmentOptions = departments.map(dept => ({
+        value: dept.id,
+        label: dept.name
+    }));
+
+    const serviceOptions = services.map(service => ({
+        value: service.id,
+        label: service.name
+    }));
+
+    const positionOptions = [...new Set(agents.map(agent => agent.position))].map(position => ({
+        value: position,
+        label: position
+    }));
+
+    const agentOptions = agents
+        .filter(agent => !form.position || agent.position === form.position)
+        .map(agent => ({
+            value: agent.id,
+            label: `${agent.name} (${agent.officerId})`
+        }));
+
+    // Document requirements based on selected service
+    const requiredDocuments: DocumentRequirement[] = useMemo(() => {
+        const selectedService = services.find(s => s.id === form.service);
+        if (!selectedService || !selectedService.requirements.length) {
+            return [
+                { name: "applicationForm", label: "Application Form", required: true, accept: ".pdf,.jpg,.jpeg,.png", description: "Completed and signed application form" },
+                { name: "nicScan", label: "NIC Copy", required: true, accept: ".jpg,.jpeg,.png,.pdf", description: "Clear scan or photo of your National Identity Card" },
+                { name: "supportingDocs", label: "Supporting Documents", required: false, accept: ".pdf,.jpg,.jpeg,.png", description: "Any additional documents related to your request" }
+            ];
+        }
+        
+        return selectedService.requirements.map((req, index) => ({
+            name: `document_${index}`,
+            label: req,
+            required: index < 2, // First 2 requirements are required
+            accept: ".pdf,.jpg,.jpeg,.png",
+            description: `${req} - Required for ${selectedService.name}`
+        }));
+    }, [services, form.service]);
+
+    function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+        const { name, value } = e.target;
+        setForm((prev) => ({
+            ...prev, 
+            [name]: value, 
+            ...(name === "department" ? { service: "", position: "", agent: "", slot: "" } : {}),
+            ...(name === "service" ? { position: "", agent: "", slot: "" } : {}),
+            ...(name === "position" ? { agent: "", slot: "" } : {}), 
+            ...(name === "agent" ? { slot: "" } : {})
+        }));
+        
+        // Clear files when department or service changes
+        if (name === "department" || name === "service") {
+            setFiles({});
+        }
+    }
+
+    function selectDay(dayKey: string) { 
+        setForm((prev) => ({ ...prev, day: dayKey, slot: "" })); 
+    }
+    
+    function selectSlot(slot: string) { 
+        if (availableSlots.has(slot)) setForm((prev) => ({ ...prev, slot })); 
+    }
+
+    const handleFile = (docName: string, file: File | null) => {
+        setFiles(prev => ({ ...prev, [docName]: file }));
+    };
+
+    const validate = useCallback(() => {
+        if (!form.department) return t.errors.selectDepartment;
+        if (!form.service) return t.errors.selectService;
+        if (!form.agent) return t.errors.selectAgent;
+        if (!form.day) return t.errors.pickDay;
+        if (!form.slot) return t.errors.chooseTimeSlot;
+        
+        // Check required documents
+        const requiredDocs = requiredDocuments.filter(doc => doc.required);
+        for (const doc of requiredDocs) {
+            if (!files[doc.name]) {
+                return `${t.errors.pleaseUpload}: ${doc.label}`;
+            }
+        }
+        
+        return null;
+    }, [form, files, requiredDocuments, t]);
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+        setError(null);
         setSuccess(null);
-		const validationError = validate();
-		if (validationError) { setError(validationError); return; }
+        
+        // Check authentication using your context
+        if (!isAuthenticated || !user) {
+            setError(t.authRequired);
+            router.push('/user/auth/login');
+            return;
+        }
+        
+        const validationError = validate();
+        if (validationError) { 
+            setError(validationError); 
+            return; 
+        }
 
-		setSubmitting(true);
-		await new Promise((res) => setTimeout(res, 1200));
-		
-		// Store booking data for the submission page (in real app, this would be handled differently)
-		const bookingData = {
-			designation: form.designation,
-			agent: form.agent,
-			day: form.day,
-			slot: form.slot,
-			notes: form.notes
-		};
-		localStorage.setItem('latestBooking', JSON.stringify(bookingData));
-		
-		// Redirect to submission page
-		router.push('/user/booking/submission');
-	}
+        console.log('🚀 Starting appointment submission...');
+        setSubmitting(true);
 
-	return (
-		<UserDashboardLayout
-			title={
-				<span className="animate-title-wave">
-					<span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
-					<span className="text-gradient">
-						{t.title.split(' ')[1] || ''}
-					</span>
-				</span>
-			}
-			subtitle={t.subtitle}
-			language={currentLanguage}
-			onLanguageChange={handleLanguageChange}
-		>
-			<div className="max-w-4xl mx-auto">
-				{/* Back Button */}
-				<div className="mb-8">
-					<Link 
-						href="/User/Booking"
-						className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
-					>
-						<ArrowLeftIcon className="w-4 h-4" />
-						{t.backToBookings}
-					</Link>
-				</div>
+        try {
+            // Prepare FormData for file upload
+            const formData = new FormData();
+            formData.append('departmentId', form.department);
+            formData.append('serviceId', form.service);
+            formData.append('agentId', form.agent);
+            formData.append('date', form.day);
+            formData.append('time', form.slot);
+            if (form.notes) formData.append('notes', form.notes);
+            formData.append('priority', 'normal');
 
-				{success && <div className="mb-8"><SuccessAlert message={success} /></div>}
-				{error && <div className="mb-8"><ErrorAlert message={error} /></div>}
-			
-				<form onSubmit={handleSubmit} className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-border/50 shadow-glow modern-card hover:border-[#FFC72C]/30 transition-all duration-500">
-					<div className="space-y-12">
-						<Step icon={UserCheckIcon} title={t.step1Title} description={t.step1Desc}>
-							<div>
-								<label htmlFor="designation" className="block text-sm font-medium text-muted-foreground mb-2">{t.agentDesignation}</label>
-								<CustomDropdown
-									id="designation"
-									name="designation"
-									value={form.designation}
-									onChange={handleChange}
-									placeholder={t.selectDesignation}
-									options={DESIGNATIONS}
-								/>
-							</div>
-							<div>
-								<label htmlFor="agent" className="block text-sm font-medium text-muted-foreground mb-2">{t.agentName}</label>
-								<CustomDropdown
-									id="agent"
-									name="agent"
-									value={form.agent}
-									onChange={handleChange}
-									disabled={!form.designation}
-									placeholder={form.designation ? t.selectAgent : t.selectDesignationFirst}
-									options={agents}
-								/>
-							</div>
-						</Step>
+            // Add files
+            Object.entries(files).forEach(([docName, file]) => {
+                if (file) {
+                    formData.append('files', file);
+                    formData.append('fileNames', docName);
+                }
+            });
 
-						<div className="border-t border-border/30"></div>
+            console.log('📝 Submitting appointment...');
 
-						<Step icon={CalendarClockIcon} title={t.step2Title} description={t.step2Desc}>
-							<div>
-								<label className="block text-sm font-medium text-muted-foreground mb-2">{t.pickDay}</label>
-								<div className="bg-card/50 dark:bg-card/60 backdrop-blur-md p-4 rounded-xl border border-border/30 modern-card">
-									{/* Responsive grid: max 7 columns on large screens, fewer on small */}
-									<div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
-										{days.map((d) => {
-											const isActive = form.day === d.key;
-											const dayOfWeek = d.date.getDay(); // 0 = Sunday, 6 = Saturday
-											const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-											
-											return (
-												<button
-													type="button"
-													key={d.key}
-													onClick={() => !isWeekend && selectDay(d.key)}
-													disabled={isWeekend}
-													className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-300 text-center backdrop-blur-sm hover:scale-105 ${
-														isWeekend 
-															? 'bg-card/20 dark:bg-card/30 text-muted-foreground/50 cursor-not-allowed opacity-60 border border-border/20' 
-															: isActive 
-																? 'bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white shadow-lg hover:shadow-2xl border border-[#FFC72C]/50' 
-																: 'bg-card/50 dark:bg-card/70 hover:bg-card/70 dark:hover:bg-card/80 text-foreground hover:text-[#FFC72C] border border-border/30 hover:border-[#FFC72C]/60'
-													}`}
-												>
-													{d.label}
-												</button>
-											);
-										})}
-									</div>
-                                        </div>
+            const response = await fetch('/api/user/appointments', {
+                method: 'POST',
+                credentials: 'include', // Use cookies for auth
+                body: formData, // Don't set Content-Type for FormData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                if (response.status === 401) {
+                    setError(t.sessionExpired);
+                    router.push('/user/auth/login');
+                    return;
+                }
+                throw new Error(errorData.message || 'Failed to create appointment');
+            }
+
+            const result = await response.json();
+            
+            if (result.success && result.data) {
+                console.log('✅ Appointment created successfully!');
+                setReference(result.data.appointment.bookingReference);
+                setSubmitted(true);
+                setSuccess(`${t.bookingReceived} ${result.data.appointment.bookingReference}`);
+            } else {
+                throw new Error(result.message || 'Failed to create appointment');
+            }
+        } catch (error: unknown) {
+            console.error('💥 Appointment submission error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create appointment. Please try again.';
+            setError(errorMessage);
+        }
+        
+        setSubmitting(false);
+    }
+
+    // Helper functions to get display names
+    const getDepartmentName = () => {
+        const department = departments.find(d => d.id === form.department);
+        return department ? department.name : '';
+    };
+
+    const getServiceName = () => {
+        const service = services.find(s => s.id === form.service);
+        return service ? service.name : '';
+    };
+
+    const getAgentName = () => {
+        const agent = agents.find(a => a.id === form.agent);
+        return agent ? agent.name : '';
+    };
+
+    const getAgentPosition = () => {
+        const agent = agents.find(a => a.id === form.agent);
+        return agent ? agent.position : '';
+    };
+
+    const getSelectedDay = () => {
+        const day = days.find(d => d.key === form.day);
+        return day ? day.label : '';
+    };
+
+    // Show loading while checking auth
+    if (isLoading) {
+        return (
+            <UserDashboardLayout
+                title="Loading..."
+                subtitle="Checking authentication..."
+                language="en"
+                onLanguageChange={() => {}}
+            >
+                <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FFC72C]"></div>
+                    <span className="ml-3 text-muted-foreground">Loading...</span>
+                </div>
+            </UserDashboardLayout>
+        );
+    }
+
+    return (
+        <UserDashboardLayout
+            title={
+                <span className="animate-title-wave">
+                    <span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
+                    <span className="text-gradient">
+                        {t.title.split(' ')[1] || ''}
+                    </span>
+                </span>
+            }
+            subtitle={t.subtitle}
+            language="en"
+            onLanguageChange={() => {}}
+        >
+            <div className="max-w-4xl mx-auto">
+                {/* Back Button */}
+                <div className="mb-8">
+                    <Link 
+                        href="/User/Booking"
+                        className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
+                    >
+                        <ArrowLeftIcon className="w-4 h-4" />
+                        {t.backToBookings}
+                    </Link>
+                </div>
+
+                {success && <div className="mb-8"><SuccessAlert message={success} /></div>}
+                {error && <div className="mb-8"><ErrorAlert message={error} onRetry={error.includes('loading') ? loadDepartments : undefined} /></div>}
+            
+                <form onSubmit={handleSubmit} className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 sm:p-8 rounded-2xl border border-border/50 shadow-glow modern-card hover:border-[#FFC72C]/30 transition-all duration-500">
+                    <div className="space-y-12">
+                        {/* Step 1: Department & Service Selection */}
+                        <Step icon={UserCheckIcon} title={t.step1Title} description={t.step1Desc}>
+                            <div>
+                                <label htmlFor="department" className="block text-sm font-medium text-muted-foreground mb-2">{t.department}</label>
+                                <CustomDropdown
+                                    id="department"
+                                    name="department"
+                                    value={form.department}
+                                    onChange={handleChange}
+                                    placeholder={t.selectDepartment}
+                                    options={departmentOptions}
+                                    loading={loadingDepartments}
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="service" className="block text-sm font-medium text-muted-foreground mb-2">{t.service}</label>
+                                <CustomDropdown
+                                    id="service"
+                                    name="service"
+                                    value={form.service}
+                                    onChange={handleChange}
+                                    disabled={!form.department}
+                                    placeholder={form.department ? t.selectService : t.selectDepartmentFirst}
+                                    options={serviceOptions}
+                                    loading={loadingServices}
+                                />
+                            </div>
+                        </Step>
+
+                        <div className="border-t border-border/30"></div>
+
+                        {/* Step 2: Agent Selection */}
+                        <Step icon={CalendarClockIcon} title={t.step2Title} description={t.step2Desc}>
+                            <div>
+                                <label htmlFor="position" className="block text-sm font-medium text-muted-foreground mb-2">{t.agentDesignation}</label>
+                                <CustomDropdown
+                                    id="position"
+                                    name="position"
+                                    value={form.position}
+                                    onChange={handleChange}
+                                    disabled={!form.department}
+                                    placeholder={form.department ? t.selectDesignation : t.selectDepartmentFirst}
+                                    options={positionOptions}
+                                    loading={loadingAgents}
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="agent" className="block text-sm font-medium text-muted-foreground mb-2">{t.agentName}</label>
+                                <CustomDropdown
+                                    id="agent"
+                                    name="agent"
+                                    value={form.agent}
+                                    onChange={handleChange}
+                                    disabled={!form.department}
+                                    placeholder={form.department ? t.selectAgent : t.selectDepartmentFirst}
+                                    options={agentOptions}
+                                    loading={loadingAgents}
+                                />
+                            </div>
+                        </Step>
+
+                        <div className="border-t border-border/30"></div>
+
+                        {/* Step 3: Schedule Selection */}
+                        <Step icon={ClockIcon} title={t.step3Title} description={t.step3Desc}>
+                            <div>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">{t.pickDay}</label>
+                                <div className="bg-card/50 dark:bg-card/60 backdrop-blur-md p-4 rounded-xl border border-border/30 modern-card">
+                                    <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
+                                        {days.map((d) => {
+                                            const isActive = form.day === d.key;
+                                            const dayOfWeek = d.date.getDay();
+                                            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                                            
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    key={d.key}
+                                                    onClick={() => !isWeekend && selectDay(d.key)}
+                                                    disabled={isWeekend}
+                                                    className={`rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-300 text-center backdrop-blur-sm hover:scale-105 ${
+                                                        isWeekend 
+                                                            ? 'bg-card/20 dark:bg-card/30 text-muted-foreground/50 cursor-not-allowed opacity-60 border border-border/20' 
+                                                            : isActive 
+                                                                ? 'bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white shadow-lg hover:shadow-2xl border border-[#FFC72C]/50' 
+                                                                : 'bg-card/50 dark:bg-card/70 hover:bg-card/70 dark:hover:bg-card/80 text-foreground hover:text-[#FFC72C] border border-border/30 hover:border-[#FFC72C]/60'
+                                                    }`}
+                                                >
+                                                    {d.label}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
+                                </div>
+                            </div>
 
-							<div>
-								<label className="block text-sm font-medium text-muted-foreground mb-2">{t.availableSlots}</label>
-								<div className="bg-card/50 dark:bg-card/60 backdrop-blur-md p-4 rounded-xl border border-border/30 modern-card">
-									{!form.day || !form.agent ? (
-										<div className="flex items-center justify-center text-center gap-3 py-12">
-											<InfoIcon className="w-8 h-8 text-muted-foreground/70" />
-											<div>
-												<p className="text-muted-foreground font-medium mb-1">{t.selectAgentAndDay}</p>
-												<p className="text-sm text-muted-foreground/70">{t.availableSlotsWillAppear}</p>
-											</div>
-										</div>
-									) : (
-										<div className="space-y-4">
-											<div className="flex items-center justify-between">
-												<h4 className="font-semibold text-foreground">
-													{t.availableTimesFor} {days.find(d => d.key === form.day)?.label}
-												</h4>
-												<div className="text-sm text-muted-foreground">
-													{Array.from(availableSlots).length} {t.slotsAvailable}
-												</div>
-											</div>
-                                                    
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                        {slots.map((s) => {
-                                                            const isAvailable = availableSlots.has(s);
-                                                            const isSelected = form.slot === s;
-                                                            return (
-                                                                <TimeSlotCard
-                                                                    key={s}
-                                                                    slot={s}
-                                                                    isAvailable={isAvailable}
-                                                                    isSelected={isSelected}
-                                                                    onSelect={() => selectSlot(s)}
-                                                                />
-                                                            );
-                                                        })}
-                                                    </div>
-                                                    
-											{Array.from(availableSlots).length === 0 && (
-												<div className="text-center py-8">
-													<AlertTriangleIcon className="w-12 h-12 text-[#FFC72C] mx-auto mb-3" />
-													<p className="text-muted-foreground font-medium mb-1">{t.noSlotsAvailable}</p>
-													<p className="text-sm text-muted-foreground/70">{t.tryDifferentDay}</p>
-												</div>
-											)}
+                            <div>
+                                <label className="block text-sm font-medium text-muted-foreground mb-2">{t.availableSlots}</label>
+                                <div className="bg-card/50 dark:bg-card/60 backdrop-blur-md p-4 rounded-xl border border-border/30 modern-card">
+                                    {!form.day || !form.agent ? (
+                                        <div className="flex items-center justify-center text-center gap-3 py-12">
+                                            <InfoIcon className="w-8 h-8 text-muted-foreground/70" />
+                                            <div>
+                                                <p className="text-muted-foreground font-medium mb-1">{t.selectAgentAndDay}</p>
+                                                <p className="text-sm text-muted-foreground/70">{t.availableSlotsWillAppear}</p>
+                                            </div>
+                                        </div>
+                                    ) : loadingSlots ? (
+                                        <div className="flex items-center justify-center py-12">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FFC72C]"></div>
+                                            <span className="ml-3 text-muted-foreground">Loading slots...</span>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="font-semibold text-foreground">
+                                                    {t.availableTimesFor} {getSelectedDay()}
+                                                </h4>
+                                                <div className="text-sm text-muted-foreground">
+                                                    {Array.from(availableSlots).length} {t.slotsAvailable}
+                                                </div>
+                                            </div>
+                                            
+                                            {Array.from(availableSlots).length > 0 ? (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                                    {Array.from(availableSlots).map((slot) => (
+                                                        <TimeSlotCard
+                                                            key={slot}
+                                                            slot={slot}
+                                                            isAvailable={true}
+                                                            isSelected={form.slot === slot}
+                                                            onSelect={() => selectSlot(slot)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-center py-8">
+                                                    <AlertTriangleIcon className="w-12 h-12 text-[#FFC72C] mx-auto mb-3" />
+                                                    <p className="text-muted-foreground font-medium mb-1">{t.noSlotsAvailable}</p>
+                                                    <p className="text-sm text-muted-foreground/70">{t.tryDifferentDay}</p>
                                                 </div>
                                             )}
                                         </div>
+                                    )}
+                                </div>
+                            </div>
+                        </Step>
+
+                        {/* Step 4: Document Upload */}
+                        {requiredDocuments.length > 0 && (
+                            <>
+                                <div className="border-t border-border/30"></div>
+                                <Step icon={FileUploadIcon} title={t.step4Title} description={t.step4Desc}>
+                                    <div className="space-y-6">
+                                        <div className="bg-card/40 dark:bg-card/50 backdrop-blur-md p-4 rounded-xl border border-border/30 modern-card">
+                                            <p className="text-xs text-[#FFC72C] font-medium flex items-center gap-2">
+                                                <InfoIcon className="w-4 h-4" />
+                                                {t.documentNote}
+                                            </p>
+                                        </div>
+                                        
+                                        {/* Required Documents */}
+                                        {requiredDocuments.filter(doc => doc.required).length > 0 && (
+                                            <div className="space-y-4">
+                                                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                                                    <AlertTriangleIcon className="w-4 h-4 text-[#FF5722]" />
+                                                    {t.requiredDocuments}
+                                                </h3>
+                                                <div className="grid md:grid-cols-2 gap-6">
+                                                    {requiredDocuments.filter(doc => doc.required).map((doc) => (
+                                                        <FileUpload
+                                                            key={doc.name}
+                                                            document={doc}
+                                                            file={files[doc.name] || null}
+                                                            onFileChange={(file) => handleFile(doc.name, file)}
+                                                            onRemove={() => handleFile(doc.name, null)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Optional Documents */}
+                                        {requiredDocuments.filter(doc => !doc.required).length > 0 && (
+                                            <div className="space-y-4">
+                                                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                                                    <InfoIcon className="w-4 h-4 text-[#FFC72C]" />
+                                                    {t.optionalDocuments}
+                                                </h3>
+                                                <div className="grid md:grid-cols-2 gap-6">
+                                                    {requiredDocuments.filter(doc => !doc.required).map((doc) => (
+                                                        <FileUpload
+                                                            key={doc.name}
+                                                            document={doc}
+                                                            file={files[doc.name] || null}
+                                                            onFileChange={(file) => handleFile(doc.name, file)}
+                                                            onRemove={() => handleFile(doc.name, null)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </Step>
-                                
-						<div className="border-t border-border/30"></div>
+                            </>
+                        )}
 
-						<Step icon={ClipboardIcon} title={t.step3Title} description={t.step3Desc}>
-							<div>
-								<label htmlFor="notes" className="block text-sm font-medium text-muted-foreground mb-2">{t.notes}</label>
-								<textarea 
-									id="notes" 
-									name="notes" 
-									value={form.notes} 
-									onChange={handleChange} 
-									rows={4} 
-									placeholder={t.notesPlaceholder} 
-									className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-md text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60 resize-none" 
-								/>
-							</div>
-						</Step>
+                        <div className="border-t border-border/30"></div>
 
-						<div className="border-t border-border/30 pt-8 flex flex-col sm:flex-row items-center justify-end gap-4">
-							<Link 
-								href="/User/Booking" 
-								className="w-full sm:w-auto px-6 py-3 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105 text-center"
-							>
-								{t.cancel}
-							</Link>
-							<button 
-								type="submit" 
-								disabled={submitting || !!success} 
-								className="w-full sm:w-auto px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-2xl"
-							>
-								{submitting ? t.submitting : (success ? t.booked : t.requestBooking)}
-							</button>
-						</div>
-					</div>
-				</form>
-			</div>
-		</UserDashboardLayout>
-	);
+                        {/* Step 5: Additional Notes */}
+                        <Step icon={ClipboardIcon} title={t.step5Title} description={t.step5Desc}>
+                            <div>
+                                <label htmlFor="notes" className="block text-sm font-medium text-muted-foreground mb-2">{t.notes}</label>
+                                <textarea 
+                                    id="notes" 
+                                    name="notes" 
+                                    value={form.notes} 
+                                    onChange={handleChange} 
+                                    rows={4} 
+                                    placeholder={t.notesPlaceholder} 
+                                    className="w-full px-4 py-3 bg-card/50 dark:bg-card/70 border border-border/50 rounded-xl focus:ring-2 focus:ring-[#FFC72C] focus:border-[#FFC72C] focus:outline-none transition-all duration-300 backdrop-blur-md text-foreground placeholder:text-muted-foreground hover:border-[#FFC72C]/60 resize-none" 
+                                />
+                            </div>
+                        </Step>
+
+                        {/* Booking Summary (post-submit) */}
+                        {submitted && (
+                            <div className="space-y-6">
+                                <div className="border-t border-border/30"></div>
+                                <div className="border border-border/40 rounded-2xl p-6 bg-card/40 dark:bg-card/50 backdrop-blur-md modern-card">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <CheckCircleIcon className="w-6 h-6 text-[#008060]" />
+                                        <h2 className="text-lg font-bold text-gradient">{t.appointmentSummary}</h2>
+                                    </div>
+                                    <div className="grid md:grid-cols-2 gap-4 text-sm">
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground">{t.reference}</p>
+                                            <p className="font-mono text-[#FFC72C] text-sm">{reference}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground">Department</p>
+                                            <p className="font-medium">{getDepartmentName()}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground">Service</p>
+                                            <p className="font-medium">{getServiceName()}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground">{t.agent}</p>
+                                            <p className="font-medium">{getAgentPosition()} - {getAgentName()}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground">{t.dateTime}</p>
+                                            <p className="font-medium">{getSelectedDay()} at {form.slot}</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-muted-foreground">Notes</p>
+                                            <p className="font-medium break-words">{form.notes || 'None'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="mt-6">
+                                        <h3 className="text-sm font-semibold mb-2 text-foreground">{t.uploadedDocuments}</h3>
+                                        <ul className="space-y-2 text-sm">
+                                            {requiredDocuments.map(doc => (
+                                                <li key={doc.name} className="flex items-center gap-2">
+                                                    <FileIcon className="w-4 h-4 text-[#FFC72C]" />
+                                                    <span>{doc.label}: </span>
+                                                    <span className="text-muted-foreground">
+                                                        {files[doc.name]?.name || (!doc.required ? `${t.optional} / ${t.notProvided}` : '—')}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between pt-4 border-t border-border/30">
+                            <div className="text-xs text-muted-foreground flex-1">
+                                Required documents: {requiredDocuments.filter(doc => doc.required).length}
+                            </div>
+                            <div className="flex gap-3 justify-end">
+                                {submitted && (
+                                    <button
+                                        type="button"
+                                        onClick={() => { setSubmitted(false); setSuccess(null); setReference(''); }}
+                                        className="px-5 py-3 rounded-xl border border-border/50 bg-card/50 hover:bg-card/70 text-sm font-medium transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105 text-foreground"
+                                    >{t.editBooking}</button>
+                                )}
+                                <Link 
+                                    href="/User/Booking" 
+                                    className="px-6 py-3 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105 text-center"
+                                >
+                                    {t.cancel}
+                                </Link>
+                                <button 
+                                    type="submit" 
+                                    disabled={submitting || !!success || !isAuthenticated} 
+                                    className="px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none shadow-lg hover:shadow-2xl"
+                                >
+                                    {submitting ? t.submitting : (submitted ? t.resubmit : t.requestBooking)}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                {/* Post-submission guidance */}
+                {submitted && (
+                    <div className="mt-8 bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow modern-card flex flex-col md:flex-row gap-6 items-start hover:border-[#008060]/30 transition-all duration-500">
+                        <div className="w-12 h-12 rounded-full bg-[#008060]/20 flex items-center justify-center border border-[#008060]/30">
+                            <CheckCircleIcon className="w-6 h-6 text-[#008060]" />
+                        </div>
+                        <div className="space-y-3 flex-1">
+                            <h3 className="text-lg font-bold text-gradient">{t.whatHappensNext}</h3>
+                            <ul className="text-sm space-y-2 text-muted-foreground list-disc pl-5">
+                                <li>{t.nextSteps.step1} <span className="text-[#FFC72C] font-mono">{reference}</span>.</li>
+                                <li>{t.nextSteps.step2}.</li>
+                                <li>{t.nextSteps.step3}.</li>
+                            </ul>
+                            <div className="pt-2 flex flex-wrap gap-3">
+                                <Link href="/User/Dashboard" className="px-5 py-2.5 rounded-xl border border-border/50 bg-card/50 hover:bg-card/70 text-sm font-medium transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105 flex items-center gap-2 text-foreground">
+                                    <HomeIcon className="w-4 h-4" /> {t.dashboard}
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </UserDashboardLayout>
+    );
 }

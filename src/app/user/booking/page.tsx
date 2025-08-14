@@ -181,7 +181,7 @@ export default function BookingListPage() {
             {/* Back Button and Create Button */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-16">
                 <Link 
-                    href="/User/Dashboard"
+                    href="/user/dashboard"
                     className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
                 >
                     <ArrowLeftIcon className="w-4 h-4" />
