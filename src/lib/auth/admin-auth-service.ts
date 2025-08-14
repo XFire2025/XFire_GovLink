@@ -1,12 +1,9 @@
-import { IAdmin } from '../models/adminSchema';
-import Admin from '../models/adminSchema';
-import { verifyPassword } from './user-password';
-import { 
-  generateTokenPair, 
-  verifyRefreshToken
-} from './user-jwt';
-import { IUser } from '../models/userSchema';
-import connectDB from '../db';
+import { IAdmin } from "../models/adminSchema";
+import Admin from "../models/adminSchema";
+import { verifyPassword } from "./user-password";
+import { generateTokenPair, verifyRefreshToken } from "./user-jwt";
+import { IUser } from "../models/userSchema";
+import connectDB from "../db";
 
 // Admin login data interface
 export interface AdminLoginData {
@@ -29,34 +26,37 @@ export interface AdminAuthResponse {
 
 // Admin auth service class
 export class AdminAuthService {
-  
   // Login admin
-  static async loginAdmin(loginData: AdminLoginData): Promise<AdminAuthResponse> {
+  static async loginAdmin(
+    loginData: AdminLoginData
+  ): Promise<AdminAuthResponse> {
     try {
       await connectDB();
 
       const { email, password } = loginData;
 
       // Find admin by email
-      const admin = await Admin.findOne({ 
-        email: email.toLowerCase().trim() 
-      }).select('+password');
+      const admin = await Admin.findOne({
+        email: email.toLowerCase().trim(),
+      }).select("+password");
 
       if (!admin) {
         return {
           success: false,
-          message: 'Invalid email or password',
-          errors: ['Admin not found']
+          message: "Invalid email or password",
+          errors: ["Admin not found"],
         };
       }
 
       // Check if account is locked
       if (admin.accountLockedUntil && admin.accountLockedUntil > new Date()) {
-        const lockTime = Math.ceil((admin.accountLockedUntil.getTime() - Date.now()) / (1000 * 60));
+        const lockTime = Math.ceil(
+          (admin.accountLockedUntil.getTime() - Date.now()) / (1000 * 60)
+        );
         return {
           success: false,
           message: `Account is locked. Try again in ${lockTime} minutes.`,
-          errors: ['Account temporarily locked']
+          errors: ["Account temporarily locked"],
         };
       }
 
@@ -69,37 +69,41 @@ export class AdminAuthService {
           loginAttempts: number;
           accountLockedUntil?: Date;
         } = {
-          loginAttempts: (admin.loginAttempts || 0) + 1
+          loginAttempts: (admin.loginAttempts || 0) + 1,
         };
-        
+
         // Lock account after 3 failed attempts (more strict for admin)
         if (updateData.loginAttempts >= 3) {
           updateData.accountLockedUntil = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
         }
-        
-        await Admin.findByIdAndUpdate(admin._id, updateData, { runValidators: false });
+
+        await Admin.findByIdAndUpdate(admin._id, updateData, {
+          runValidators: false,
+        });
 
         return {
           success: false,
-          message: 'Invalid email or password',
-          errors: ['Incorrect password']
+          message: "Invalid email or password",
+          errors: ["Incorrect password"],
         };
       }
 
       // Check account status
-      if (admin.accountStatus === 'SUSPENDED') {
+      if (admin.accountStatus === "SUSPENDED") {
         return {
           success: false,
-          message: 'Your admin account has been suspended. Please contact system administrator.',
-          errors: ['Account suspended']
+          message:
+            "Your admin account has been suspended. Please contact system administrator.",
+          errors: ["Account suspended"],
         };
       }
 
-      if (admin.accountStatus === 'DEACTIVATED') {
+      if (admin.accountStatus === "DEACTIVATED") {
         return {
           success: false,
-          message: 'Your admin account has been deactivated. Please contact system administrator.',
-          errors: ['Account deactivated']
+          message:
+            "Your admin account has been deactivated. Please contact system administrator.",
+          errors: ["Account deactivated"],
         };
       }
 
@@ -109,7 +113,7 @@ export class AdminAuthService {
         {
           loginAttempts: 0,
           accountLockedUntil: undefined,
-          lastLoginAt: new Date()
+          lastLoginAt: new Date(),
         },
         { runValidators: false }
       );
@@ -118,36 +122,38 @@ export class AdminAuthService {
       const adminUser = {
         _id: admin._id,
         email: admin.email,
-        role: 'admin',
-        fullName: admin.fullName
+        role: admin.role === "SUPERADMIN" ? "superadmin" : "admin", // Map to lowercase for JWT
+        fullName: admin.fullName,
       } as const;
-  const tokens = generateTokenPair(adminUser as IUser);
+      const tokens = generateTokenPair(adminUser as IUser);
 
       return {
         success: true,
-        message: 'Admin login successful',
+        message: "Admin login successful",
         admin: {
           _id: admin._id,
           fullName: admin.fullName,
           email: admin.email,
+          role: admin.role,
           accountStatus: admin.accountStatus,
-          lastLoginAt: admin.lastLoginAt
+          lastLoginAt: admin.lastLoginAt,
         },
-        tokens
+        tokens,
       };
-
     } catch (error) {
-      console.error('Admin login error:', error);
+      console.error("Admin login error:", error);
       return {
         success: false,
-        message: 'Login failed due to server error',
-        errors: ['Internal server error occurred']
+        message: "Login failed due to server error",
+        errors: ["Internal server error occurred"],
       };
     }
   }
 
   // Refresh admin access token
-  static async refreshAdminToken(refreshToken: string): Promise<AdminAuthResponse> {
+  static async refreshAdminToken(
+    refreshToken: string
+  ): Promise<AdminAuthResponse> {
     try {
       await connectDB();
 
@@ -159,17 +165,17 @@ export class AdminAuthService {
       if (!admin) {
         return {
           success: false,
-          message: 'Admin not found',
-          errors: ['Invalid refresh token - admin not found']
+          message: "Admin not found",
+          errors: ["Invalid refresh token - admin not found"],
         };
       }
 
       // Check account status
-      if (admin.accountStatus !== 'ACTIVE') {
+      if (admin.accountStatus !== "ACTIVE") {
         return {
           success: false,
-          message: 'Admin account is not active',
-          errors: ['Account not active']
+          message: "Admin account is not active",
+          errors: ["Account not active"],
         };
       }
 
@@ -177,30 +183,30 @@ export class AdminAuthService {
       const adminUser = {
         _id: admin._id,
         email: admin.email,
-        role: 'admin',
-        fullName: admin.fullName
+        role: admin.role === "SUPERADMIN" ? "superadmin" : "admin", // Map to lowercase for JWT
+        fullName: admin.fullName,
       } as const;
-  const tokens = generateTokenPair(adminUser as IUser);
+      const tokens = generateTokenPair(adminUser as IUser);
 
       return {
         success: true,
-        message: 'Token refreshed successfully',
+        message: "Token refreshed successfully",
         admin: {
           _id: admin._id,
           fullName: admin.fullName,
           email: admin.email,
+          role: admin.role,
           accountStatus: admin.accountStatus,
-          lastLoginAt: admin.lastLoginAt
+          lastLoginAt: admin.lastLoginAt,
         },
-        tokens
+        tokens,
       };
-
     } catch (error) {
-      console.error('Admin token refresh error:', error);
+      console.error("Admin token refresh error:", error);
       return {
         success: false,
-        message: 'Token refresh failed',
-        errors: ['Invalid or expired refresh token']
+        message: "Token refresh failed",
+        errors: ["Invalid or expired refresh token"],
       };
     }
   }
@@ -214,52 +220,55 @@ export class AdminAuthService {
       if (!admin) {
         return {
           success: false,
-          message: 'Admin not found',
-          errors: ['Admin not found']
+          message: "Admin not found",
+          errors: ["Admin not found"],
         };
       }
 
       return {
         success: true,
-        message: 'Admin profile retrieved successfully',
+        message: "Admin profile retrieved successfully",
         admin: {
           _id: admin._id,
           fullName: admin.fullName,
           email: admin.email,
+          role: admin.role,
           accountStatus: admin.accountStatus,
-          lastLoginAt: admin.lastLoginAt
-        }
+          lastLoginAt: admin.lastLoginAt,
+        },
       };
-
     } catch (error) {
-      console.error('Get admin profile error:', error);
+      console.error("Get admin profile error:", error);
       return {
         success: false,
-        message: 'Failed to retrieve admin profile',
-        errors: ['Internal server error occurred']
+        message: "Failed to retrieve admin profile",
+        errors: ["Internal server error occurred"],
       };
     }
   }
 
   // Validate admin login data
-  static validateLoginData(loginData: AdminLoginData): { isValid: boolean; errors: string[] } {
+  static validateLoginData(loginData: AdminLoginData): {
+    isValid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
     if (!loginData.email) {
-      errors.push('Email is required');
+      errors.push("Email is required");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginData.email)) {
-      errors.push('Invalid email format');
+      errors.push("Invalid email format");
     }
 
     if (!loginData.password) {
-      errors.push('Password is required');
+      errors.push("Password is required");
     } else if (loginData.password.length < 6) {
-      errors.push('Password must be at least 6 characters');
+      errors.push("Password must be at least 6 characters");
     }
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }

@@ -1,10 +1,17 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 
 export interface Admin {
   _id: string;
   fullName: string;
   email: string;
-  accountStatus: 'ACTIVE' | 'SUSPENDED' | 'DEACTIVATED';
+  role: "ADMIN" | "SUPERADMIN";
+  accountStatus: "ACTIVE" | "SUSPENDED" | "DEACTIVATED";
   lastLoginAt?: Date;
 }
 
@@ -12,17 +19,22 @@ interface AdminAuthContextType {
   admin: Admin | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; message: string; admin?: Admin }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; message: string; admin?: Admin }>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
 }
 
-const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined);
+const AdminAuthContext = createContext<AdminAuthContextType | undefined>(
+  undefined
+);
 
 export const useAdminAuth = () => {
   const context = useContext(AdminAuthContext);
   if (context === undefined) {
-    throw new Error('useAdminAuth must be used within an AdminAuthProvider');
+    throw new Error("useAdminAuth must be used within an AdminAuthProvider");
   }
   return context;
 };
@@ -31,7 +43,9 @@ interface AdminAuthProviderProps {
   children: React.ReactNode;
 }
 
-export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }) => {
+export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({
+  children,
+}) => {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -39,9 +53,9 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
   // Refresh admin token
   const refreshToken = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await fetch('/api/auth/admin/refresh', {
-        method: 'POST',
-        credentials: 'include',
+      const response = await fetch("/api/auth/admin/refresh", {
+        method: "POST",
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -55,7 +69,7 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
         return false;
       }
     } catch (error) {
-      console.error('Admin token refresh failed:', error);
+      console.error("Admin token refresh failed:", error);
       setAdmin(null);
       setIsAuthenticated(false);
       return false;
@@ -66,9 +80,9 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await fetch('/api/auth/admin/me', {
-          method: 'GET',
-          credentials: 'include',
+        const response = await fetch("/api/auth/admin/me", {
+          method: "GET",
+          credentials: "include",
         });
 
         if (response.ok) {
@@ -84,7 +98,7 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
           }
         }
       } catch (error) {
-        console.error('Admin auth check failed:', error);
+        console.error("Admin auth check failed:", error);
         setAdmin(null);
         setIsAuthenticated(false);
       } finally {
@@ -98,12 +112,12 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
   // Admin login
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/admin/login', {
-        method: 'POST',
+      const response = await fetch("/api/auth/admin/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 
@@ -114,23 +128,26 @@ export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }
         setIsAuthenticated(true);
         return { success: true, message: data.message, admin: data.admin };
       } else {
-        return { success: false, message: data.message || 'Admin login failed' };
+        return {
+          success: false,
+          message: data.message || "Admin login failed",
+        };
       }
     } catch (error) {
-      console.error('Admin login error:', error);
-      return { success: false, message: 'Network error. Please try again.' };
+      console.error("Admin login error:", error);
+      return { success: false, message: "Network error. Please try again." };
     }
   };
 
   // Admin logout
   const logout = async () => {
     try {
-      await fetch('/api/auth/admin/logout', {
-        method: 'POST',
-        credentials: 'include',
+      await fetch("/api/auth/admin/logout", {
+        method: "POST",
+        credentials: "include",
       });
     } catch (error) {
-      console.error('Admin logout error:', error);
+      console.error("Admin logout error:", error);
     } finally {
       setAdmin(null);
       setIsAuthenticated(false);
