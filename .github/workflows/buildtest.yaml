@@ -11,10 +11,11 @@ on:
       - '**'
 
 jobs:
-  # JOB 1: Build the application and store it as an artifact.
-  # This runs for all pushes and PRs to ensure the build is always healthy.
   build:
     runs-on: ubuntu-latest
+    # This output will tell the next job if the artifact was created successfully
+    outputs:
+      build_success: ${{ steps.upload_artifact.outcome == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,7 +31,6 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.next/cache
-          # Use the same key for all branches to share cache
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-
@@ -39,33 +39,40 @@ jobs:
         run: npm ci
 
       - name: Build with OpenNext
-        # Provide all necessary build-time environment variables
         env:
-          # These secrets are required for `next build` to succeed without errors
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
-          EMAIL_PORT: ${{ secrets.EMAIL_PORT }}
-          EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
-          # Add any other build-time secrets here
-        run: npm run build:deploy # This command should run `open-next build`
+          # This block maps the GitHub Secrets you created to the environment variables
+          # that your Next.js application expects to find.
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MAIL_ID: ${{ secrets.MAIL_ID }}
+          MAIL_PW: ${{ secrets.MAIL_PW }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          
+          # We force NODE_ENV to production for the build
+          NODE_ENV: production
+          # You should replace this with your actual production URL
+          NEXT_PUBLIC_APP_URL: "https://your-production-url.com" 
+        run: npm run build:deploy
 
       - name: Upload OpenNext build artifact
+        id: upload_artifact
         uses: actions/upload-artifact@v4
         with:
           name: open-next-build
-          path: .open-next # This is the output directory for `open-next build`
+          path: .open-next # This directory should now be created successfully
 
-  # JOB 2: Deploy the application to AWS.
-  # This job ONLY runs on pushes to specific branches and depends on a successful build.
   deploy-to-aws:
-    needs: build # This job depends on the 'build' job completing successfully
-    # Condition: Run only on a push (not a PR) to the main or CI-CD branch
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI-CD')
+    needs: build
+    # This job will only run if the build job was successful and on a push to a deployable branch
+    if: needs.build.outputs.build_success == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/CI-CD')
     runs-on: ubuntu-latest
-    environment: production # Use GitHub environments for protection rules and secrets
     permissions:
-      id-token: write # Required for OIDC, a more secure way to authenticate with AWS
+      id-token: write # Best practice for AWS auth, though we are using keys for now
       contents: read
 
     steps:
@@ -79,15 +86,14 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      # We don't need to install all dependencies, just the ones for deployment (CDK)
-      - name: Install deployment dependencies
-        run: npm ci --omit=dev # Installs only production dependencies if needed, but we'll run full ci for cdk dev deps
+      - name: Install All Dependencies (including dev for CDK)
+        run: npm ci
 
       - name: Download OpenNext build artifact
         uses: actions/download-artifact@v4
         with:
           name: open-next-build
-          path: . # Download to the root directory
+          path: . 
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -101,32 +107,6 @@ jobs:
 
       - name: Bootstrap CDK (if needed)
         run: cdk bootstrap --require-approval never
-        env:
-          AWS_REGION: us-east-1
 
       - name: Deploy with CDK
         run: cdk deploy --all --require-approval never
-        env:
-          AWS_REGION: us-east-1
-          # Pass any deployment-time secrets your CDK stack needs
-          # EXAMPLE_SECRET: ${{ secrets.EXAMPLE_SECRET }}
-
-      - name: Get CloudFormation Outputs
-        id: cf-outputs
-        run: |
-          # A more robust way to get the stack name from cdk.out
-          STACK_NAME=$(cat cdk.out/manifest.json | jq -r '.artifacts | to_entries[] | select(.value.type == "aws:cloudformation:stack") | .key' | head -n 1)
-          if [ ! -z "$STACK_NAME" ]; then
-            DOMAIN=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --query "Stacks[0].Outputs[?OutputKey=='DomainName'].OutputValue" --output text)
-            echo "domain=$DOMAIN" >> $GITHUB_OUTPUT
-            echo "stack-name=$STACK_NAME" >> $GITHUB_OUTPUT
-          else
-            echo "Could not determine CloudFormation stack name."
-          fi
-
-      - name: Display Deployment Info
-        if: steps.cf-outputs.outputs.domain
-        run: |
-          echo "🚀 Deployment successful!"
-          echo "📍 Application URL: https://${{ steps.cf-outputs.outputs.domain }}"
-          echo "📦 CloudFormation Stack: ${{ steps.cf-outputs.outputs.stack-name }}"
