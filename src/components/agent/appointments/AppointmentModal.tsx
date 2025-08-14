@@ -9,14 +9,6 @@ type Language = 'en' | 'si' | 'ta';
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 type ServiceType = 'passport' | 'license' | 'certificate' | 'registration' | 'visa';
 
-interface AppointmentFile {
-  id: string;
-  fileName: string;
-  fileType: string;
-  fileSize: number;
-  fileUrl: string;
-}
-
 interface Appointment {
   id: string;
   citizenName: string;
@@ -32,7 +24,17 @@ interface Appointment {
   submittedDate: string;
   bookingReference?: string;
   agentNotes?: string;
-  attachments?: AppointmentFile[];
+}
+
+// UPDATED: This is the detailed appointment data we will fetch
+interface DetailedAppointment extends Appointment {
+  documents?: {
+    id: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    url: string | null; // Can be null if presigned URL fails
+  }[];
 }
 
 interface AppointmentUpdateData {
@@ -49,7 +51,7 @@ interface AppointmentModalProps {
   language?: Language;
 }
 
-// Modal translations
+// Modal translations (No changes needed here)
 const modalTranslations: Record<Language, {
   appointmentDetails: string;
   citizenInformation: string;
@@ -190,7 +192,7 @@ const modalTranslations: Record<Language, {
     updatingStatus: 'තත්ත්වය යාවත්කාලීන කරමින්...',
     sendingNotification: 'දැනුම්දීම යවමින්...',
     savingNotes: 'සටහන් සුරකිමින්...',
-    bookingReference: 'වෙන්කරගැනුම් අංකය',
+    bookingReference: 'වෙන්කරගැනීම් අංකය',
     cancellationReason: 'අවලංගු කිරීමේ හේතුව',
     noAttachments: 'ඇමුණුම් උඩුගත කර නැත',
     viewDocument: 'ලේඛනය බලන්න',
@@ -289,49 +291,55 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   onStatusUpdate,
   language = 'en'
 }) => {
+  const [detailedAppointment, setDetailedAppointment] = useState<DetailedAppointment | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(true);
   const [newStatus, setNewStatus] = useState<AppointmentStatus>(appointment.status);
   const [additionalNotes, setAdditionalNotes] = useState(appointment.agentNotes || '');
   const [notificationType, setNotificationType] = useState<'sms' | 'email' | 'both'>('email');
   const [cancellationReason, setCancellationReason] = useState('');
   
-  // Loading states
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isSendingNotification, setIsSendingNotification] = useState(false);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
   
-  // Message states
   const [showNotificationSuccess, setShowNotificationSuccess] = useState(false);
   const [showNotificationError, setShowNotificationError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   
   const [activeTab, setActiveTab] = useState<'details' | 'attachments' | 'history'>('details');
   
-  // File viewer state
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
 
   const t = modalTranslations[language];
 
-  // Load detailed appointment data when modal opens
   const loadAppointmentDetails = useCallback(async () => {
+    if (!appointment.id) return;
+    setIsLoadingDetails(true);
     try {
       const result = await appointmentService.getAppointment(appointment.id);
-      
       if (result.success && result.data) {
+        setDetailedAppointment(result.data as DetailedAppointment);
         setAdditionalNotes(result.data.agentNotes || '');
+      } else {
+        setErrorMessage(result.message || 'Failed to load details');
       }
     } catch (error) {
       console.error('Error loading appointment details:', error);
+      setErrorMessage('Failed to load details');
+    } finally {
+      setIsLoadingDetails(false);
     }
   }, [appointment.id]);
 
   useEffect(() => {
-    if (isOpen && appointment.id) {
+    if (isOpen) {
       loadAppointmentDetails();
+    } else {
+      setDetailedAppointment(null);
     }
-  }, [isOpen, appointment.id, loadAppointmentDetails]);
+  }, [isOpen, loadAppointmentDetails]);
 
-  // Reset states when appointment changes
   useEffect(() => {
     setNewStatus(appointment.status);
     setAdditionalNotes(appointment.agentNotes || '');
@@ -415,7 +423,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
       );
       
       if (result.success) {
-        // Notes saved successfully
         console.log('Notes saved successfully');
       } else {
         setErrorMessage(result.message || 'Failed to save notes');
@@ -429,7 +436,6 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   };
 
   const handleViewHistory = () => {
-    // Mock view history functionality
     console.log(`Viewing history for citizen ${appointment.citizenId}`);
   };
 
@@ -438,10 +444,15 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     setIsViewerOpen(true);
   };
 
-  const handleDownloadFile = (file: AppointmentFile) => {
+  const handleDownloadFile = (file: { fileName: string; url: string | null }) => {
+    if (!file.url) {
+      console.error("Cannot download file, URL is missing.");
+      setErrorMessage("Could not generate a secure download link for this file. Please try again later.");
+      return;
+    }
     console.log(`Downloading file: ${file.fileName}`);
     const link = document.createElement('a');
-    link.href = file.fileUrl;
+    link.href = file.url;
     link.download = file.fileName;
     document.body.appendChild(link);
     link.click();
@@ -449,8 +460,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
   };
 
   const handleDownloadAll = () => {
-    if (appointment.attachments) {
-      appointment.attachments.forEach(file => {
+    if (detailedAppointment?.documents) {
+      detailedAppointment.documents.forEach(file => {
         setTimeout(() => handleDownloadFile(file), 100);
       });
     }
@@ -601,7 +612,11 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
               </div>
             )}
 
-            {activeTab === 'details' && (
+            {isLoadingDetails ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="w-8 h-8 border-4 border-[#FFC72C]/20 border-t-[#FFC72C] rounded-full animate-spin"></div>
+              </div>
+            ) : activeTab === 'details' && detailedAppointment ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left Column */}
                 <div className="space-y-6">
@@ -617,11 +632,11 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                     <div className="space-y-3">
                       <div>
                         <span className="text-sm text-muted-foreground">{t.name}:</span>
-                        <p className="font-medium text-foreground">{appointment.citizenName}</p>
+                        <p className="font-medium text-foreground">{detailedAppointment.citizenName}</p>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">{t.citizenId}:</span>
-                        <p className="font-medium text-foreground font-mono">{appointment.citizenId}</p>
+                        <p className="font-medium text-foreground font-mono">{detailedAppointment.citizenId}</p>
                       </div>
                     </div>
 
@@ -641,11 +656,11 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                     <div className="space-y-3">
                       <div>
                         <span className="text-sm text-muted-foreground">{t.email}:</span>
-                        <p className="font-medium text-foreground">{appointment.contactEmail}</p>
+                        <p className="font-medium text-foreground">{detailedAppointment.contactEmail}</p>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">{t.phone}:</span>
-                        <p className="font-medium text-foreground">{appointment.contactPhone}</p>
+                        <p className="font-medium text-foreground">{detailedAppointment.contactPhone}</p>
                       </div>
                     </div>
 
@@ -666,30 +681,30 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                     <div className="space-y-3">
                       <div>
                         <span className="text-sm text-muted-foreground">{t.serviceType}:</span>
-                        <p className="font-medium text-foreground">{t.services[appointment.serviceType]}</p>
+                        <p className="font-medium text-foreground">{t.services[detailedAppointment.serviceType]}</p>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">{t.appointmentDate}:</span>
-                        <p className="font-medium text-foreground">{formatDate(appointment.date)}</p>
+                        <p className="font-medium text-foreground">{formatDate(detailedAppointment.date)}</p>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">{t.appointmentTime}:</span>
-                        <p className="font-medium text-foreground">{formatTime(appointment.time)}</p>
+                        <p className="font-medium text-foreground">{formatTime(detailedAppointment.time)}</p>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">{t.submittedDate}:</span>
-                        <p className="font-medium text-foreground">{formatDate(appointment.submittedDate)}</p>
+                        <p className="font-medium text-foreground">{formatDate(detailedAppointment.submittedDate)}</p>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">{t.priority}:</span>
-                        <span className={`font-medium ${appointment.priority === 'urgent' ? 'text-[#FF5722]' : 'text-foreground'}`}>
-                          {t.priorities[appointment.priority]}
+                        <span className={`font-medium ${detailedAppointment.priority === 'urgent' ? 'text-[#FF5722]' : 'text-foreground'}`}>
+                          {t.priorities[detailedAppointment.priority]}
                         </span>
                       </div>
                       <div>
                         <span className="text-sm text-muted-foreground">{t.currentStatus}:</span>
-                        <span className={`font-medium ${getStatusColor(appointment.status)}`}>
-                          {t.statuses[appointment.status]}
+                        <span className={`font-medium ${getStatusColor(detailedAppointment.status)}`}>
+                          {t.statuses[detailedAppointment.status]}
                         </span>
                       </div>
                     </div>
@@ -703,10 +718,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                 {/* Right Column */}
                 <div className="space-y-6">
                   {/* Notes */}
-                  {appointment.notes && (
+                  {detailedAppointment.notes && (
                     <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card hover:border-[#8D153A]/50 group relative overflow-hidden">
                       <h3 className="text-lg font-semibold text-foreground mb-4 group-hover:text-[#8D153A] transition-colors duration-300">{t.notes}</h3>
-                      <p className="text-foreground italic">"{appointment.notes}"</p>
+                      <p className="text-foreground italic">&ldquo;{detailedAppointment.notes}&rdquo;</p>
 
                       <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                         <div className="absolute inset-0 bg-gradient-to-br from-[#8D153A]/5 via-transparent to-[#FF5722]/5 rounded-2xl"></div>
@@ -749,7 +764,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                           </div>
                         )}
                         
-                        {newStatus !== appointment.status && (
+                        {newStatus !== detailedAppointment.status && (
                           <button
                             onClick={handleStatusUpdate}
                             disabled={isUpdatingStatus || (newStatus === 'cancelled' && !cancellationReason.trim())}
@@ -809,7 +824,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                           rows={3}
                           placeholder="Add internal notes about this appointment..."
                         />
-                        {additionalNotes.trim() !== (appointment.agentNotes || '').trim() && (
+                        {additionalNotes.trim() !== (detailedAppointment.agentNotes || '').trim() && (
                           <button
                             onClick={handleSaveNotes}
                             disabled={isSavingNotes}
@@ -847,13 +862,11 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   </div>
                 </div>
               </div>
-            )}
-
-            {activeTab === 'attachments' && (
+            ) : activeTab === 'attachments' && detailedAppointment ? (
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-semibold text-foreground">{t.attachments}</h3>
-                  {appointment.attachments && appointment.attachments.length > 0 && (
+                  {detailedAppointment.documents && detailedAppointment.documents.length > 0 && (
                     <button
                       onClick={handleDownloadAll}
                       className="px-4 py-2 bg-gradient-to-r from-[#008060] to-[#FFC72C] text-white rounded-lg hover:from-[#FFC72C] hover:to-[#FF5722] transition-all duration-300 text-sm font-medium"
@@ -863,10 +876,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   )}
                 </div>
 
-                {appointment.attachments && appointment.attachments.length > 0 ? (
+                {detailedAppointment.documents && detailedAppointment.documents.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {appointment.attachments.map((file, index) => (
-                      <div key={file.id} className="glass-morphism p-4 rounded-xl border border-border/30 hover:border-[#FFC72C] transition-all duration-300">
+                    {detailedAppointment.documents.map((file, index) => (
+                      <div key={file.id} className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-4 rounded-xl border border-border/30 hover:border-[#FFC72C] transition-all duration-300">
                         <div className="flex items-start gap-3">
                           {getFileIcon(file.fileType)}
                           <div className="flex-1 min-w-0">
@@ -902,9 +915,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                   </div>
                 )}
               </div>
-            )}
-
-            {activeTab === 'history' && (
+            ) : activeTab === 'history' && detailedAppointment ? (
               <div>
                 <h3 className="text-xl font-semibold text-foreground mb-6">{t.statusHistory}</h3>
                 <div className="space-y-4">
@@ -917,22 +928,22 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                     </div>
                     <div>
                       <h4 className="font-medium text-foreground">Appointment Created</h4>
-                      <p className="text-sm text-muted-foreground">{formatDate(appointment.submittedDate)}</p>
-                      <p className="text-sm text-muted-foreground">Appointment booked by {appointment.citizenName}</p>
+                      <p className="text-sm text-muted-foreground">{formatDate(detailedAppointment.submittedDate)}</p>
+                      <p className="text-sm text-muted-foreground">Appointment booked by {detailedAppointment.citizenName}</p>
                     </div>
                   </div>
 
-                  {appointment.status !== 'pending' && (
+                  {detailedAppointment.status !== 'pending' && (
                     <div className="flex gap-4 p-4 bg-card/90 dark:bg-card/95 backdrop-blur-md border border-border/50 rounded-2xl shadow-glow modern-card hover:shadow-xl transition-all duration-300">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        appointment.status === 'confirmed' ? 'bg-[#008060]' :
-                        appointment.status === 'cancelled' ? 'bg-[#FF5722]' :
+                        detailedAppointment.status === 'confirmed' ? 'bg-[#008060]' :
+                        detailedAppointment.status === 'cancelled' ? 'bg-[#FF5722]' :
                         'bg-[#8D153A]'
                       }`}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          {appointment.status === 'confirmed' ? (
+                          {detailedAppointment.status === 'confirmed' ? (
                             <polyline points="20 6 9 17 4 12"/>
-                          ) : appointment.status === 'cancelled' ? (
+                          ) : detailedAppointment.status === 'cancelled' ? (
                             <>
                               <line x1="18" y1="6" x2="6" y2="18"/>
                               <line x1="6" y1="6" x2="18" y2="18"/>
@@ -946,17 +957,17 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-medium text-foreground">Status Updated: {t.statuses[appointment.status]}</h4>
+                        <h4 className="font-medium text-foreground">Status Updated: {t.statuses[detailedAppointment.status]}</h4>
                         <p className="text-sm text-muted-foreground">Updated by agent</p>
-                        {appointment.notes && (
-                          <p className="text-sm text-foreground mt-1">"{appointment.notes}"</p>
+                        {detailedAppointment.notes && (
+                          <p className="text-sm text-foreground mt-1">&ldquo;{detailedAppointment.notes}&rdquo;</p>
                         )}
                       </div>
                     </div>
                   )}
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Footer */}
@@ -984,10 +995,17 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
         </div>
       </div>
 
-      {/* File Viewer Modal */}
-      {appointment.attachments && appointment.attachments.length > 0 && (
+      {detailedAppointment?.documents && detailedAppointment.documents.length > 0 && (
         <AppointmentViewer
-          files={appointment.attachments}
+          files={detailedAppointment.documents
+            .filter(doc => doc.url) // Filter out any docs where URL generation failed
+            .map(doc => ({
+              id: doc.id,
+              fileName: doc.fileName,
+              fileType: doc.fileType,
+              fileSize: doc.fileSize,
+              fileUrl: doc.url! // Use non-null assertion because we filtered
+          }))}
           isOpen={isViewerOpen}
           onClose={() => setIsViewerOpen(false)}
           initialFileIndex={selectedFileIndex}

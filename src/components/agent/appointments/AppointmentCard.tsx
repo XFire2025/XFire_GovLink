@@ -7,14 +7,6 @@ type Language = 'en' | 'si' | 'ta';
 type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 type ServiceType = 'passport' | 'license' | 'certificate' | 'registration' | 'visa';
 
-interface AppointmentFile {
-  id: string;
-  fileName: string;
-  fileType: string;
-  fileSize: number;
-  fileUrl: string;
-}
-
 interface Appointment {
   id: string;
   citizenName: string;
@@ -30,7 +22,13 @@ interface Appointment {
   submittedDate: string;
   bookingReference?: string;
   agentNotes?: string;
-  attachments?: AppointmentFile[];
+  documents?: {
+    id: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    url: string;
+  }[];
 }
 
 interface AppointmentCardProps {
@@ -85,7 +83,7 @@ const cardTranslations: Record<Language, {
   si: {
     time: 'වේලාව',
     citizenId: 'පුරවැසි හැඳුනුම්පත',
-    submitted: 'ගොනු කරන ලදී',
+    submitted: 'ඉදිරිපත් කරන ලදී',
     urgentPriority: 'හදිසි',
     viewDetails: 'විස්තර බලන්න',
     quickActions: 'ඉක්මන් ක්‍රියා',
@@ -320,32 +318,20 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
               </div>
 
               {/* Attachments - NEW */}
-              {appointment.attachments && appointment.attachments.length > 0 && (
-                <div className="flex items-center gap-2 mt-3">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
+              {appointment.documents && appointment.documents.length > 0 && (
+                <div className="flex items-center gap-2 mt-3 text-muted-foreground group-hover:text-[#FFC72C] transition-colors duration-300">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                   </svg>
-                  <span className="text-sm text-muted-foreground">
-                    {appointment.attachments.length} {t.attachments}
+                  <span className="text-sm font-medium">
+                    {appointment.documents.length} {t.attachments}
                   </span>
-                  <div className="flex flex-wrap gap-1">
-                    {appointment.attachments.slice(0, 2).map((file) => (
-                      <span key={file.id} className="text-xs bg-card/30 px-2 py-1 rounded text-muted-foreground">
-                        {file.fileName.length > 15 ? `${file.fileName.substring(0, 15)}...` : file.fileName}
-                      </span>
-                    ))}
-                    {appointment.attachments.length > 2 && (
-                      <span className="text-xs text-muted-foreground">
-                        +{appointment.attachments.length - 2} more
-                      </span>
-                    )}
-                  </div>
                 </div>
               )}
 
               {appointment.notes && (
                 <div className="mt-3 p-3 bg-card/30 rounded-lg border border-border/30">
-                  <p className="text-sm text-muted-foreground italic">"{appointment.notes}"</p>
+                  <p className="text-sm text-muted-foreground italic">&ldquo;{appointment.notes}&rdquo;</p>
                 </div>
               )}
             </div>
