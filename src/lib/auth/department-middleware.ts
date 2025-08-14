@@ -45,7 +45,7 @@ export async function departmentAuthMiddleware(request: NextRequest): Promise<De
     }
 
     // Check if it's a department token
-    if (verification.decoded.role !== 'department') {
+    if (!verification.decoded || verification.decoded.role !== 'department') {
       return {
         success: false,
         message: 'Invalid access role',
@@ -81,7 +81,7 @@ export async function departmentAuthMiddleware(request: NextRequest): Promise<De
 const departmentAuthAttempts = new Map<string, { count: number; resetTime: number }>();
 
 export async function departmentAuthRateLimit(request: NextRequest): Promise<DepartmentMiddlewareResult> {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
   const maxAttempts = 10; // Max 10 attempts per window

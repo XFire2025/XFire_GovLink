@@ -281,8 +281,6 @@ const DepartmentSchema = new Schema<IDepartment>({
 });
 
 // Indexes for performance
-DepartmentSchema.index({ departmentId: 1 });
-DepartmentSchema.index({ email: 1 });
 DepartmentSchema.index({ name: 1 });
 DepartmentSchema.index({ status: 1 });
 DepartmentSchema.index({ type: 1 });

@@ -136,6 +136,13 @@ export async function POST(request: NextRequest) {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(body.password, saltRounds);
 
+    // Generate department ID if not provided
+    if (!body.departmentId) {
+      const prefix = body.type.substring(0, 3).toUpperCase();
+      const timestamp = Date.now().toString().slice(-6);
+      body.departmentId = `${prefix}${timestamp}`;
+    }
+
     // Create department
     const department = new Department({
       ...body,

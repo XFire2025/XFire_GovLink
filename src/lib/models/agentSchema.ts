@@ -32,6 +32,13 @@ export interface IAgent extends Document {
   lastLoginAt?: Date;
   loginAttempts: number;
   accountLockedUntil?: Date;
+  // Email verification fields
+  isEmailVerified: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
+  // Password reset fields
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -99,7 +106,16 @@ const AgentSchema = new Schema<IAgent>({
   // Login tracking
   lastLoginAt: { type: Date },
   loginAttempts: { type: Number, default: 0 },
-  accountLockedUntil: { type: Date }
+  accountLockedUntil: { type: Date },
+  
+  // Email verification fields
+  isEmailVerified: { type: Boolean, default: false },
+  emailVerificationToken: { type: String },
+  emailVerificationExpires: { type: Date },
+  
+  // Password reset fields
+  passwordResetToken: { type: String },
+  passwordResetExpires: { type: Date }
 }, {
   timestamps: true
 });
