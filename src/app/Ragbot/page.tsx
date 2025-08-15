@@ -5,7 +5,6 @@ import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
-import rehypeSanitize from 'rehype-sanitize';
 import 'highlight.js/styles/github-dark.css';
 
 // --- TYPES ---
@@ -270,7 +269,7 @@ const BotMessage = ({ message, language = 'en' }: { message: Message; language?:
             <div className="prose prose-lg max-w-none leading-relaxed text-foreground markdown-content">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeSanitize, rehypeHighlight]}
+                rehypePlugins={[rehypeHighlight]}
                 components={{
                   h1: ({ children }) => <h1 className="text-2xl font-bold text-[#FFC72C] border-b-2 border-[#FFC72C] pb-2 mb-4 mt-6 first:mt-0">{children}</h1>,
                   h2: ({ children }) => <h2 className="text-xl font-semibold text-[#FFC72C] mb-3 mt-6">{children}</h2>,

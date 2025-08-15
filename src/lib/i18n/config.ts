@@ -98,8 +98,8 @@ const i18nConfig = {
     bindI18n: 'languageChanged loaded',
     bindI18nStore: 'added removed',
     transEmptyNodeValue: '',
-    transSupportBasicHtmlNodes: true,
-    transKeepBasicHtmlNodesFor: ['br', 'strong', 'i', 'em', 'span']
+    transSupportBasicHtmlNodes: false,
+    transKeepBasicHtmlNodesFor: []
   },
   
   // Detection settings
