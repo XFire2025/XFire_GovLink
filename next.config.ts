@@ -11,9 +11,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    // Disable static optimization for error pages to avoid SSR issues
-    optimizePackageImports: ['react-markdown', 'rehype-highlight']
+  // Remove experimental features that might cause build issues
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
   },
   /* config options here */
 };
