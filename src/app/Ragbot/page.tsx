@@ -54,7 +54,7 @@ const chatTranslations: Record<Language, {
     subtitle: 'AI-powered assistant with real-time search for Sri Lankan government services',
     newChat: 'New Chat',
     askFollowUp: 'Ask a question about any government service...',
-    analyzing: 'Analyzing your question...',
+    analyzing: 'Analyzing your question',
     preparing: 'GovLink Assistant is preparing your response',
     chatStarted: 'Chat started with GovLink Assistant',
     suggestions: {

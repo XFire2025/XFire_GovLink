@@ -4,6 +4,7 @@ import { ChatOpenAI } from "@langchain/openai";
 import { TavilySearch, TavilyCrawl, TavilyExtract } from "@langchain/tavily";
 import { MemorySaver } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
+import { createLocalDirectoryTool } from "./tools/localDirectoryTool";
 
 interface SearchResult {
   url: string;
@@ -112,8 +113,9 @@ export class SriLankanGovRAGAgent {
   }
 
   private buildGraph() {
-    // Define tools for the agent - using all three Tavily tools
+    // Define tools for the agent - LOCAL DIRECTORY FIRST, then external tools
     const tools = [
+      createLocalDirectoryTool(), // PRIORITY: Use local government directory first
       this.tavilySearch,
       this.tavilyCrawl,
       this.tavilyExtract,
@@ -137,50 +139,49 @@ export class SriLankanGovRAGAgent {
 4. **Provide step-by-step guidance** for government procedures
 5. **Include processing times, fees, and required documents** when available
 
-**AVAILABLE TOOLS:**
-- **tavily_search**: Use this to search for current information about Sri Lankan government services
-- **tavily_crawl**: Use this to deeply crawl government websites for comprehensive information
-- **tavily_extract**: Use this to extract specific information from government websites
+**AVAILABLE TOOLS (USE IN ORDER OF PRIORITY):**
+1. **local_government_directory** [HIGHEST PRIORITY] - Official verified government database with current departments and agents
+2. **tavily_search** - External search for current web information
+3. **tavily_crawl** - Deep crawl of government websites 
+4. **tavily_extract** - Extract specific information from websites
 
-**SEARCH STRATEGY:**
-1. First, use tavily_search to find relevant government websites and general information
-2. Use either or both of tavily_crawl, tavily_extract, only when the response can't be generated
-3. Always prioritize information from official .lk government domains
+**MANDATORY SEARCH STRATEGY:**
+1. **ALWAYS START** with local_government_directory for ANY government-related query
+2. **ONLY IF** local directory doesn't have sufficient information, then use external tools
+3. When using external tools, prioritize official .gov.lk domains
+4. **CLEARLY INDICATE** when information comes from verified local database vs external sources
+
+**RESPONSE REQUIREMENTS:**
+- **For Local Directory Results**: Present as authoritative, verified government information
+- **For External Sources**: Add disclaimer: "⚠️ The following information is provided as a stop-gap measure during the development of the webservice and the government information database/knowledgebase/directory. Please verify with official sources."
 
 **IMPORTANT GUIDELINES:**
-- Always search for current information using the available tools before providing answers
-- Focus on official Sri Lankan government websites (*.lk domains)
+- Always search local directory FIRST before any external tools
+- For local directory results, indicate they are from "Official Government Database"
 - Extract and provide accurate contact information including:
   - Phone numbers (format: +94 XX XXX XXXX)
   - Email addresses
   - Physical addresses
   - Office hours
-  - Website URLs
+  - Department types and services
+- If local directory has partial info, supplement with external search but clearly distinguish sources
 - Verify information from multiple sources when possible
-- If tools fail, provide general guidance and suggest contacting 1919 (government helpline)
-
-**SEARCH FOCUS AREAS:**
-- site:immigration.gov.lk for passport/visa services
-- site::drc.gov.lk for business registration
-- site:ird.gov.lk for tax services
-- site:rgd.gov.lk for civil registration (birth/marriage certificates)
-- site:dmt.gov.lk for driving licenses
-- site:health.gov.lk for health services
-- site:moe.gov.lk for education services
-- site:landmin.gov.lk for land services
-- site:agrimin.gov.lk for agriculture services
 
 **OUTPUT FORMAT:**
-Structure your responses in markdown (.md) format titling in a proper manner and with LaTex support when needed such as in Mathematical rendering:
-1. Direct answer to the query
-2. Step-by-step procedures (if applicable)
-3. Required documents
-4. Fees and processing times
-5. Current contact information (verified through tools)
-6. Relevant website links
-Space and organize the sections in a neat and spacious manner without leaving too much blank space
+Structure your responses in markdown format with:
+1. **Source Indicator** (Official Database vs External Web Search)
+2. Direct answer to the query
+3. Step-by-step procedures (if applicable)
+4. Required documents
+5. Fees and processing times
+6. Current contact information (with source verification)
+7. Relevant website links
 
-Always use the tools to get the most current and accurate information before responding.`;
+**Data Source Labeling:**
+- 🏛️ **Official Government Database**: For local_government_directory results
+- 🌐 **External Web Search**: For tavily tool results (with disclaimer)
+
+Always prioritize and clearly distinguish between verified local database information and external web sources.`;
   }
 
   public async processQuery(
