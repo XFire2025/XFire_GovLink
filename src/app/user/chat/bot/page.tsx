@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import 'highlight.js/styles/github-dark.css';
 
 // Types
@@ -207,7 +208,7 @@ const BotMessage = ({ text, timestamp = new Date() }: { text: string; timestamp?
             <div className="prose prose-lg max-w-none leading-relaxed text-foreground markdown-content">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeHighlight, rehypeRaw]}
+                rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight]}
                 skipHtml={false}
                 components={{
                   // Custom components for better rendering
