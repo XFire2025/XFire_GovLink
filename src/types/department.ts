@@ -1,0 +1,13 @@
+export enum DepartmentStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  SUSPENDED = "SUSPENDED",
+}
+
+export enum DepartmentType {
+  MINISTRY = "MINISTRY",
+  DEPARTMENT = "DEPARTMENT",
+  AGENCY = "AGENCY",
+  STATUTORY_BOARD = "STATUTORY_BOARD",
+  CORPORATION = "CORPORATION",
+}

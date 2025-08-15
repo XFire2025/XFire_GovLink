@@ -1,0 +1,128 @@
+{
+  "sidebar": {
+    "title": "Department Portal",
+    "dashboard": "Dashboard",
+    "agents": "Manage Agents",
+    "services": "Manage Services",
+    "submissions": "Review Submissions",
+    "reports": "Generate Reports",
+    "settings": "Settings"
+  },
+  "navbar": {
+    "title": "Department",
+    "portal": "Portal",
+    "description": "Departmental Services Management",
+    "profile_label": "Department Account",
+    "profile_settings": "Profile Settings",
+    "sign_out": "Sign Out"
+  },
+  "login": {
+    "page_title": "Department Portal",
+    "header": "Departmental Access",
+    "title": "Department Portal",
+    "subtitle": "Secure access for authorized department personnel",
+    "form_title": "Secure Department Login",
+    "email_label": "Department Email",
+    "email_placeholder": "Enter your official department email",
+    "password_label": "Password",
+    "password_placeholder": "Enter your password",
+    "submit_button": "Sign In to Department Portal",
+    "back_to_home": "← Back to Home"
+  },
+  "dashboard": {
+    "title": "Department Dashboard",
+    "welcome": "Welcome to your Department Portal. Monitor services and manage agents.",
+    "stats": {
+      "total_submissions": "Total Submissions",
+      "assigned_agents": "Assigned Agents",
+      "pending_reviews": "Pending Reviews",
+      "service_uptime": "Service Uptime"
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "refresh": "Refresh"
+    }
+  },
+  "config": {
+    "title": "Department Configuration",
+    "description": "Manage your department's public information and operational settings.",
+    "sections": {
+      "general": "General Information",
+      "contact": "Contact Details",
+      "operational": "Operational Settings"
+    },
+    "labels": {
+      "departmentName": "Department Name",
+      "publicAddress": "Public Address",
+      "contactEmail": "Contact Email",
+      "contactPhone": "Contact Phone",
+      "officeHours": "Office Hours",
+      "acceptingSubmissions": "Accepting New Submissions"
+    },
+    "placeholders": {
+      "publicAddress": "e.g., 'Suhurupaya', Sri Subhuthipura Road, Battaramulla",
+      "contactEmail": "e.g., info@immigration.gov.lk",
+      "contactPhone": "e.g., +94 11 532 9000",
+      "officeHours": "e.g., 8:30 AM - 4:30 PM"
+    },
+    "saveChanges": "Save Configuration",
+    "saving": "Saving...",
+    "successMessage": "Configuration updated successfully!"
+  },
+  "analytics": {
+    "title": "Advanced Analytics",
+    "subtitle": "Analyze departmental performance, service metrics, and agent productivity.",
+    "overview": "Department Analytics Overview",
+    "performanceMetrics": "Overall Performance",
+    "serviceReports": "Service Reports",
+    "agentLeaderboard": "Agent Leaderboard",
+    "performanceDesc": "Track key performance indicators for the entire department.",
+    "reportDesc": "Generate detailed reports for specific services.",
+    "leaderboardDesc": "View rankings and productivity of all agents.",
+    "timeRanges": {
+      "today": "Today",
+      "week": "This Week",
+      "month": "This Month",
+      "quarter": "This Quarter"
+    },
+    "quickStats": "Department-wide Statistics",
+    "totalSubmissions": "Total Submissions",
+    "avgResolutionTime": "Avg. Resolution Time",
+    "approvalRate": "Approval Rate",
+    "citizenSatisfaction": "Citizen Satisfaction",
+    "refreshData": "Refresh Data",
+    "lastUpdated": "Last Updated",
+    "metrics": {
+      "submissionsTrend": "Submissions Trend",
+      "serviceBreakdown": "Submissions by Service",
+      "statusDistribution": "Status Distribution",
+      "peakHours": "Peak Activity Hours",
+      "topPerformingAgents": "Top Performing Agents"
+    }
+  },
+  "submissions": {
+    "title": "Submissions Management",
+    "description": "Review, process, and manage all citizen submissions for your department.",
+    "searchPlaceholder": "Search by name, ID, or service...",
+    "filterByStatus": "Filter by Status",
+    "all": "All",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "needsInfo": "Needs Info",
+    "table": {
+      "citizen": "Citizen",
+      "service": "Service",
+      "status": "Status",
+      "submittedOn": "Submitted On",
+      "actions": "Actions"
+    },
+    "modal": {
+      "title": "Submission Details",
+      "approve": "Approve",
+      "reject": "Reject",
+      "requestInfo": "Request Info",
+      "close": "Close"
+    }
+  }
+}

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useAuth } from '@/lib/auth/AuthContext';
+import { useLogout } from '@/lib/auth/useAuthUtils';
 
 // Types for translations
 type Language = 'en' | 'si' | 'ta';
@@ -152,9 +154,25 @@ const UserDashboardLayout: React.FC<UserDashboardLayoutProps> = ({
   headerContent
 }) => {
   const router = useRouter();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const { logoutAndRedirect } = useLogout();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const t = translations[language];
+
+  // Get user display data
+  const userDisplayName = user?.firstName && user?.lastName 
+    ? `${user.firstName} ${user.lastName}`
+    : user?.email?.split('@')[0] || 'User';
+    
+  const userInitials = user?.firstName && user?.lastName
+    ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
+    : user?.email ? user.email[0].toUpperCase()
+    : 'U';
+    
+  const userShortName = user?.firstName 
+    ? `${user.firstName} ${user.lastName ? user.lastName[0] + '.' : ''}`
+    : user?.email?.split('@')[0] || 'User';
 
   const handleLanguageChange = (newLanguage: Language) => {
     if (onLanguageChange) {
@@ -164,8 +182,23 @@ const UserDashboardLayout: React.FC<UserDashboardLayoutProps> = ({
   };
 
   const handleLogout = () => {
-    router.push('/User/Auth/Login');
+    logoutAndRedirect('/user/auth/login');
   };
+
+  // Show loading state if user data is still loading
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#FFC72C]"></div>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated (this shouldn't happen due to middleware)
+  if (!isAuthenticated) {
+    router.push('/user/auth/login');
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden theme-transition-slow">
@@ -251,9 +284,9 @@ const UserDashboardLayout: React.FC<UserDashboardLayoutProps> = ({
                 className="flex items-center gap-3 px-3 py-2 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 hover:border-[#FFC72C]/60 text-sm font-medium text-foreground hover:bg-card/80 dark:hover:bg-card/90 transition-all duration-300 shadow-md hover:shadow-lg modern-card"
               >
                 <div className="w-8 h-8 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center shadow-lg">
-                  <span className="text-white text-xs font-bold">S</span>
+                  <span className="text-white text-xs font-bold">{userInitials}</span>
                 </div>
-                <span className="hidden sm:block">Sanduni P.</span>
+                <span className="hidden sm:block">{userShortName}</span>
                 <svg className={`w-4 h-4 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M6 9l6 6 6-6" />
                 </svg>
@@ -267,10 +300,26 @@ const UserDashboardLayout: React.FC<UserDashboardLayoutProps> = ({
                   />
                   <div className="absolute right-0 top-full mt-2 w-48 backdrop-blur-md bg-card/90 dark:bg-card/95 border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-50">
                     <div className="px-4 py-3 border-b border-border/30">
-                      <div className="font-medium text-foreground">Sanduni Perera</div>
-                      <div className="text-xs text-muted-foreground">Citizen Account</div>
+                      <div className="font-medium text-foreground">{userDisplayName}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {user?.email}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        {user?.role === 'citizen' ? 'Citizen Account' : user?.role}
+                        {user?.accountStatus && (
+                          <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
+                            user.accountStatus === 'active' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              : user.accountStatus === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}>
+                            {user.accountStatus}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <Link href="/User/Profile" className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3">
+                    <Link href="/user/profile" className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />

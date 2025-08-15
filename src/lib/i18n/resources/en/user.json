@@ -1,0 +1,84 @@
+{
+  "dashboard": {
+    "title": "User Dashboard",
+    "welcome": "Welcome back, {{name}}",
+    "overview": "Account Overview",
+    "quickActions": "Quick Actions",
+    "recentActivity": "Recent Activity",
+    "stats": {
+      "applications": "Applications",
+      "appointments": "Appointments",
+      "messages": "Messages",
+      "documents": "Documents"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "personalInfo": "Personal Information",
+    "contactInfo": "Contact Information",
+    "preferences": "Preferences",
+    "security": "Security Settings",
+    "verification": "Verification Status",
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "address": "Address",
+      "city": "City",
+      "province": "Province",
+      "postalCode": "Postal Code",
+      "nicNumber": "NIC Number",
+      "dateOfBirth": "Date of Birth",
+      "gender": "Gender",
+      "occupation": "Occupation"
+    }
+  },
+  "applications": {
+    "title": "My Applications",
+    "newApplication": "New Application",
+    "status": "Status",
+    "submitted": "Submitted",
+    "inReview": "In Review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "completed": "Completed",
+    "viewDetails": "View Details",
+    "trackProgress": "Track Progress"
+  },
+  "appointments": {
+    "title": "My Appointments",
+    "bookNew": "Book New Appointment",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "cancelled": "Cancelled",
+    "reschedule": "Reschedule",
+    "cancel": "Cancel",
+    "joinMeeting": "Join Meeting"
+  },
+  "documents": {
+    "title": "My Documents",
+    "upload": "Upload Document",
+    "download": "Download",
+    "share": "Share",
+    "categories": {
+      "identity": "Identity Documents",
+      "education": "Education Certificates",
+      "employment": "Employment Documents",
+      "medical": "Medical Records",
+      "legal": "Legal Documents",
+      "other": "Other Documents"
+    }
+  },
+  "chat": {
+    "title": "Support Chat",
+    "startChat": "Start New Chat",
+    "connectingAgent": "Connecting to agent...",
+    "waitingInQueue": "Waiting in queue...",
+    "chatEnded": "Chat session ended",
+    "typingIndicator": "Agent is typing...",
+    "sendMessage": "Send Message",
+    "attachFile": "Attach File",
+    "endChat": "End Chat"
+  }
+}

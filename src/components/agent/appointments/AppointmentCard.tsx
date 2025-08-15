@@ -1,6 +1,6 @@
-// src/components/agent/appointments/AppointmentCard.tsx
+// components/agent/appointments/AppointmentCard.tsx
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
@@ -20,6 +20,15 @@ interface Appointment {
   contactEmail: string;
   contactPhone: string;
   submittedDate: string;
+  bookingReference?: string;
+  agentNotes?: string;
+  documents?: {
+    id: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    url: string;
+  }[];
 }
 
 interface AppointmentCardProps {
@@ -41,6 +50,7 @@ const cardTranslations: Record<Language, {
   cancel: string;
   complete: string;
   sendReminder: string;
+  attachments: string;
   statuses: Record<AppointmentStatus, string>;
   services: Record<ServiceType, string>;
 }> = {
@@ -55,6 +65,7 @@ const cardTranslations: Record<Language, {
     cancel: 'Cancel',
     complete: 'Complete',
     sendReminder: 'Send Reminder',
+    attachments: 'attachments',
     statuses: {
       pending: 'Pending Review',
       confirmed: 'Confirmed',
@@ -72,14 +83,15 @@ const cardTranslations: Record<Language, {
   si: {
     time: 'වේලාව',
     citizenId: 'පුරවැසි හැඳුනුම්පත',
-    submitted: 'ගොනු කරන ලදී',
-    urgentPriority: 'ගඩු',
+    submitted: 'ඉදිරිපත් කරන ලදී',
+    urgentPriority: 'හදිසි',
     viewDetails: 'විස්තර බලන්න',
     quickActions: 'ඉක්මන් ක්‍රියා',
     confirm: 'තහවුරු කරන්න',
     cancel: 'අවලංගු කරන්න',
     complete: 'සම්පූර්ණ කරන්න',
     sendReminder: 'මතක් කිරීම යවන්න',
+    attachments: 'ඇමුණුම්',
     statuses: {
       pending: 'සමාලෝචනය අපේක්ෂිත',
       confirmed: 'තහවුරු කළ',
@@ -105,6 +117,7 @@ const cardTranslations: Record<Language, {
     cancel: 'ரத்துசெய்',
     complete: 'முடிக்கவும்',
     sendReminder: 'நினைவூட்டல் அனுப்பவும்',
+    attachments: 'இணைப்புகள்',
     statuses: {
       pending: 'மதிப்பாய்வு நிலுவையில்',
       confirmed: 'உறுதிப்படுத்தப்பட்டது',
@@ -128,7 +141,25 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   onStatusUpdate
 }) => {
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const t = cardTranslations[language];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        if (buttonRef.current && !buttonRef.current.contains(event.target as Node)) {
+          setIsActionMenuOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const getStatusColor = (status: AppointmentStatus) => {
     switch (status) {
@@ -219,18 +250,17 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   };
 
   const handleSendReminder = () => {
-    // Mock send reminder functionality
     console.log(`Sending reminder to ${appointment.contactEmail}`);
     setIsActionMenuOpen(false);
   };
 
   return (
-    <div className="group bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:border-[#FFC72C]/70 animate-fade-in-up modern-card relative overflow-hidden">
+    <div className="group bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:border-[#FFC72C]/70 animate-fade-in-up modern-card relative">
       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
         {/* Left Section - Main Info */}
         <div className="flex-1">
           <div className="flex items-start gap-4">
-            {/* Service Icon - Enhanced with Dashboard Styling */}
+            {/* Service Icon */}
             <div className="relative p-3 rounded-2xl transition-all duration-500 flex-shrink-0"
                  style={{
                    background: 'linear-gradient(135deg, rgba(255, 199, 44, 0.1) 0%, rgba(255, 87, 34, 0.05) 50%, rgba(141, 21, 58, 0.08) 100%)',
@@ -240,14 +270,12 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 {getServiceIcon(appointment.serviceType)}
               </div>
               
-              {/* Success Badge for hover state */}
               <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 shadow-lg">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               </div>
 
-              {/* Glow Effect */}
               <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#FFC72C]/15 via-transparent to-[#FF5722]/15 rounded-2xl blur-xl"></div>
               </div>
@@ -265,7 +293,6 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                   </p>
                 </div>
 
-                {/* Priority Badge */}
                 {appointment.priority === 'urgent' && (
                   <span className="inline-flex items-center px-3 py-1 bg-[#FF5722]/20 text-[#FF5722] border border-[#FF5722]/30 rounded-full text-xs font-semibold backdrop-blur-md animate-pulse">
                     {t.urgentPriority}
@@ -273,14 +300,12 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 )}
               </div>
 
-              {/* Service Type */}
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-sm font-medium text-foreground group-hover:text-[#FFC72C] transition-colors duration-300">
                   {t.services[appointment.serviceType]}
                 </span>
               </div>
 
-              {/* Date and Time */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">Date: </span>
@@ -292,10 +317,21 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 </div>
               </div>
 
-              {/* Notes */}
+              {/* Attachments - NEW */}
+              {appointment.documents && appointment.documents.length > 0 && (
+                <div className="flex items-center gap-2 mt-3 text-muted-foreground group-hover:text-[#FFC72C] transition-colors duration-300">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                  </svg>
+                  <span className="text-sm font-medium">
+                    {appointment.documents.length} {t.attachments}
+                  </span>
+                </div>
+              )}
+
               {appointment.notes && (
                 <div className="mt-3 p-3 bg-card/30 rounded-lg border border-border/30">
-                  <p className="text-sm text-muted-foreground italic">&quot;{appointment.notes}&quot;</p>
+                  <p className="text-sm text-muted-foreground italic">&ldquo;{appointment.notes}&rdquo;</p>
                 </div>
               )}
             </div>
@@ -304,17 +340,14 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
 
         {/* Right Section - Status & Actions */}
         <div className="flex flex-col lg:items-end gap-3 lg:min-w-[200px]">
-          {/* Status Badge */}
           <span className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-semibold border backdrop-blur-md ${getStatusColor(appointment.status)}`}>
             {t.statuses[appointment.status]}
           </span>
 
-          {/* Submitted Date */}
           <p className="text-xs text-muted-foreground">
             {t.submitted}: {formatDate(appointment.submittedDate)}
           </p>
 
-          {/* Action Buttons */}
           <div className="flex flex-wrap gap-2">
             <button
               onClick={onClick}
@@ -326,7 +359,11 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             {/* Quick Actions Dropdown */}
             <div className="relative">
               <button
-                onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
+                ref={buttonRef}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsActionMenuOpen(!isActionMenuOpen);
+                }}
                 className="px-4 py-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white rounded-xl text-sm font-medium hover:from-[#FF5722] hover:to-[#8D153A] transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
               >
                 {t.quickActions}
@@ -334,77 +371,97 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                   <path d="M6 9l6 6 6-6" />
                 </svg>
               </button>
-
+              
               {isActionMenuOpen && (
-                <>
-                  <div 
-                    className="fixed inset-0 z-0" 
-                    onClick={() => setIsActionMenuOpen(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-2 w-48 glass-morphism border border-border/50 rounded-xl shadow-glow overflow-hidden animate-fade-in-up z-10">
-                    {appointment.status === 'pending' && (
-                      <button
-                        onClick={() => handleStatusUpdate('confirmed')}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <div 
+                  ref={dropdownRef}
+                  className="absolute right-0 top-full mt-2 bg-background/98 dark:bg-card/98 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl overflow-hidden animate-fade-in-up z-50 min-w-48 max-w-xs modern-card"
+                  style={{ 
+                    zIndex: 9999,
+                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 199, 44, 0.1)'
+                  }}
+                >
+                  {appointment.status === 'pending' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusUpdate('confirmed');
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-[#008060]/10 hover:text-[#008060] transition-all duration-200 flex items-center gap-3 border-b border-border/30 last:border-b-0 hover:scale-[1.02] hover:backdrop-blur-md"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-[#008060]/10 flex items-center justify-center transition-all duration-200 group-hover:bg-[#008060]/20">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#008060" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
-                        {t.confirm}
-                      </button>
-                    )}
-                    
-                    {appointment.status === 'confirmed' && (
-                      <button
-                        onClick={() => handleStatusUpdate('completed')}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      </div>
+                      <span className="font-medium">{t.confirm}</span>
+                    </button>
+                  )}
+                  
+                  {appointment.status === 'confirmed' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusUpdate('completed');
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-[#8D153A]/10 hover:text-[#8D153A] transition-all duration-200 flex items-center gap-3 border-b border-border/30 last:border-b-0 hover:scale-[1.02] hover:backdrop-blur-md"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-[#8D153A]/10 flex items-center justify-center transition-all duration-200 group-hover:bg-[#8D153A]/20">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8D153A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                           <polyline points="22 4 12 14.01 9 11.01" />
                         </svg>
-                        {t.complete}
-                      </button>
-                    )}
+                      </div>
+                      <span className="font-medium">{t.complete}</span>
+                    </button>
+                  )}
 
-                    {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
-                      <button
-                        onClick={() => handleStatusUpdate('cancelled')}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-[#FF5722] hover:bg-[#FF5722]/10 transition-all duration-200 flex items-center gap-3"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStatusUpdate('cancelled');
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-[#FF5722]/10 hover:text-[#FF5722] transition-all duration-200 flex items-center gap-3 border-b border-border/30 last:border-b-0 hover:scale-[1.02] hover:backdrop-blur-md"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-[#FF5722]/10 flex items-center justify-center transition-all duration-200 group-hover:bg-[#FF5722]/20">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF5722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <circle cx="12" cy="12" r="10" />
                           <line x1="15" y1="9" x2="9" y2="15" />
                           <line x1="9" y1="9" x2="15" y2="15" />
                         </svg>
-                        {t.cancel}
-                      </button>
-                    )}
+                      </div>
+                      <span className="font-medium">{t.cancel}</span>
+                    </button>
+                  )}
 
-                    <button
-                      onClick={handleSendReminder}
-                      className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-card/30 transition-all duration-200 flex items-center gap-3"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSendReminder();
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-[#FFC72C]/10 hover:text-[#FFC72C] transition-all duration-200 flex items-center gap-3 hover:scale-[1.02] hover:backdrop-blur-md"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-[#FFC72C]/10 flex items-center justify-center transition-all duration-200 group-hover:bg-[#FFC72C]/20">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFC72C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                         <polyline points="22 6 12 13 2 6" />
                       </svg>
-                      {t.sendReminder}
-                    </button>
-                  </div>
-                </>
+                    </div>
+                    <span className="font-medium">{t.sendReminder}</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Hover Effect Gradient - EXACT SAME as Dashboard Cards */}
+      {/* Hover Effect Gradient */}
       <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-[#FFC72C]/5 via-transparent to-[#FF5722]/5 rounded-2xl"></div>
       </div>
       
-      {/* Animated border glow */}
       <div className="absolute inset-0 rounded-2xl transition-all duration-500 pointer-events-none group-hover:shadow-[0_0_30px_rgba(255,199,44,0.3)]"></div>
     </div>
   );

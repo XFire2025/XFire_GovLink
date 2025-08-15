@@ -1,0 +1,129 @@
+{
+  "navigation": {
+    "home": "Home",
+    "services": "Services",
+    "about": "About",
+    "contact": "Contact",
+    "feedback": "Feedback",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "settings": "Settings",
+    "help": "Help",
+    "notifications": "Notifications",
+    "messages": "Messages"
+  },
+  "hero": {
+    "title1": "Connect with Government",
+    "title2": "Services Instantly",
+    "subtitle": "Your Gateway to Sri Lankan Government Services",
+    "description": "Access government services, get information, and connect with officials through our secure, multilingual platform designed for all Sri Lankan citizens.",
+    "searchPlaceholder": "Search for services, documents, or information...",
+    "searchSuggestions": [
+      "Birth Certificate",
+      "Passport Application",
+      "Business Registration",
+      "Tax Information",
+      "Driving License"
+    ],
+    "trustIndicators": {
+      "trusted": "Trusted by 1M+ Citizens",
+      "available": "24/7 Available",
+      "endorsed": "Government Endorsed"
+    }
+  },
+  "features": {
+    "title1": "Comprehensive Government",
+    "title2": "Services Platform",
+    "description": "Everything you need for government interactions in one place",
+    "documents": {
+      "title": "Document Services",
+      "description": "Apply for and track all your government documents online",
+      "benefits": [
+        "Online applications",
+        "Real-time tracking",
+        "Digital certificates",
+        "Secure storage"
+      ]
+    },
+    "information": {
+      "title": "Government Information",
+      "description": "Get accurate, up-to-date information about policies and procedures",
+      "benefits": [
+        "Policy updates",
+        "Procedure guides",
+        "FAQ sections",
+        "Multilingual support"
+      ]
+    },
+    "appointments": {
+      "title": "Appointment Booking",
+      "description": "Schedule meetings with government officials and departments",
+      "benefits": [
+        "Easy scheduling",
+        "Calendar integration",
+        "Reminder notifications",
+        "Virtual meetings"
+      ]
+    }
+  },
+  "about": {
+    "title1": "Bridging Citizens",
+    "title2": "and Government",
+    "description": "GovLink is Sri Lanka's premier digital platform for citizen-government interaction, designed to make public services accessible, efficient, and user-friendly for everyone.",
+    "mission": {
+      "title": "Our Mission",
+      "content": "To democratize access to government services and information, ensuring every Sri Lankan citizen can easily interact with their government regardless of language, location, or technical expertise."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "content": "A digitally empowered Sri Lanka where every citizen has seamless, transparent, and efficient access to government services and information."
+    },
+    "values": {
+      "title": "Our Values",
+      "items": [
+        {
+          "title": "Accessibility",
+          "description": "Government services for everyone, everywhere"
+        },
+        {
+          "title": "Transparency",
+          "description": "Clear, honest communication in all interactions"
+        },
+        {
+          "title": "Efficiency",
+          "description": "Streamlined processes that save time and effort"
+        },
+        {
+          "title": "Security",
+          "description": "Protecting citizen data with highest standards"
+        }
+      ]
+    }
+  },
+  "footer": {
+    "description": "Your trusted gateway to Sri Lankan government services.",
+    "quickLinks": {
+      "title": "Quick Links",
+      "services": "Services",
+      "about": "About Us",
+      "contact": "Contact",
+      "help": "Help Center",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    },
+    "contact": {
+      "title": "Contact Info",
+      "address": "Ministry of Digital Technology, Colombo 01, Sri Lanka",
+      "phone": "+94 11 234 5678",
+      "email": "info@govlink.lk"
+    },
+    "social": {
+      "title": "Follow Us",
+      "facebook": "Facebook",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn",
+      "youtube": "YouTube"
+    },
+    "copyright": "© 2025 GovLink. All rights reserved."
+  }
+}

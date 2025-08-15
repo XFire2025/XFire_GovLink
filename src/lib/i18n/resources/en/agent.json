@@ -1,0 +1,60 @@
+{
+  "dashboard": {
+    "title": "Agent Dashboard",
+    "welcome": "Welcome, Agent {{name}}",
+    "todayStats": "Today's Statistics",
+    "activeChats": "Active Chats",
+    "pendingTasks": "Pending Tasks",
+    "performance": "Performance Metrics"
+  },
+  "chat": {
+    "title": "Customer Support",
+    "queue": "Chat Queue",
+    "activeChats": "Active Chats",
+    "waitingCustomers": "Waiting Customers",
+    "acceptChat": "Accept Chat",
+    "transferChat": "Transfer Chat",
+    "endChat": "End Chat",
+    "addNotes": "Add Notes",
+    "customerInfo": "Customer Information",
+    "chatHistory": "Chat History"
+  },
+  "appointments": {
+    "title": "Appointment Management",
+    "todayAppointments": "Today's Appointments",
+    "upcomingAppointments": "Upcoming Appointments",
+    "rescheduleAppointment": "Reschedule",
+    "cancelAppointment": "Cancel",
+    "completeAppointment": "Mark Complete",
+    "appointmentNotes": "Appointment Notes"
+  },
+  "submissions": {
+    "title": "Application Reviews",
+    "pendingReviews": "Pending Reviews",
+    "reviewApplication": "Review Application",
+    "approve": "Approve",
+    "reject": "Reject",
+    "requestMoreInfo": "Request More Information",
+    "addComments": "Add Comments",
+    "reviewHistory": "Review History"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "performance": "Performance Metrics",
+    "customerSatisfaction": "Customer Satisfaction",
+    "responseTime": "Average Response Time",
+    "resolutionRate": "Resolution Rate",
+    "chatVolume": "Chat Volume",
+    "trends": "Trends"
+  },
+  "profile": {
+    "title": "Agent Profile",
+    "personalInfo": "Personal Information",
+    "workSchedule": "Work Schedule",
+    "skills": "Skills & Expertise",
+    "availability": "Availability Status",
+    "setAvailable": "Set Available",
+    "setUnavailable": "Set Unavailable",
+    "setBreak": "On Break"
+  }
+}

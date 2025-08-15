@@ -12,15 +12,23 @@ import {
   ChevronDown 
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useAdminAuth } from '@/lib/auth/AdminAuthContext';
 
 export default function AdminNavbar() {
   const router = useRouter();
+  const { admin, logout } = useAdminAuth();
   const [showProfileMenu, setShowProfileMenu] = React.useState(false);
   const [showNotifications, setShowNotifications] = React.useState(false);
 
-  const handleLogout = () => {
-    // Clear admin session and redirect to login
-    router.push('/admin/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/admin/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Force redirect even if logout fails
+      router.push('/admin/login');
+    }
   };
 
   const notifications = [
@@ -174,9 +182,13 @@ export default function AdminNavbar() {
               className="flex items-center gap-2 p-2.5 hover:bg-card/60 rounded-xl transition-all duration-300 hover:shadow-md modern-card hover:scale-105"
             >
               <div className="w-8 h-8 bg-gradient-to-r from-[#8D153A]/20 to-[#FF5722]/20 rounded-full flex items-center justify-center border border-[#8D153A]/30 shadow-md">
-                <span className="text-sm font-medium text-[#8D153A]">A</span>
+                <span className="text-sm font-medium text-[#8D153A]">
+                  {admin?.fullName?.charAt(0).toUpperCase() || 'A'}
+                </span>
               </div>
-              <span className="hidden md:block text-sm font-medium text-foreground">Admin</span>
+              <span className="hidden md:block text-sm font-medium text-foreground">
+                {admin?.fullName?.split(' ')[0] || 'Admin'}
+              </span>
               <ChevronDown className="w-4 h-4 text-muted-foreground hover:text-[#8D153A] transition-colors duration-300" />
             </button>
 
@@ -186,11 +198,17 @@ export default function AdminNavbar() {
                 <div className="p-4 border-b border-border/30 bg-gradient-to-r from-[#8D153A]/5 to-[#FF5722]/5">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-r from-[#8D153A]/20 to-[#FF5722]/20 rounded-full flex items-center justify-center border border-[#8D153A]/30 shadow-md">
-                      <span className="text-sm font-medium text-[#8D153A]">A</span>
+                      <span className="text-sm font-medium text-[#8D153A]">
+                        {admin?.fullName?.charAt(0).toUpperCase() || 'A'}
+                      </span>
                     </div>
                     <div>
-                      <h3 className="font-medium bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">Administrator</h3>
-                      <p className="text-sm text-muted-foreground">admin@govlink.lk</p>
+                      <h3 className="font-medium bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
+                        {admin?.fullName || 'Administrator'}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {admin?.email || 'admin@govlink.lk'}
+                      </p>
                     </div>
                   </div>
                 </div>
