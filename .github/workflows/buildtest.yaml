@@ -43,3 +43,7 @@ jobs:
 
       - name: Run Build Command
         run: npm run build
+        env:
+          # AI Services
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
