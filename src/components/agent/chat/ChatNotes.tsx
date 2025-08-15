@@ -53,26 +53,26 @@ const notesTranslations: Record<Language, {
     resolutionRequired: 'Please select a resolution status'
   },
   si: {
-    endChatSession: 'කතාබස් සේසිය අවසන් කරන්න',
-    sessionSummary: 'සේසි සාරංගය',
+    endChatSession: 'කතාබස් සැසිය අවසන් කරන්න',
+    sessionSummary: 'සැසි සාරාංශය',
     chatResolution: 'කතාබස් විසඳුම',
     followUpRequired: 'පසු විපරම් අවශ්‍යයි',
     followUpDesc: 'පුරවැසියාට අමතර සහාය අවශ්‍ය විය හැක',
-    sessionNotes: 'සේසි සටහන්',
-    notesPlaceholder: 'කරුණාකර කතාබස් සේසියේ සාරංගයක්, සාකච්ඡා කළ දේ සහ ගත් ක්‍රියාමාර්ග ලබා දෙන්න...',
+    sessionNotes: 'සැසි සටහන්',
+    notesPlaceholder: 'කරුණාකර කතාබස් සැසියේ සාරාංශයක්, සාකච්ඡා කළ දේ සහ ගත් ක්‍රියාමාර්ග ලබා දෙන්න...',
     cancel: 'අවලංගු කරන්න',
-    endSession: 'සේසිය අවසන් කරන්න',
-    ending: 'සේසිය අවසන් කරමින්...',
+    endSession: 'සැසිය අවසන් කරන්න',
+    ending: 'සැසිය අවසන් කරමින්...',
     resolutionOptions: {
-      'resolved': 'ගැටළුව විසඳ ලැබිණ',
-      'partial': 'අර්ධ වශයෙන් විසඳ ලැබිණ',
+      'resolved': 'ගැටලුව විසඳා ඇත',
+      'partial': 'අර්ධ වශයෙන් විසඳා ඇත',
       'referred': 'දෙපාර්තමේන්තුවට යොමු කළා',
       'appointment': 'නියමයන් නියම කළා',
       'information': 'තොරතුරු ලබා දුන්නා',
       'follow_up': 'පසු විපරම් අවශ්‍යයි'
     },
-    notesRequired: 'කරුණාකර සේසි සටහන් ලබා දෙන්න',
-    resolutionRequired: 'කරුණාකර විසඳුම් තත්ත්වයක් තරන්න'
+    notesRequired: 'කරුණාකර සැසි සටහන් ලබා දෙන්න',
+    resolutionRequired: 'කරුණාකර විසඳුම් තත්ත්වයක් තෝරන්න'
   },
   ta: {
     endChatSession: 'அரட்டை அமர்வை முடிக்கவும்',
