@@ -1,8 +1,11 @@
 // src/app/User/Booking/page.tsx
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import QRCodeDisplay from '@/components/user/QRCodeDisplay';
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth/AuthContext';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 
 // Types
@@ -25,6 +28,8 @@ const bookingTranslations: Record<Language, {
   cancel: string;
   cancelling: string;
   viewDetails: string;
+  viewPass: string;
+  qrCode: string;
 }> = {
   en: {
     title: 'Your Bookings',
@@ -41,7 +46,9 @@ const bookingTranslations: Record<Language, {
     view: 'View',
     cancel: 'Cancel',
     cancelling: 'Cancelling...',
-    viewDetails: 'View Details'
+    viewDetails: 'View Details',
+    viewPass: 'View Pass',
+    qrCode: 'QR Code'
   },
   si: {
     title: 'ඔබගේ වෙන්කිරීම්',
@@ -58,7 +65,9 @@ const bookingTranslations: Record<Language, {
     view: 'බලන්න',
     cancel: 'අවලංගු කරන්න',
     cancelling: 'අවලංගු කරමින්...',
-    viewDetails: 'විස්තර බලන්න'
+    viewDetails: 'විස්තර බලන්න',
+    viewPass: 'පාස් බලන්න',
+    qrCode: 'QR කේතය'
   },
   ta: {
     title: 'உங்கள் முன்பதிவுகள்',
@@ -75,7 +84,9 @@ const bookingTranslations: Record<Language, {
     view: 'பார்க்கவும்',
     cancel: 'ரத்து செய்',
     cancelling: 'ரத்து செய்கிறது...',
-    viewDetails: 'விவரங்களைப் பார்க்கவும்'
+    viewDetails: 'விவரங்களைப் பார்க்கவும்',
+    viewPass: 'பாஸைப் பார்க்கவும்',
+    qrCode: 'QR குறியீடு'
   }
 };
 
@@ -103,18 +114,31 @@ const EmptyCalendarIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 type Booking = {
     id: string;
-    designation: string;
-    agent: string;
+    bookingReference: string;
+    serviceType: string;
+    department: string;
     date: string; // ISO date
     time: string; // HH:mm
-    location?: string;
-    status: "upcoming" | "completed" | "cancelled";
+    status: "pending" | "confirmed" | "completed" | "cancelled";
+    priority?: string;
+    notes?: string;
+    assignedAgent?: {
+        name: string;
+        position: string;
+        office?: string;
+    } | null;
+    submittedDate?: string;
+    qrCode?: {
+        imageUrl: string;
+        generatedAt: string;
+    } | null;
 };
 
 // A styled status badge component
 const BookingStatusBadge = ({ status }: { status: Booking['status'] }) => {
     const styles = {
-        upcoming: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+        pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+        confirmed: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
         completed: "bg-blue-500/10 text-blue-400 border-blue-500/20",
         cancelled: "bg-red-500/10 text-red-400 border-red-500/20",
     };
@@ -128,15 +152,78 @@ const BookingStatusBadge = ({ status }: { status: Booking['status'] }) => {
 // The main component for the page
 export default function BookingListPage() {
     const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
-    const [bookings, setBookings] = useState<Booking[]>([
-        { id: "bk-001", designation: "Senior Officer", agent: "N. Silva", date: new Date().toISOString().slice(0, 10), time: new Date(Date.now() + 10 * 60 * 1000).toTimeString().slice(0, 5), location: "GovLink Office - Counter 3", status: "upcoming" },
-        { id: "bk-002", designation: "Officer", agent: "A. Perera", date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10), time: "10:30", location: "GovLink Office - Counter 1", status: "upcoming" },
-        { id: "bk-003", designation: "Manager", agent: "R. Jayasinghe", date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), time: "14:00", location: "GovLink Office - Room 2", status: "upcoming" },
-        { id: "bk-004", designation: "Clerk", agent: "S. Fernando", date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), time: "09:00", location: "GovLink Office - Counter 5", status: "completed" },
-    ]);
-
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [showQRCode, setShowQRCode] = useState(false);
+    const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+    const router = useRouter();
     const t = bookingTranslations[currentLanguage];
+
+    // Redirect if not authenticated
+    useEffect(() => {
+        if (!authLoading && !isAuthenticated) {
+            router.push('/user/auth/login');
+            return;
+        }
+    }, [authLoading, isAuthenticated, router]);
+
+    // Fetch appointments from API
+    useEffect(() => {
+        const fetchAppointments = async () => {
+            // Don't fetch if not authenticated
+            if (!isAuthenticated || !user) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                setLoading(true);
+                setError(null);
+                const response = await fetch('/api/user/appointments?limit=50', {
+                    method: 'GET',
+                    credentials: 'include', // Include cookies for authentication
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (response.status === 401) {
+                    // User is not authenticated, redirect to login
+                    router.push('/user/auth/login');
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch appointments: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    setBookings(data.data.appointments || []);
+                } else {
+                    throw new Error(data.message || 'Failed to fetch appointments');
+                }
+            } catch (err) {
+                console.error('Error fetching appointments:', err);
+                if (err instanceof Error && err.message.includes('401')) {
+                    router.push('/user/auth/login');
+                    return;
+                }
+                setError(err instanceof Error ? err.message : 'Failed to load appointments');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        // Only fetch if authentication is complete
+        if (!authLoading) {
+            fetchAppointments();
+        }
+    }, [authLoading, isAuthenticated, user, router]);
 
     const handleLanguageChange = (newLanguage: Language) => {
         setCurrentLanguage(newLanguage);
@@ -144,10 +231,60 @@ export default function BookingListPage() {
 
     function cancelBooking(id: string) {
         setCancellingId(id);
-        setTimeout(() => {
-            setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b)));
-            setCancellingId(null);
-        }, 700);
+        
+        // Call the cancel API
+        const cancelAppointment = async () => {
+            try {
+                const response = await fetch(`/api/user/appointments/${id}/cancel`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (response.status === 401) {
+                    router.push('/user/auth/login');
+                    return;
+                }
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Failed to cancel appointment: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update the local state to reflect the cancellation
+                    setBookings((prev) => prev.map((b) => (
+                        b.id === id 
+                            ? { ...b, status: "cancelled" as const, qrCode: null } // Remove QR code
+                            : b
+                    )));
+                    console.log('✅ Appointment cancelled successfully');
+                } else {
+                    throw new Error(data.message || 'Failed to cancel appointment');
+                }
+            } catch (error) {
+                console.error('❌ Cancel appointment error:', error);
+                alert(error instanceof Error ? error.message : 'Failed to cancel appointment. Please try again.');
+            } finally {
+                setCancellingId(null);
+            }
+        };
+
+        cancelAppointment();
+    }
+
+    function showBookingQRCode(booking: Booking) {
+        setSelectedBooking(booking);
+        setShowQRCode(true);
+    }
+
+    function hideQRCode() {
+        setShowQRCode(false);
+        setSelectedBooking(null);
     }
 
     const sortedBookings = useMemo(() => {
@@ -161,8 +298,89 @@ export default function BookingListPage() {
         });
     }, [bookings]);
     
-    const upcomingBookings = sortedBookings.filter(b => b.status === 'upcoming');
-    const pastBookings = sortedBookings.filter(b => b.status !== 'upcoming');
+    const upcomingBookings = sortedBookings.filter(b => b.status === 'pending' || b.status === 'confirmed');
+    const pastBookings = sortedBookings.filter(b => b.status === 'completed' || b.status === 'cancelled');
+
+    // Show loading state while authentication is being checked
+    if (authLoading) {
+        return (
+            <UserDashboardLayout
+                title={
+                    <span className="animate-title-wave">
+                        <span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
+                        <span className="text-gradient">
+                            {t.title.split(' ')[1] || ''}
+                        </span>
+                    </span>
+                }
+                subtitle={t.subtitle}
+                language={currentLanguage}
+                onLanguageChange={handleLanguageChange}
+            >
+                <div className="flex items-center justify-center min-h-64">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#FFC72C]"></div>
+                </div>
+            </UserDashboardLayout>
+        );
+    }
+
+    // Don't render anything if not authenticated (will be redirected)
+    if (!isAuthenticated || !user) {
+        return null;
+    }
+
+    if (loading) {
+        return (
+            <UserDashboardLayout
+                title={
+                    <span className="animate-title-wave">
+                        <span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
+                        <span className="text-gradient">
+                            {t.title.split(' ')[1] || ''}
+                        </span>
+                    </span>
+                }
+                subtitle={t.subtitle}
+                language={currentLanguage}
+                onLanguageChange={handleLanguageChange}
+            >
+                <div className="flex items-center justify-center min-h-64">
+                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#FFC72C]"></div>
+                </div>
+            </UserDashboardLayout>
+        );
+    }
+
+    if (error) {
+        return (
+            <UserDashboardLayout
+                title={
+                    <span className="animate-title-wave">
+                        <span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
+                        <span className="text-gradient">
+                            {t.title.split(' ')[1] || ''}
+                        </span>
+                    </span>
+                }
+                subtitle={t.subtitle}
+                language={currentLanguage}
+                onLanguageChange={handleLanguageChange}
+            >
+                <div className="max-w-lg mx-auto">
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
+                        <h3 className="text-lg font-bold text-red-900 dark:text-red-100 mb-2">Error Loading Appointments</h3>
+                        <p className="text-red-700 dark:text-red-300 mb-4">{error}</p>
+                        <button 
+                            onClick={() => window.location.reload()}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </UserDashboardLayout>
+        );
+    }
 
     return (
         <UserDashboardLayout
@@ -230,8 +448,10 @@ export default function BookingListPage() {
                                             <div className="flex-grow">
                                                 <div className="flex items-start justify-between gap-4 mb-4">
                                                     <div>
-                                                        <p className="text-muted-foreground text-sm">{b.designation}</p>
-                                                        <h3 className="text-xl font-bold text-foreground group-hover:text-[#FFC72C] transition-colors duration-300">{b.agent}</h3>
+                                                        <p className="text-muted-foreground text-sm">{b.assignedAgent?.position || 'Position not assigned'}</p>
+                                                        <h3 className="text-xl font-bold text-foreground group-hover:text-[#FFC72C] transition-colors duration-300">{b.assignedAgent?.name || 'Agent not assigned'}</h3>
+                                                        <p className="text-sm text-muted-foreground">{b.serviceType}</p>
+                                                        <p className="text-xs text-muted-foreground">{b.department}</p>
                                                     </div>
                                                     <BookingStatusBadge status={b.status} />
                                                 </div>
@@ -239,13 +459,29 @@ export default function BookingListPage() {
                                                 <div className="space-y-3 text-sm">
                                                     <div className="flex items-center gap-3"><CalendarIcon className="w-5 h-5 text-[#FFC72C]" /><span className="text-foreground">{new Date(b.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
                                                     <div className="flex items-center gap-3"><ClockIcon className="w-5 h-5 text-[#FFC72C]" /><span className="text-foreground">{b.time}</span></div>
-                                                    {b.location && <div className="flex items-center gap-3"><LocationPinIcon className="w-5 h-5 text-[#FFC72C]" /><span className="text-foreground">{b.location}</span></div>}
+                                                    {b.assignedAgent?.office && <div className="flex items-center gap-3"><LocationPinIcon className="w-5 h-5 text-[#FFC72C]" /><span className="text-foreground">{b.assignedAgent.office}</span></div>}
                                                 </div>
                                             </div>
                                             <div className="border-t border-border/50 mt-6 pt-4 flex items-center justify-between">
-                                                <p className="text-xs text-muted-foreground">ID: {b.id}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {b.bookingReference ? `REF: ${b.bookingReference}` : `ID: ${b.id}`}
+                                                </p>
                                                 <div className="flex gap-2">
-                                                    <button type="button" className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-lg transition-all duration-300 hover:border-[#FFC72C]/60">{t.view}</button>
+                                                    <Link 
+                                                        href={`/user/booking/${b.id}`}
+                                                        className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-lg transition-all duration-300 hover:border-[#FFC72C]/60"
+                                                    >
+                                                        {t.view}
+                                                    </Link>
+                                                    {b.qrCode?.imageUrl && (
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => showBookingQRCode(b)}
+                                                            className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-blue-600 rounded-lg transition-all duration-300"
+                                                        >
+                                                            {t.viewPass}
+                                                        </button>
+                                                    )}
                                                     <button type="button" onClick={() => cancelBooking(b.id)} disabled={cancellingId === b.id} className="px-3 py-1.5 text-sm font-medium text-[#FF5722] hover:text-white bg-[#FF5722]/10 hover:bg-[#FF5722] border border-[#FF5722]/30 hover:border-[#FF5722] rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                                                         {cancellingId === b.id ? t.cancelling : t.cancel}
                                                     </button>
@@ -280,21 +516,30 @@ export default function BookingListPage() {
                                             <div className="flex-grow">
                                                 <div className="flex items-start justify-between gap-4 mb-4">
                                                     <div>
-                                                        <p className="text-muted-foreground text-sm">{b.designation}</p>
-                                                        <h3 className="text-xl font-bold text-foreground">{b.agent}</h3>
+                                                        <p className="text-muted-foreground text-sm">{b.assignedAgent?.position || 'Position not assigned'}</p>
+                                                        <h3 className="text-xl font-bold text-foreground">{b.assignedAgent?.name || 'Agent not assigned'}</h3>
+                                                        <p className="text-sm text-muted-foreground">{b.serviceType}</p>
+                                                        <p className="text-xs text-muted-foreground">{b.department}</p>
                                                     </div>
                                                     <BookingStatusBadge status={b.status} />
                                                 </div>
                                                 <div className="border-t border-border/50 my-4"></div>
                                                 <div className="space-y-3 text-sm text-muted-foreground">
                                                     <div className="flex items-center gap-3"><CalendarIcon className="w-5 h-5" /><span>{new Date(b.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} at {b.time}</span></div>
-                                                    {b.location && <div className="flex items-center gap-3"><LocationPinIcon className="w-5 h-5" /><span>{b.location}</span></div>}
+                                                    {b.assignedAgent?.office && <div className="flex items-center gap-3"><LocationPinIcon className="w-5 h-5" /><span>{b.assignedAgent.office}</span></div>}
                                                 </div>
                                             </div>
                                             <div className="border-t border-border/50 mt-6 pt-4 flex items-center justify-between">
-                                                <p className="text-xs text-muted-foreground">ID: {b.id}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {b.bookingReference ? `REF: ${b.bookingReference}` : `ID: ${b.id}`}
+                                                </p>
                                                 <div className="flex gap-2">
-                                                    <button type="button" className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-lg transition-all duration-300 hover:border-[#FFC72C]/60">{t.viewDetails}</button>
+                                                    <Link 
+                                                        href={`/user/booking/${b.id}`}
+                                                        className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-lg transition-all duration-300 hover:border-[#FFC72C]/60"
+                                                    >
+                                                        {t.viewDetails}
+                                                    </Link>
                                                 </div>
                                             </div>
                                         </div>
@@ -304,6 +549,22 @@ export default function BookingListPage() {
                         </section>
                     )}
                 </div>
+            )}
+
+            {/* QR Code Modal */}
+            {showQRCode && selectedBooking && (
+                <QRCodeDisplay
+                    qrCodeImageUrl={selectedBooking.qrCode?.imageUrl}
+                    bookingReference={selectedBooking.bookingReference}
+                    appointmentData={{
+                        service: selectedBooking.serviceType,
+                        date: selectedBooking.date,
+                        time: selectedBooking.time,
+                        agent: selectedBooking.assignedAgent?.name,
+                        location: selectedBooking.assignedAgent?.office
+                    }}
+                    onClose={hideQRCode}
+                />
             )}
         </UserDashboardLayout>
     );

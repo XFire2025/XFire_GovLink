@@ -56,6 +56,13 @@ export interface IAppointment extends Document {
   requirements?: string[]; // Documents/requirements needed
   documents: IAppointmentDocument[]; // NEW: Add the documents array
   
+  // QR Code Information
+  qrCode?: {
+    data: string; // QR code data (booking reference + appointment details)
+    imageUrl?: string; // URL to QR code image stored in R2
+    generatedAt: Date;
+  };
+  
   // System Information
   bookingReference: string; // Unique booking ID
   submittedDate: Date;
@@ -199,6 +206,13 @@ const AppointmentSchema: Schema = new Schema({
     fileSize: { type: Number, required: true },
     uploadedAt: { type: Date, default: Date.now }
   }],
+  
+  // QR Code Information
+  qrCode: {
+    data: { type: String },
+    imageUrl: { type: String },
+    generatedAt: { type: Date, default: Date.now }
+  },
   
   // System Information
   bookingReference: {
