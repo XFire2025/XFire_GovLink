@@ -14,33 +14,49 @@ GovLink aims to bridge the gap between citizens and government services by offer
 ## Folder Structure
 
 ```
-├── app/
-│   ├── admin/                # Admin-specific pages and layouts
-│   ├── agent/                # Agent-specific pages and layouts
-│   ├── User/                 # User-specific pages and functionalities
-│   ├── favicon.ico           # Favicon for the application
-│   ├── globals.css           # Global styles
-│   ├── layout.tsx            # Root layout
-│   ├── page.tsx              # Main entry page
-│   └── providers.tsx         # Providers for context and state management
-├── components/
-│   ├── Header.tsx            # Header component
-│   ├── SelectField.tsx       # Custom select field component
-│   ├── ThemeProvider.tsx     # Theme provider for dark/light mode
-│   ├── ThemeToggle.tsx       # Theme toggle button
-│   ├── adminSystem/          # Admin-specific components
-│   ├── agent/                # Agent-specific components
-│   └── Icons/                # Icon components
-├── lib/
-│   └── utils.ts              # Utility functions
-├── public/
-│   ├── Assets like images, SVGs, and GIFs
-├── styles/
-│   └── Tailwind and other style configurations
-├── deploy/
-│   ├── govlink.service       # Systemd service file for deployment
-│   ├── start-app.sh          # Script to start the application
-│   └── validate-deployment.sh # Script to validate deployment
+├── src/                      # Source files
+│   ├── app/                  # Next.js app routes and pages
+│   │   ├── admin/
+│   │   ├── agent/
+│   │   ├── department/
+│   │   ├── user/
+│   │   ├── api/              # Serverless/api route handlers
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   └── providers.tsx
+│   ├── components/           # React components grouped by area
+│   │   ├── adminSystem/
+│   │   ├── agent/
+│   │   ├── department/
+│   │   ├── user/
+│   │   ├── Header.tsx
+│   │   ├── SelectField.tsx
+│   │   ├── ThemeProvider.tsx
+│   │   └── ThemeToggle.tsx
+│   ├── lib/                  # Shared libraries and helpers
+│   │   ├── db.ts
+│   │   ├── i18n.ts
+│   │   ├── r2.ts
+│   │   └── utils.ts
+│   └── types/                # Type definitions
+│       └── department.ts
+├── public/                   # Static assets (images, SVGs, GIFs)
+├── scripts/                  # Migration and helper scripts
+├── .github/                  # CI, templates, workflow files
+├── components.json           # Design/component metadata
+├── middleware.ts
+├── package.json
+├── package-lock.json
+├── tsconfig.json
+├── next.config.ts
+├── tailwind.config.ts
+├── postcss.config.mjs
+├── eslint.config.mjs
+├── README.md
+├── DEPLOYMENT.md
+└── ADMIN_RBAC_DOCUMENTATION.md
 ```
 
 ## Technologies Used
@@ -129,5 +145,7 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+ 
 ## CodeRabit
+
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/XFire2025/govlink?utm_source=oss&utm_medium=github&utm_campaign=XFire2025%2Fgovlink&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
