@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Do NOT set NODE_ENV; Netlify sets it to production for build.
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Optional: future flags (uncomment when needed)
+#[functions]
+#  node_bundler = "esbuild"
