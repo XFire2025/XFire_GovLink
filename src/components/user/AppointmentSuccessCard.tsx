@@ -80,154 +80,130 @@ const AppointmentSuccessCard: React.FC<AppointmentSuccessCardProps> = ({ appoint
   };
 
   return (
-    <div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-2 border-green-200 dark:border-green-700 rounded-2xl p-6 shadow-xl">
-      {/* Success Header */}
-      <div className="text-center mb-6">
-        <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <h2 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">
-          🎉 Appointment Confirmed!
-        </h2>
-        <div className="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full text-lg font-bold inline-block">
-          REF: {appointment.bookingReference}
+    <div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border-2 border-green-200 dark:border-green-700 rounded-xl p-4 shadow-xl max-h-screen overflow-hidden">
+      {/* Success Header - Compact */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-green-700 dark:text-green-300">
+              Appointment Confirmed!
+            </h2>
+            <div className="bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-sm font-bold">
+              REF: {appointment.bookingReference}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Appointment Details */}
-      <div className="grid md:grid-cols-2 gap-6 mb-6">
-        {/* Left Column */}
-        <div className="space-y-4">
-          <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">📋 Service Details</h3>
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Service:</span>
-                <span className="ml-2 font-medium text-gray-900 dark:text-gray-100">{appointment.serviceType}</span>
-              </div>
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Department:</span>
-                <span className="ml-2 font-medium text-gray-900 dark:text-gray-100">{appointment.department}</span>
-              </div>
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Status:</span>
-                <span className="ml-2 inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
-                  {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                </span>
-              </div>
+      {/* Three Column Layout for Compact View */}
+      <div className="grid grid-cols-3 gap-3 mb-3">
+        {/* Service Details */}
+        <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+          <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 text-sm">📋 Service Details</h3>
+          <div className="space-y-1 text-xs">
+            <div>
+              <span className="text-gray-600 dark:text-gray-400">Service:</span>
+              <span className="ml-1 font-medium text-gray-900 dark:text-gray-100 block">{appointment.serviceType}</span>
             </div>
-          </div>
-
-          <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">👤 Agent Information</h3>
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Agent:</span>
-                <span className="ml-2 font-medium text-gray-900 dark:text-gray-100">{appointment.agent}</span>
-              </div>
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Position:</span>
-                <span className="ml-2 font-medium text-gray-900 dark:text-gray-100">{appointment.agentPosition}</span>
-              </div>
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Office:</span>
-                <span className="ml-2 font-medium text-gray-900 dark:text-gray-100">{appointment.agentOffice}</span>
-              </div>
+            <div>
+              <span className="text-gray-600 dark:text-gray-400">Department:</span>
+              <span className="ml-1 font-medium text-gray-900 dark:text-gray-100 block">{appointment.department}</span>
+            </div>
+            <div>
+              <span className="text-gray-600 dark:text-gray-400">Status:</span>
+              <span className="ml-1 inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Right Column */}
-        <div className="space-y-4">
-          <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
-            <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">📅 Schedule</h3>
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Date:</span>
-                <span className="ml-2 font-medium text-gray-900 dark:text-gray-100">{formatDate(appointment.date)}</span>
-              </div>
-              <div>
-                <span className="text-gray-600 dark:text-gray-400">Time:</span>
-                <span className="ml-2 font-medium text-green-600 text-lg">{formatTime(appointment.time)}</span>
-              </div>
+        {/* Agent & Schedule Combined */}
+        <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+          <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 text-sm">👤 Agent Information</h3>
+          <div className="space-y-1 text-xs mb-3">
+            <div>
+              <span className="text-gray-600 dark:text-gray-400">Agent:</span>
+              <span className="ml-1 font-medium text-gray-900 dark:text-gray-100 block">{appointment.agent}</span>
+            </div>
+            <div>
+              <span className="text-gray-600 dark:text-gray-400">Position:</span>
+              <span className="ml-1 font-medium text-gray-900 dark:text-gray-100 block">{appointment.agentPosition}</span>
+            </div>
+            <div>
+              <span className="text-gray-600 dark:text-gray-400">Office:</span>
+              <span className="ml-1 font-medium text-gray-900 dark:text-gray-100 block">{appointment.agentOffice}</span>
             </div>
           </div>
+          
+          <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 text-sm">📅 Schedule</h3>
+          <div className="space-y-1 text-xs">
+            <div>
+              <span className="text-gray-600 dark:text-gray-400">Date:</span>
+              <span className="ml-1 font-medium text-gray-900 dark:text-gray-100 block">{formatDate(appointment.date)}</span>
+            </div>
+            <div>
+              <span className="text-gray-600 dark:text-gray-400">Time:</span>
+              <span className="ml-1 font-medium text-green-600 text-sm block">{formatTime(appointment.time)}</span>
+            </div>
+          </div>
+        </div>
 
-          {/* QR Code Section */}
-          {appointment.qrCode?.imageUrl && (
-            <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-600">
-              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 text-center">📱 Your Digital Pass</h3>
-              
-              {/* QR Code Preview */}
-              <div className="text-center mb-4">
-                <div className="inline-block bg-white p-4 rounded-xl border-2 border-dashed border-yellow-400 shadow-lg">
-                  <div onClick={() => setShowFullQR(true)} className="cursor-pointer hover:scale-105 transition-transform">
-                    <QRCodeImage 
-                      src={appointment.qrCode.imageUrl} 
-                      alt={`QR Code for appointment ${appointment.bookingReference}`}
-                      className="w-32 h-32 mx-auto"
-                      width={128}
-                      height={128}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-600 mt-2">Click to view full size</p>
+        {/* QR Code Section - Compact */}
+        {appointment.qrCode?.imageUrl && (
+          <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+            <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2 text-sm text-center">📱 Your Digital Pass</h3>
+            
+            {/* QR Code Preview - Smaller */}
+            <div className="text-center mb-2">
+              <div className="inline-block bg-white p-2 rounded-lg border border-yellow-400">
+                <div onClick={() => setShowFullQR(true)} className="cursor-pointer hover:scale-105 transition-transform">
+                  <QRCodeImage 
+                    src={appointment.qrCode.imageUrl} 
+                    alt={`QR Code for appointment ${appointment.bookingReference}`}
+                    className="w-20 h-20 mx-auto"
+                    width={80}
+                    height={80}
+                  />
                 </div>
-              </div>
-
-              {/* QR Code Actions */}
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={downloadQRCode}
-                  disabled={isDownloading}
-                  className="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-4 py-3 rounded-lg font-medium transition-colors"
-                >
-                  {isDownloading ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Downloading...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Download Pass
-                    </>
-                  )}
-                </button>
-                
-                <button
-                  onClick={() => window.print()}
-                  className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                  </svg>
-                  Print Pass
-                </button>
+                <p className="text-xs text-gray-600 mt-1">Click to view full size</p>
               </div>
             </div>
-          )}
-        </div>
+
+            {/* QR Code Action - Download Only */}
+            <div>
+              <button
+                onClick={downloadQRCode}
+                disabled={isDownloading}
+                className="flex items-center justify-center gap-1 w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-2 py-2 rounded text-xs font-medium transition-colors"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                {isDownloading ? 'Wait...' : 'Download Pass'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Notes Section */}
+      {/* Notes Section - Compact */}
       {appointment.notes && (
-        <div className="bg-white/70 dark:bg-gray-800/70 rounded-xl p-4 border border-gray-200 dark:border-gray-600 mb-6">
-          <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">📝 Notes</h3>
-          <p className="text-gray-700 dark:text-gray-300 text-sm">{appointment.notes}</p>
+        <div className="bg-white/70 dark:bg-gray-800/70 rounded-lg p-3 border border-gray-200 dark:border-gray-600 mb-3">
+          <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1 text-sm">📝 Notes</h3>
+          <p className="text-gray-700 dark:text-gray-300 text-xs">{appointment.notes}</p>
         </div>
       )}
 
-      {/* Instructions */}
-      <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-400 p-4 rounded-r-xl">
-        <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">📋 Important Instructions</h4>
-        <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
+      {/* Instructions - Compact */}
+      <div className="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-400 p-3 rounded-r-lg">
+        <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-1 text-sm">📋 Important Instructions</h4>
+        <ul className="text-xs text-blue-800 dark:text-blue-300 space-y-0.5">
           <li>• <strong>Check your email</strong> for the appointment pass with QR code</li>
           <li>• <strong>Arrive 15 minutes early</strong> for document verification</li>
           <li>• <strong>Bring original documents</strong> and the required photocopies</li>
@@ -272,19 +248,13 @@ const AppointmentSuccessCard: React.FC<AppointmentSuccessCardProps> = ({ appoint
                 </p>
               </div>
 
-              <div className="flex gap-3">
+              <div className="text-center">
                 <button
                   onClick={downloadQRCode}
                   disabled={isDownloading}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                 >
-                  {isDownloading ? 'Downloading...' : 'Download'}
-                </button>
-                <button
-                  onClick={() => window.print()}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                >
-                  Print
+                  {isDownloading ? 'Downloading...' : 'Download Pass'}
                 </button>
               </div>
             </div>
