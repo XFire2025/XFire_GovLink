@@ -43,7 +43,7 @@ const createThemeRipple = (event: React.MouseEvent<HTMLButtonElement>, isDark: b
     animation: themeRippleExpand 1.0s cubic-bezier(0.23, 1, 0.32, 1) forwards;
   `;
   
-  // Add keyframes for the ripple animation
+  // Add keyframes for the ripple animation (only on client side)
   if (!document.querySelector('#theme-ripple-styles')) {
     const style = document.createElement('style');
     style.id = 'theme-ripple-styles';
@@ -164,7 +164,7 @@ export function ThemeToggle() {
   const isDark = effective === "dark";
 
   const toggle = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (isAnimating) return;
+    if (isAnimating || !mounted) return;
     
     createThemeRipple(event, isDark);
     setIsAnimating(true);
@@ -179,6 +179,13 @@ export function ThemeToggle() {
       setIsAnimating(false);
     }, 800);
   };
+
+  // Don't render anything until mounted on client
+  if (!mounted) {
+    return (
+      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
+    );
+  }
 
   return (
     <button
