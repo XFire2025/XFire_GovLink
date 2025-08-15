@@ -5,6 +5,9 @@ import * as React from "react";
 import { useTheme } from "next-themes";
 
 const createThemeRipple = (event: React.MouseEvent<HTMLButtonElement>, isDark: boolean) => {
+  // Only run on client side
+  if (typeof window === 'undefined') return;
+  
   const button = event.currentTarget;
   const rect = button.getBoundingClientRect();
   

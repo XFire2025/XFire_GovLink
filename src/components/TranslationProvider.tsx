@@ -35,15 +35,19 @@ export const TranslationProvider: React.FC<TranslationProviderProps> = ({ childr
   const handleLanguageChange = (newLanguage: string) => {
     setLanguage(newLanguage);
     i18next.changeLanguage(newLanguage);
-    localStorage.setItem('govlink-language', newLanguage);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('govlink-language', newLanguage);
+    }
   };
 
   useEffect(() => {
     // Initialize i18next
     const initI18n = async () => {
       try {
-        // Check for saved language preference
-        const savedLanguage = localStorage.getItem('govlink-language') || 'en';
+        // Check for saved language preference (only on client side)
+        const savedLanguage = typeof window !== 'undefined' 
+          ? localStorage.getItem('govlink-language') || 'en'
+          : 'en';
         
         // Initialize i18next if not already initialized
         if (!i18next.isInitialized) {
