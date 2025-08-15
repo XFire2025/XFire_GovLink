@@ -218,7 +218,6 @@ const AppointmentSchema: Schema = new Schema({
   bookingReference: {
     type: String,
     required: true,
-    unique: true,
     uppercase: true
   },
   submittedDate: {
@@ -263,7 +262,7 @@ AppointmentSchema.index({ status: 1 });
 AppointmentSchema.index({ serviceType: 1 });
 AppointmentSchema.index({ date: 1, time: 1 });
 AppointmentSchema.index({ assignedAgent: 1 });
-AppointmentSchema.index({ bookingReference: 1 });
+AppointmentSchema.index({ bookingReference: 1 }, { unique: true });
 AppointmentSchema.index({ submittedDate: -1 });
 
 // Compound indexes for common queries

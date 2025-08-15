@@ -275,7 +275,7 @@ interface ServiceCardProps {
   animationDelay: string;
 }
 
-const ServiceCard = ({ title, description, href, icon, color, animationDelay }: ServiceCardProps) => (
+const ServiceCard = ({ title, description, href, icon, animationDelay }: ServiceCardProps) => (
   <Link href={href}>
     <div 
       className="group relative bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow transition-all duration-500 animate-fade-in-up modern-card hover:border-[#FFC72C]/70 hover:shadow-2xl hover-lift cursor-pointer p-6 h-full min-h-[280px] flex flex-col"
