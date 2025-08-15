@@ -37,13 +37,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      {/* 5. Combine all font variables into the className */}
-      <body
-        className={`${notoSans.variable} ${notoSansSinhala.variable} ${notoSansTamil.variable}`}
-      >
-        <Providers>{children}</Providers>
-      </body>
-    </html>
+    <div
+      className={`${notoSans.variable} ${notoSansSinhala.variable} ${notoSansTamil.variable}`}
+    >
+      <Providers>{children}</Providers>
+    </div>
   );
 }
