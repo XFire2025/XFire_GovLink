@@ -1,7 +1,6 @@
 // src/app/Ragbot/page.tsx
 "use client";
 import React, { Suspense, useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

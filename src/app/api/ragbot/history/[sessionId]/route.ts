@@ -1,13 +1,13 @@
 // src/app/api/ragbot/history/[sessionId]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSriLankanGovRAGAgent } from '@/lib/ragAgent';
+import { getSriLankanGovRAGAgent } from '@/lib/ragAgent';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    const { sessionId } = params;
+    const { sessionId } = await params;
 
     if (!sessionId) {
       return NextResponse.json(
@@ -28,10 +28,7 @@ export async function GET(
     }
 
     // Create RAG agent
-    const ragAgent = createSriLankanGovRAGAgent({
-      openaiApiKey,
-      tavilyApiKey,
-    });
+    const ragAgent = getSriLankanGovRAGAgent();
 
     // Get chat history
     const messages = await ragAgent.getChatHistory(sessionId);
@@ -61,10 +58,10 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    const { sessionId } = params;
+    const { sessionId } = await params;
 
     if (!sessionId) {
       return NextResponse.json(
@@ -85,10 +82,7 @@ export async function DELETE(
     }
 
     // Create RAG agent
-    const ragAgent = createSriLankanGovRAGAgent({
-      openaiApiKey,
-      tavilyApiKey,
-    });
+    const ragAgent = getSriLankanGovRAGAgent();
 
     // Clear chat history
     await ragAgent.clearChatHistory(sessionId);

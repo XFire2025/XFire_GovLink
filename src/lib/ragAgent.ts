@@ -93,18 +93,15 @@ export class SriLankanGovRAGAgent {
     this.tavilySearch = new TavilySearch({
       maxResults: 8,
       searchDepth: "advanced",
-      apiKey: tavilyApiKey,
     });
 
     this.tavilyCrawl = new TavilyCrawl({
       maxDepth: 2,
       maxBreadth: 4,
-      apiKey: tavilyApiKey,
     });
 
     this.tavilyExtract = new TavilyExtract({
       includeImages: false,
-      apiKey: tavilyApiKey,
     });
 
     // Initialize memory saver for conversation context
