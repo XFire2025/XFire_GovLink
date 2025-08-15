@@ -131,3 +131,6 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 ## CodeRabit
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/XFire2025/govlink?utm_source=oss&utm_medium=github&utm_campaign=XFire2025%2Fgovlink&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+
+## RAG Application
+GovLink is integrated with a Retrieval-Augmented Generation (RAG) application that enhances the user experience by providing intelligent responses and data retrieval capabilities. This integration allows users to interact with the system more effectively, leveraging AI to assist in various tasks.
