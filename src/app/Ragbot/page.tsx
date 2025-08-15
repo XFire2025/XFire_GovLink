@@ -1,6 +1,7 @@
 // src/app/Ragbot/page.tsx
 "use client";
 import React, { Suspense, useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -8,16 +9,8 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import 'highlight.js/styles/github-dark.css';
 
-// Types
+// --- TYPES ---
 type Language = 'en' | 'si' | 'ta';
-
-interface Message {
-  type: 'user' | 'bot';
-  text: string;
-  timestamp: Date;
-  departmentContacts?: DepartmentContact[];
-  sources?: string[];
-}
 
 interface DepartmentContact {
   id: string;
@@ -27,9 +20,18 @@ interface DepartmentContact {
   website: string;
   address: string;
   services: string[];
+  source?: string;
 }
 
-// Chat translations
+interface Message {
+  type: 'user' | 'bot';
+  text: string;
+  timestamp: Date;
+  departmentContacts?: DepartmentContact[];
+  sources?: string[];
+}
+
+// --- TRANSLATIONS ---
 const chatTranslations: Record<Language, {
   title: string;
   subtitle: string;
@@ -38,8 +40,6 @@ const chatTranslations: Record<Language, {
   analyzing: string;
   preparing: string;
   chatStarted: string;
-  contactDetails: string;
-  sources: string;
   suggestions: {
     moreDetails: string;
     relatedServices: string;
@@ -47,60 +47,62 @@ const chatTranslations: Record<Language, {
     contactInfo: string;
     waitForAgent: string;
   };
+  contactDetails: string;
+  sources: string;
 }> = {
   en: {
-    title: 'RAG Assistant',
+    title: 'GovLink RAG',
     subtitle: 'AI-powered assistant with real-time search for Sri Lankan government services',
     newChat: 'New Chat',
-    askFollowUp: 'Ask a follow-up question...',
-    analyzing: 'Searching government databases...',
-    preparing: 'RAG Assistant is gathering information',
-    chatStarted: 'Chat started with RAG Assistant',
-    contactDetails: 'Department Contacts',
-    sources: 'Sources',
+    askFollowUp: 'Ask a question about any government service...',
+    analyzing: 'Analyzing your question...',
+    preparing: 'GovLink Assistant is preparing your response',
+    chatStarted: 'Chat started with GovLink Assistant',
     suggestions: {
-      moreDetails: 'More details',
-      relatedServices: 'Related services',
-      howToApply: 'How to apply',
-      contactInfo: 'Contact info',
+      moreDetails: 'More details about passport renewal',
+      relatedServices: 'Related services for business registration',
+      howToApply: 'How do I apply for a marriage certificate?',
+      contactInfo: 'Contact info for Ministry of Education',
       waitForAgent: 'Wait for Agent'
-    }
+    },
+    contactDetails: 'Department Contacts',
+    sources: 'Sources'
   },
   si: {
-    title: 'RAG සහායක',
-    subtitle: 'ශ්‍රී ලංකා රජයේ සේවා සඳහා තත්‍ය කාලීන සෙවුම් සහිත AI සහායක',
+    title: 'GovLink RAG',
+    subtitle: 'ශ්‍රී ලංකා රජයේ සේවා සඳහා තත්‍ය කාලීන සෙවුම් සහිත AI බලැති සහකාර',
     newChat: 'නව කතාබස්',
-    askFollowUp: 'පසු විපරම් ප්‍රශ්නයක් අසන්න...',
-    analyzing: 'රජයේ දත්ත ගබඩා සොයමින්...',
-    preparing: 'RAG සහායක තොරතුරු එකතු කරමින්',
-    chatStarted: 'RAG සහායක සමඟ කතාබස් ආරම්භ විය',
-    contactDetails: 'දෙපාර්තමේන්තු සම්බන්ධතා',
-    sources: 'මූලාශ්‍ර',
+    askFollowUp: 'ඕනෑම රජයේ සේවාවක් ගැන ප්‍රශ්නයක් අසන්න...',
+    analyzing: 'ඔබගේ ප්‍රශ්නය විශ්ලේෂණය කරමින්...',
+    preparing: 'GovLink සහායක ඔබගේ පිළිතුර සූදානම් කරමින්',
+    chatStarted: 'GovLink සහායක සමඟ කතාබස් ආරම්භ විය',
     suggestions: {
-      moreDetails: 'වැඩි විස්තර',
-      relatedServices: 'සම්බන්ධිත සේවා',
-      howToApply: 'අයදුම් කරන ආකාරය',
-      contactInfo: 'සම්බන්ධතා තොරතුරු',
-      waitForAgent: 'නියෝජිතයක් සඳහා රැඳී සිටින්න'
-    }
+      moreDetails: 'විදේශ ගමන් බලපත්‍ර අලුත් කිරීම පිළිබඳ වැඩි විස්තර',
+      relatedServices: 'ව්‍යාපාර ලියාපදිංචිය සඳහා අදාළ සේවා',
+      howToApply: 'විවාහ සහතිකයක් සඳහා අයදුම් කරන්නේ කෙසේද?',
+      contactInfo: 'අධ්‍යාපන අමාත්‍යාංශයේ සම්බන්ධතා තොරතුරු',
+      waitForAgent: 'නියෝජිතයෙකු සඳහා රැඳී සිටින්න'
+    },
+    contactDetails: 'දෙපාර්තමේන්තු සම්බන්ධතා',
+    sources: 'මූලාශ්‍ර'
   },
   ta: {
-    title: 'RAG உதவியாளர்',
+    title: 'GovLink RAG',
     subtitle: 'இலங்கை அரசாங்க சேவைகளுக்கான நேரடி தேடல் கொண்ட AI உதவியாளர்',
     newChat: 'புதிய அரட்டை',
-    askFollowUp: 'பின்தொடர்ந்து கேள்வி கேளுங்கள்...',
-    analyzing: 'அரசாங்க தரவுத்தளங்களை தேடுகிறது...',
-    preparing: 'RAG உதவியாளர் தகவல்களை சேகரிக்கிறது',
-    chatStarted: 'RAG உதவியாளருடன் அரட்டை தொடங்கப்பட்டது',
-    contactDetails: 'துறை தொடர்புகள்',
-    sources: 'ஆதாரங்கள்',
+    askFollowUp: 'எந்தவொரு அரசாங்க சேவை பற்றியும் ஒரு கேள்வியைக் கேளுங்கள்...',
+    analyzing: 'உங்கள் கேள்வியை பகுப்பாய்வு செய்கிறது...',
+    preparing: 'GovLink உதவியாளர் உங்கள் பதிலை தயாரிக்கிறது',
+    chatStarted: 'GovLink உதவியாளருடன் அரட்டை தொடங்கப்பட்டது',
     suggestions: {
-      moreDetails: 'மேலும் விவரங்கள்',
-      relatedServices: 'தொடர்புடைய சேவைகள்',
-      howToApply: 'எப்படி விண்ணபிப்பது',
-      contactInfo: 'தொடர்பு தகவல்',
-      waitForAgent: 'முகவர்க்காக காத்திருங்கள்'
-    }
+      moreDetails: 'கடவுச்சீட்டு புதுப்பித்தல் பற்றிய கூடுதல் விவரங்கள்',
+      relatedServices: 'வணிகப் பதிவிற்கான தொடர்புடைய சேவைகள்',
+      howToApply: 'திருமணச் சான்றிதழுக்கு நான் எப்படி விண்ணப்பிப்பது?',
+      contactInfo: 'கல்வி அமைச்சுக்கான தொடர்புத் தகவல்',
+      waitForAgent: 'முகவருக்காக காத்திருங்கள்'
+    },
+    contactDetails: 'துறை தொடர்புகள்',
+    sources: 'ஆதாரங்கள்'
   }
 };
 
@@ -118,26 +120,34 @@ const SparklesIcon = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-const SearchIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="11" cy="11" r="8"/>
-    <path d="m21 21-4.35-4.35"/>
+const LotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100" fill="none">
+    <path d="M50 10C45 15 35 25 30 35C25 45 30 55 40 60C45 62 55 62 60 60C70 55 75 45 70 35C65 25 55 15 50 10Z" fill="url(#lotus-gradient)"/>
+    <path d="M50 15C45 20 40 30 35 40C30 50 35 60 45 65C50 67 60 67 65 65C75 60 80 50 75 40C70 30 65 20 50 15Z" fill="url(#lotus-gradient-inner)"/>
+    <defs>
+      <linearGradient id="lotus-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style={{stopColor: '#FFC72C', stopOpacity: 1}} />
+        <stop offset="50%" style={{stopColor: '#FF5722', stopOpacity: 1}} />
+        <stop offset="100%" style={{stopColor: '#8D153A', stopOpacity: 1}} />
+      </linearGradient>
+      <linearGradient id="lotus-gradient-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style={{stopColor: '#FFC72C', stopOpacity: 0.7}} />
+        <stop offset="100%" style={{stopColor: '#FF5722', stopOpacity: 0.7}} />
+      </linearGradient>
+    </defs>
   </svg>
 );
 
-// Sri Lankan Lotus Icon with AI enhancement
 const RAGBotIcon = () => (
   <div className="relative">
-    <div className="w-10 h-10 bg-gradient-to-br from-[#FFC72C] via-[#FF5722] to-[#8D153A] rounded-xl flex items-center justify-center">
-      <SearchIcon className="w-5 h-5 text-white" />
-    </div>
-    <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-[#4CAF50] to-[#2196F3] rounded-full flex items-center justify-center animate-pulse">
+    <LotusIcon className="w-10 h-10" />
+    <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center animate-pulse">
       <SparklesIcon className="w-2 h-2 text-white" />
     </div>
   </div>
 );
 
-// --- MESSAGE COMPONENTS ---
+// --- PREMIUM MESSAGE COMPONENTS ---
 const TimeAgo = ({ timestamp }: { timestamp: Date }) => {
   const [timeAgo, setTimeAgo] = useState('');
 
@@ -162,271 +172,314 @@ const TimeAgo = ({ timestamp }: { timestamp: Date }) => {
 
     updateTimeAgo();
     const interval = setInterval(updateTimeAgo, 60000);
+
     return () => clearInterval(interval);
   }, [timestamp]);
 
+  return <span className="text-xs text-muted-foreground">{timeAgo}</span>;
+};
+
+const UserMessage = ({ text, timestamp = new Date() }: { text: string; timestamp?: Date }) => (
+  <div className="flex justify-end my-6 animate-fade-in-up">
+    <div className="max-w-2xl">
+      <div className="bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white p-6 rounded-2xl rounded-br-lg shadow-lg hover:shadow-2xl transition-all duration-300">
+        <p className="leading-relaxed font-medium">{text}</p>
+      </div>
+      <div className="text-right mt-2">
+        <TimeAgo timestamp={timestamp} />
+      </div>
+    </div>
+  </div>
+);
+
+const TypingIndicator = ({ language = 'en' }: { language?: Language }) => {
+  const t = chatTranslations[language];
   return (
-    <span className="text-xs text-muted-foreground/60 font-medium ml-2">
-      {timeAgo}
-    </span>
+    <div className="flex justify-start my-6 animate-fade-in-up">
+      <div className="flex gap-4 max-w-4xl">
+        <div className="flex-shrink-0">
+          <RAGBotIcon />
+        </div>
+        <div className="flex-1">
+          <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl rounded-bl-lg shadow-glow border border-border/50 modern-card">
+            <div className="flex items-center space-x-1 text-muted-foreground">
+              <span className="animate-pulse">•</span>
+              <span className="animate-pulse" style={{animationDelay: '0.2s'}}>•</span>
+              <span className="animate-pulse" style={{animationDelay: '0.4s'}}>•</span>
+              <span className="ml-2 text-sm">{t.analyzing}</span>
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground mt-2">
+            {t.preparing}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ContactCard = ({ contact }: { contact: DepartmentContact }) => {
+    return (
+      <div className="bg-muted/20 dark:bg-muted/10 rounded-lg p-4 border border-border/30 transition-all hover:border-[#FF5722]/50">
+        <h4 className="font-semibold text-[#FFC72C] mb-2">{contact.name}</h4>
+        <div className="space-y-1 text-sm text-muted-foreground">
+          {contact.phone && <div>📞 {contact.phone}</div>}
+          {contact.email && <div>✉️ {contact.email}</div>}
+          {contact.website && <div>🌐 <a href={contact.website} target="_blank" rel="noopener noreferrer" className="text-[#FF5722] hover:underline">{contact.website}</a></div>}
+          {contact.address && <div>📍 {contact.address}</div>}
+        </div>
+      </div>
+    );
+  };
+  
+const SourcesSection = ({ sources, language }: { sources: string[]; language: Language }) => {
+    const t = chatTranslations[language];
+    
+    if (!sources || sources.length === 0) return null;
+    
+    return (
+      <div className="mt-4 pt-4 border-t border-white/10">
+        <h3 className="text-lg font-semibold text-[#FF5722] mb-2 mt-4">{t.sources}</h3>
+        <div className="space-y-1">
+          {sources.map((source, index) => (
+            <div key={index} className="text-sm">
+              <a 
+                href={source} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-[#FFC72C] underline hover:text-[#FF5722] transition-colors duration-200 flex items-center gap-1"
+              >
+                🔗 {new URL(source).hostname}
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+};
+
+const BotMessage = ({ message, language = 'en' }: { message: Message; language?: Language }) => {
+  const { text, timestamp, departmentContacts, sources } = message;
+  return (
+    <div className="flex justify-start my-6 animate-fade-in-up">
+      <div className="flex gap-4 max-w-4xl">
+        <div className="flex-shrink-0">
+          <RAGBotIcon />
+        </div>
+        <div className="flex-1">
+          <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl rounded-bl-lg shadow-glow border border-border/50 modern-card hover:border-[#FFC72C]/30 transition-all duration-300">
+            <div className="prose prose-lg max-w-none leading-relaxed text-foreground markdown-content">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight, rehypeRaw]}
+                skipHtml={false}
+                components={{
+                  h1: ({ children }) => <h1 className="text-2xl font-bold text-[#FFC72C] border-b-2 border-[#FFC72C] pb-2 mb-4 mt-6 first:mt-0">{children}</h1>,
+                  h2: ({ children }) => <h2 className="text-xl font-semibold text-[#FFC72C] mb-3 mt-6">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-lg font-semibold text-[#FF5722] mb-2 mt-4">{children}</h3>,
+                  h4: ({ children }) => <h4 className="text-base font-semibold text-[#FF5722] mb-2 mt-3">{children}</h4>,
+                  p: ({ children }) => <p className="mb-4 leading-relaxed text-foreground">{children}</p>,
+                  ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
+                  ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
+                  li: ({ children }) => <li className="text-foreground leading-relaxed">{children}</li>,
+                  strong: ({ children }) => <strong className="font-semibold text-[#FFC72C]">{children}</strong>,
+                  em: ({ children }) => <em className="italic opacity-90">{children}</em>,
+                  blockquote: ({ children }) => (
+                    <blockquote className="border-l-4 border-[#FFC72C] bg-[#FFC72C]/5 pl-4 py-3 my-4 italic rounded-r-lg">
+                      {children}
+                    </blockquote>
+                  ),
+                  code: ({ children, className, ...props }: React.ComponentProps<'code'>) => {
+                    const isInline = !className;
+                    if (isInline) {
+                      return (
+                        <code className="bg-black/30 text-[#FFC72C] px-2 py-1 rounded text-sm font-mono border border-white/10">
+                          {children}
+                        </code>
+                      );
+                    }
+                    return (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                  pre: ({ children }) => (
+                    <pre className="bg-black/40 border border-white/10 rounded-lg p-4 overflow-x-auto my-4 text-sm">
+                      {children}
+                    </pre>
+                  ),
+                  table: ({ children }) => (
+                    <div className="overflow-x-auto my-4">
+                      <table className="w-full border-collapse border border-white/20 rounded-lg overflow-hidden">
+                        {children}
+                      </table>
+                    </div>
+                  ),
+                  thead: ({ children }) => (
+                    <thead className="bg-[#FFC72C]/10">
+                      {children}
+                    </thead>
+                  ),
+                  th: ({ children }) => (
+                    <th className="border border-white/20 px-4 py-3 text-left font-semibold text-[#FFC72C]">
+                      {children}
+                    </th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="border border-white/20 px-4 py-3 text-foreground">
+                      {children}
+                    </td>
+                  ),
+                  tr: ({ children, ...props }) => (
+                    <tr className="even:bg-white/5 hover:bg-white/10 transition-colors" {...props}>
+                      {children}
+                    </tr>
+                  ),
+                  a: ({ children, href }) => (
+                    <a 
+                      href={href} 
+                      className="text-[#FFC72C] underline hover:text-[#FF5722] transition-colors duration-200"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {children}
+                    </a>
+                  ),
+                }}
+              >
+                {text}
+              </ReactMarkdown>
+              {departmentContacts && departmentContacts.length > 0 && (
+                <div className="mt-6 pt-4 border-t border-white/10">
+                  <h3 className="text-lg font-semibold text-[#FF5722] mb-3 mt-4">{chatTranslations[language].contactDetails}</h3>
+                  <div className="grid gap-3">
+                    {departmentContacts.map((contact, index) => (
+                      <ContactCard key={index} contact={contact} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <SourcesSection sources={sources || []} language={language} />
+            </div>
+          </div>
+          <div className="text-xs text-muted-foreground mt-2">
+            GovLink Assistant • <TimeAgo timestamp={timestamp} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
 const TopicTag = ({ text }: { text: string }) => (
-  <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/50 dark:bg-muted/30 rounded-full text-sm font-medium text-muted-foreground border border-border/50">
-    <div className="w-2 h-2 bg-[#FFC72C] rounded-full animate-pulse"></div>
-    {text}
+  <div
+    className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold tracking-wide select-none
+      bg-card/90 dark:bg-card/95 backdrop-blur-md border border-border/50 shadow-sm"
+  >
+    <span className="text-gradient">{text}</span>
   </div>
 );
 
-const ContactCard = ({ contact }: { contact: DepartmentContact }) => {
-  return (
-    <div className="bg-muted/20 dark:bg-muted/10 rounded-lg p-4 border border-border/30">
-      <h4 className="font-semibold text-foreground mb-2">{contact.name}</h4>
-      <div className="space-y-1 text-sm text-muted-foreground">
-        <div>📞 {contact.phone}</div>
-        <div>✉️ {contact.email}</div>
-        <div>🌐 <a href={contact.website} target="_blank" rel="noopener noreferrer" className="text-[#FF5722] hover:underline">{contact.website}</a></div>
-        <div>📍 {contact.address}</div>
-      </div>
-    </div>
-  );
-};
-
-const SourcesSection = ({ sources, language }: { sources: string[]; language: Language }) => {
-  const t = chatTranslations[language];
-  
-  if (!sources || sources.length === 0) return null;
-  
-  return (
-    <div className="mt-4 pt-4 border-t border-border/30">
-      <h4 className="font-semibold text-foreground mb-2">{t.sources}</h4>
-      <div className="space-y-1">
-        {sources.map((source, index) => (
-          <div key={index} className="text-sm">
-            <a 
-              href={source} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-[#FF5722] hover:underline flex items-center gap-1"
-            >
-              🔗 {source}
-            </a>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const UserMessage = ({ text, timestamp }: { text: string; timestamp: Date }) => (
-  <div className="flex items-start gap-3 mb-6">
-    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-[#FFC72C] to-[#FF5722] rounded-full flex items-center justify-center text-white font-bold text-sm">
-      U
-    </div>
-    <div className="flex-1 max-w-[85%]">
-      <div className="bg-gradient-to-r from-[#FFC72C]/10 to-[#FF5722]/10 dark:from-[#FFC72C]/5 dark:to-[#FF5722]/5 backdrop-blur-sm p-4 rounded-2xl rounded-tl-md border border-[#FFC72C]/20 dark:border-[#FF5722]/20">
-        <p className="text-foreground font-medium leading-relaxed">{text}</p>
-      </div>
-      <TimeAgo timestamp={timestamp} />
-    </div>
-  </div>
-);
-
-const BotMessage = ({ text, timestamp, departmentContacts, sources, language = 'en' }: { 
-  text: string; 
-  timestamp: Date; 
-  departmentContacts?: DepartmentContact[];
-  sources?: string[];
-  language?: Language;
-}) => {
-  const t = chatTranslations[language];
-  
-  return (
-    <div className="flex items-start gap-3 mb-6">
-      <div className="flex-shrink-0">
-        <RAGBotIcon />
-      </div>
-      <div className="flex-1 max-w-[85%]">
-        <div className="bg-card/50 dark:bg-card/30 backdrop-blur-md p-5 rounded-2xl rounded-tl-md border border-border/50 modern-card">
-          <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-foreground prose-pre:bg-muted prose-pre:border prose-pre:border-border/30">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeHighlight, rehypeRaw]}
-              components={{
-                h1: ({ children }) => <h1 className="text-xl font-bold text-foreground mb-3">{children}</h1>,
-                h2: ({ children }) => <h2 className="text-lg font-semibold text-foreground mb-2">{children}</h2>,
-                h3: ({ children }) => <h3 className="text-base font-semibold text-foreground mb-2">{children}</h3>,
-                p: ({ children }) => <p className="text-foreground mb-3 leading-relaxed">{children}</p>,
-                ul: ({ children }) => <ul className="text-foreground mb-3 space-y-1">{children}</ul>,
-                ol: ({ children }) => <ol className="text-foreground mb-3 space-y-1">{children}</ol>,
-                li: ({ children }) => <li className="text-foreground">{children}</li>,
-                blockquote: ({ children }) => (
-                  <blockquote className="border-l-4 border-[#FF5722] pl-4 py-2 my-4 bg-muted/30 rounded-r-lg">
-                    {children}
-                  </blockquote>
-                ),
-                code: ({ children, className }) => {
-                  const isBlock = className?.includes('language-');
-                  if (isBlock) {
-                    return (
-                      <code className={`${className} text-sm`}>
-                        {children}
-                      </code>
-                    );
-                  }
-                  return (
-                    <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground">
-                      {children}
-                    </code>
-                  );
-                },
-                table: ({ children }) => (
-                  <div className="overflow-x-auto my-4">
-                    <table className="w-full border-collapse border border-border/30 rounded-lg">
-                      {children}
-                    </table>
-                  </div>
-                ),
-                th: ({ children }) => (
-                  <th className="border border-border/30 bg-muted/50 px-3 py-2 text-left font-semibold text-foreground">
-                    {children}
-                  </th>
-                ),
-                td: ({ children }) => (
-                  <td className="border border-border/30 px-3 py-2 text-foreground">
-                    {children}
-                  </td>
-                ),
-              }}
-            >
-              {text}
-            </ReactMarkdown>
-          </div>
-          
-          {/* Department Contacts */}
-          {departmentContacts && departmentContacts.length > 0 && (
-            <div className="mt-6 pt-4 border-t border-border/30">
-              <h4 className="font-semibold text-foreground mb-3">{t.contactDetails}</h4>
-              <div className="grid gap-3">
-                {departmentContacts.map((contact, index) => (
-                  <ContactCard key={index} contact={contact} />
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Sources */}
-          <SourcesSection sources={sources || []} language={language} />
-        </div>
-        <TimeAgo timestamp={timestamp} />
-      </div>
-    </div>
-  );
-};
-
-const TypingIndicator = ({ language = 'en' }: { language?: Language }) => {
-  const t = chatTranslations[language];
-  
-  return (
-    <div className="flex items-start gap-3 mb-6">
-      <div className="flex-shrink-0">
-        <RAGBotIcon />
-      </div>
-      <div className="flex-1 max-w-[85%]">
-        <div className="bg-card/50 dark:bg-card/30 backdrop-blur-md p-5 rounded-2xl rounded-tl-md border border-border/50">
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1">
-              <div className="w-2 h-2 bg-[#FFC72C] rounded-full animate-bounce"></div>
-              <div className="w-2 h-2 bg-[#FF5722] rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-              <div className="w-2 h-2 bg-[#8D153A] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-            </div>
-            <span className="text-muted-foreground text-sm">{t.preparing}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Chat Input Component
-const ChatInput = ({ onSendMessage, language = 'en', disabled = false }: { 
-  onSendMessage: (message: string) => void; 
-  language?: Language;
-  disabled?: boolean;
-}) => {
-  const [inputValue, setInputValue] = useState('');
+const ChatInput = ({ onSendMessage, language = 'en', disabled = false }: { onSendMessage: (message: string) => void; language?: Language, disabled?: boolean }) => {
+  const [message, setMessage] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const t = chatTranslations[language];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (inputValue.trim() && !disabled) {
-      onSendMessage(inputValue.trim());
-      setInputValue('');
+  const handleSend = () => {
+    if (message.trim() && !disabled) {
+      onSendMessage(message.trim());
+      setMessage('');
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
     }
   };
 
   return (
-    <div className="border-t border-border/30 bg-background/80 backdrop-blur-sm p-4">
-      <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-        <div className="relative">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder={t.askFollowUp}
-            disabled={disabled}
-            className="w-full px-4 py-3 pr-12 bg-card/50 dark:bg-card/30 border border-border/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#FF5722]/50 focus:border-[#FF5722] text-foreground placeholder-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed"
-          />
-          <button
-            type="submit"
-            disabled={!inputValue.trim() || disabled}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] text-white rounded-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-          >
-            <SendIcon />
-          </button>
+    <div className="bg-background/95 dark:bg-card/95 backdrop-blur-md border-t border-border/50 p-4 sm:p-6 z-40">
+      <div className="container mx-auto max-w-4xl">
+        <div className={`relative transition-all duration-300 ${isFocused ? 'scale-[1.02]' : ''}`}>
+          <div className="relative bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl p-2 shadow-glow hover:shadow-2xl transition-all duration-500 border border-border/50 hover:border-[#FFC72C]/60 modern-card">
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onKeyPress={handleKeyPress}
+              className="w-full bg-transparent text-foreground placeholder-muted-foreground p-4 pr-16 rounded-xl resize-none focus:outline-none leading-relaxed border-none"
+              placeholder={t.askFollowUp}
+              rows={1}
+              disabled={disabled}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                target.style.height = `${Math.max(target.scrollHeight, 60)}px`;
+              }}
+            />
+            <button 
+              onClick={handleSend}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-3 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] rounded-xl transition-all duration-300 hover:scale-110 shadow-lg hover:shadow-2xl group disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              disabled={!message.trim() || disabled}
+            >
+              <SendIcon className="h-5 w-5 text-white group-hover:translate-x-0.5 transition-transform duration-300" />
+            </button>
+          </div>
+          
+          <div className="mt-4 flex flex-wrap gap-2 items-center">
+            {Object.values(t.suggestions).slice(0, 4).map((suggestion, index) => (
+              <button
+                key={index}
+                onClick={() => onSendMessage(suggestion)}
+                disabled={disabled}
+                className="px-3 py-1.5 bg-card/50 dark:bg-card/70 hover:bg-card border border-border/50 hover:border-[#FFC72C]/60 rounded-full text-xs font-medium transition-all duration-300 hover:scale-105 text-foreground hover:text-[#FFC72C] backdrop-blur-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
 
+// --- MAIN CHAT PAGE COMPONENT ---
 export default function RAGBotPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
-  const [sessionId] = useState(`rag_session_${Date.now()}`);
+  const [sessionId] = useState(`rag_session_${Date.now()}_${Math.random().toString(36).substring(7)}`);
+  const t = chatTranslations[currentLanguage];
 
-  const handleSendMessage = async (message: string) => {
-    // Add user message
-    const userMessage: Message = {
-      type: 'user',
-      text: message,
-      timestamp: new Date(),
-    };
-    
+  const handleLanguageChange = (newLanguage: Language) => {
+    setCurrentLanguage(newLanguage);
+  };
+
+  const handleSendMessage = async (messageText: string) => {
+    if (!messageText.trim()) return;
+
+    const userMessage: Message = { type: 'user', text: messageText, timestamp: new Date() };
     setMessages(prev => [...prev, userMessage]);
     setIsTyping(true);
 
     try {
       const response = await fetch('/api/ragbot/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message,
-          sessionId,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: messageText, sessionId }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to get response from server');
       }
 
       const data = await response.json();
-
-      // Add bot response
       const botMessage: Message = {
         type: 'bot',
         text: data.response,
@@ -434,33 +487,33 @@ export default function RAGBotPage() {
         departmentContacts: data.departmentContacts,
         sources: data.sources,
       };
-
       setMessages(prev => [...prev, botMessage]);
+
     } catch (error) {
       console.error('Error sending message:', error);
-      
-      // Add error message
       const errorMessage: Message = {
         type: 'bot',
-        text: 'Sorry, I encountered an error while processing your request. Please try again.',
+        text: `I apologize, but I encountered an error. Please try again later. 
+
+*Details: ${error instanceof Error ? error.message : 'Unknown error'}*`,
         timestamp: new Date(),
       };
-
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsTyping(false);
     }
   };
 
-  const handleLanguageChange = (lang: Language) => {
-    setCurrentLanguage(lang);
-  };
-
-  const t = chatTranslations[currentLanguage];
-
   return (
     <UserDashboardLayout
-      title={t.title}
+      title={
+        <span className="animate-title-wave">
+          <span className="text-foreground">{t.title.split(' ')[0]}</span>{' '}
+          <span className="text-gradient">
+            {t.title.split(' ')[1] || ''}
+          </span>
+        </span>
+      }
       subtitle={t.subtitle}
       language={currentLanguage}
       onLanguageChange={handleLanguageChange}
@@ -469,7 +522,6 @@ export default function RAGBotPage() {
       headerContent={<div className="hidden" aria-hidden="true" />}
     >
       <div className="grid grid-rows-[1fr_auto] h-full max-h-full">
-        {/* Chat History Area (scrollable) */}
         <div className="min-h-0 overflow-y-auto overscroll-contain pr-1">
           <Suspense fallback={
             <div className="flex items-center justify-center py-20">
@@ -481,99 +533,70 @@ export default function RAGBotPage() {
               </div>
             </div>
           }>
-            <ChatContent 
-              messages={messages} 
-              isTyping={isTyping} 
-              language={currentLanguage} 
-            />
+            <ChatContent messages={messages} isTyping={isTyping} language={currentLanguage} onSendMessage={handleSendMessage} />
           </Suspense>
         </div>
-        
-        {/* Input Area (anchored at bottom) */}
         <div>
-          <ChatInput 
-            onSendMessage={handleSendMessage} 
-            language={currentLanguage}
-            disabled={isTyping}
-          />
+          <ChatInput onSendMessage={handleSendMessage} language={currentLanguage} disabled={isTyping} />
         </div>
       </div>
     </UserDashboardLayout>
   );
-}
+};
 
-function ChatContent({ messages, isTyping, language = 'en' }: { 
-  messages: Message[]; 
-  isTyping: boolean; 
-  language: Language;
-}) {
+function ChatContent({ messages, isTyping, language = 'en', onSendMessage }: { messages: Message[]; isTyping: boolean; language: Language, onSendMessage: (message: string) => void; }) {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const t = chatTranslations[language];
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    setTimeout(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 100);
   }, [messages.length, isTyping]);
 
   if (messages.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6 py-8">
-        {/* Welcome Message */}
-        <div className="text-center">
-          <RAGBotIcon />
-          <h2 className="text-2xl font-bold text-foreground mt-4 mb-2">{t.title}</h2>
-          <p className="text-muted-foreground mb-6">{t.subtitle}</p>
-          
-          {/* Example Questions */}
-          <div className="grid gap-3 max-w-2xl mx-auto">
-            <div className="text-sm text-muted-foreground mb-2">Try asking:</div>
-            {[
-              "How do I renew my passport?",
-              "What are the requirements for starting a business in Sri Lanka?",
-              "How can I register for marriage certificate?",
-              "What is the process for getting a driving license?"
-            ].map((question, index) => (
-              <button
-                key={index}
-                className="p-3 text-left bg-muted/30 hover:bg-muted/50 rounded-lg border border-border/30 transition-colors"
-                onClick={() => {
-                  // This would be handled by parent component
-                  console.log('Suggested question:', question);
-                }}
-              >
-                {question}
-              </button>
-            ))}
-          </div>
+        <div className="max-w-4xl mx-auto space-y-6 py-8 px-4 text-center">
+            <div className="flex justify-center mb-4">
+                <RAGBotIcon />
+            </div>
+            <h2 className="text-3xl font-bold text-foreground">Welcome to {t.title}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">{t.subtitle}</p>
+            
+            <div className="mt-8 pt-6 border-t border-border/50">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Try asking me about:</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
+                {Object.values(t.suggestions).slice(0, 4).map((question, index) => (
+                    <button
+                        key={index}
+                        className="p-4 text-left bg-card/50 hover:bg-card/80 rounded-lg border border-border/50 transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
+                        onClick={() => onSendMessage(question)}
+                    >
+                        {question}
+                    </button>
+                ))}
+                </div>
+            </div>
         </div>
-      </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-2">
-      {/* Topic Tag (centered) */}
+    <div className="max-w-4xl mx-auto space-y-2 px-4">
       <div className="py-6 mb-2 flex justify-center">
         <TopicTag text={t.chatStarted} />
       </div>
 
-      {/* Render messages */}
       {messages.map((message, index) => (
-        <div key={index}>
+        <div key={`${message.type}-${index}`}>
           {message.type === 'user' ? (
             <UserMessage text={message.text} timestamp={message.timestamp} />
           ) : (
-            <BotMessage 
-              text={message.text} 
-              timestamp={message.timestamp}
-              departmentContacts={message.departmentContacts}
-              sources={message.sources}
-              language={language}
-            />
+            <BotMessage message={message} language={language} />
           )}
         </div>
       ))}
       
-      {/* Show typing indicator if bot is typing */}
       {isTyping && <TypingIndicator language={language} />}
       <div ref={bottomRef} />
     </div>

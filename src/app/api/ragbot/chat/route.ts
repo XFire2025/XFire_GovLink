@@ -1,6 +1,6 @@
 // src/app/api/ragbot/chat/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { createSriLankanGovRAGAgent } from '@/lib/ragAgent';
+import { getSriLankanGovRAGAgent } from '@/lib/ragAgent';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,28 +13,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get API keys from environment variables
-    const openaiApiKey = process.env.OPENAI_API_KEY;
-    const tavilyApiKey = process.env.TAVILY_API_KEY;
+    // Get the singleton RAG agent instance
+    const ragAgent = getSriLankanGovRAGAgent();
 
-    if (!openaiApiKey || !tavilyApiKey) {
-      console.error('Missing API keys:', { 
-        openaiApiKey: !!openaiApiKey, 
-        tavilyApiKey: !!tavilyApiKey 
-      });
-      return NextResponse.json(
-        { error: 'API keys not configured' },
-        { status: 500 }
-      );
-    }
-
-    // Create RAG agent
-    const ragAgent = createSriLankanGovRAGAgent({
-      openaiApiKey,
-      tavilyApiKey,
-    });
-
-    // Process the query
+    // Process the query using the persistent agent
     const result = await ragAgent.processQuery(
       message,
       sessionId || `session_${Date.now()}`
@@ -45,7 +27,7 @@ export async function POST(request: NextRequest) {
       searchResults: result.searchResults,
       departmentContacts: result.departmentContacts,
       sources: result.sources,
-      sessionId: sessionId || `session_${Date.now()}`,
+      sessionId: result.sessionId, // Use session ID from the agent response
     });
 
   } catch (error) {

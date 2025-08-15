@@ -1,13 +1,10 @@
 // src/lib/ragAgent.ts
 import { BaseMessage, HumanMessage } from "@langchain/core/messages";
 import { ChatOpenAI } from "@langchain/openai";
-import { TavilySearch } from "@langchain/tavily";
-import { TavilyCrawl } from "@langchain/tavily";
-import { TavilyExtract } from "@langchain/tavily";
+import { TavilySearch, TavilyCrawl, TavilyExtract } from "@langchain/tavily";
 import { MemorySaver } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 
-// Define types for our data structures
 interface SearchResult {
   url: string;
   title?: string;
@@ -25,24 +22,6 @@ interface DepartmentContact {
   services: string[];
   source?: string;
 }
-
-// Sri Lankan government websites to focus on
-const SRI_LANKAN_GOV_SITES = [
-  "site:gov.lk",
-  "site:parliament.lk",
-  "site:cbsl.gov.lk", // Central Bank
-  "site:immigration.gov.lk",
-  "site:ird.gov.lk", // Inland Revenue
-  "site:registrar-companies.gov.lk",
-  "site:doc.gov.lk", // Department of Commerce
-  "site:pubad.gov.lk", // Public Administration
-  "site:health.gov.lk",
-  "site:education.gov.lk",
-  "site:transport.gov.lk",
-  "site:lands.gov.lk",
-  "site:agrimin.gov.lk", // Agriculture
-  "site:finance.gov.lk",
-];
 
 // Government service categories for dynamic contact discovery
 const GOVERNMENT_SERVICE_CATEGORIES = {
@@ -96,29 +75,36 @@ export class SriLankanGovRAGAgent {
   private memorySaver: MemorySaver;
   private graph!: ReturnType<typeof createReactAgent>;
 
-  constructor(apiKeys: {
-    openaiApiKey: string;
-    tavilyApiKey: string;
-  }) {
+  constructor() {
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    const tavilyApiKey = process.env.TAVILY_API_KEY;
+
+    if (!openaiApiKey || !tavilyApiKey) {
+      throw new Error("API keys for OpenAI and Tavily must be set in environment variables.");
+    }
+
     // Initialize OpenAI model
     this.model = new ChatOpenAI({
-      modelName: "gpt-5-mini",
-      openAIApiKey: apiKeys.openaiApiKey,
+      modelName: "gpt-4o",
+      openAIApiKey: openaiApiKey,
     });
 
-    // Initialize Tavily tools (they use TAVILY_API_KEY environment variable)
-    this.tavilySearch = new TavilySearch({ 
+    // Initialize Tavily tools
+    this.tavilySearch = new TavilySearch({
       maxResults: 8,
-      searchDepth: "advanced"
+      searchDepth: "advanced",
+      apiKey: tavilyApiKey,
     });
 
     this.tavilyCrawl = new TavilyCrawl({
       maxDepth: 2,
-      maxBreadth: 4
+      maxBreadth: 4,
+      apiKey: tavilyApiKey,
     });
 
     this.tavilyExtract = new TavilyExtract({
-      includeImages: false
+      includeImages: false,
+      apiKey: tavilyApiKey,
     });
 
     // Initialize memory saver for conversation context
@@ -136,7 +122,7 @@ export class SriLankanGovRAGAgent {
       this.tavilyExtract,
     ];
 
-    // Create the react agent with Tavily tools enabled
+    // Create the react agent with tools enabled
     this.graph = createReactAgent({
       llm: this.model,
       tools,
@@ -161,8 +147,8 @@ export class SriLankanGovRAGAgent {
 
 **SEARCH STRATEGY:**
 1. First, use tavily_search to find relevant government websites and general information
-2. Use either or both of tavily_crawl tavily_extract only if the response can't be generated
-4. Always prioritize information from official .lk government domains
+2. Use either or both of tavily_crawl, tavily_extract, only when the response can't be generated
+3. Always prioritize information from official .lk government domains
 
 **IMPORTANT GUIDELINES:**
 - Always search for current information using the available tools before providing answers
@@ -188,13 +174,14 @@ export class SriLankanGovRAGAgent {
 - site:agrimin.gov.lk for agriculture services
 
 **OUTPUT FORMAT:**
-Structure your responses in markdown format with:
+Structure your responses in markdown (.md) format titling in a proper manner and with LaTex support when needed such as in Mathematical rendering:
 1. Direct answer to the query
 2. Step-by-step procedures (if applicable)
 3. Required documents
 4. Fees and processing times
 5. Current contact information (verified through tools)
 6. Relevant website links
+Space and organize the sections in a neat and spacious manner without leaving too much blank space
 
 Always use the tools to get the most current and accurate information before responding.`;
   }
@@ -207,6 +194,7 @@ Always use the tools to get the most current and accurate information before res
     searchResults: SearchResult[];
     departmentContacts: DepartmentContact[];
     sources: string[];
+    sessionId: string;
   }> {
     try {
       // Enhance query with Sri Lankan government context
@@ -241,8 +229,8 @@ Always use the tools to get the most current and accurate information before res
       searchResults.push(...contactSearchResults);
 
       // Add some relevant Sri Lankan government websites as sources
-      const governmentSources = this.getRelevantGovernmentSources(query);
-      sources.push(...governmentSources);
+      // const governmentSources = this.getRelevantGovernmentSources(query);
+      // sources.push(...governmentSources);
 
       // Extract sources from search results
       const extractedSources = this.extractSources(searchResults);
@@ -260,6 +248,7 @@ Always use the tools to get the most current and accurate information before res
         searchResults,
         departmentContacts: relevantContacts,
         sources: uniqueSources,
+        sessionId,
       };
     } catch (error) {
       console.error("Error processing query:", error);
@@ -276,9 +265,9 @@ Always use the tools to get the most current and accurate information before res
           await this.findRelevantDepartmentsDynamically(query);
 
         // Add relevant government sources even in fallback mode
-        const governmentSources = this.getRelevantGovernmentSources(query);
+        // const governmentSources = this.getRelevantGovernmentSources(query);
         const extractedSources = this.extractSources(contactSearchResults);
-        const uniqueSources = Array.from(new Set([...governmentSources, ...extractedSources]));
+        const uniqueSources = Array.from(new Set([...extractedSources])); // ...governmentSources
 
         // Add department contacts if any
         if (relevantContacts.length > 0) {
@@ -306,6 +295,7 @@ Always use the tools to get the most current and accurate information before res
           searchResults: contactSearchResults,
           departmentContacts: relevantContacts,
           sources: uniqueSources,
+          sessionId,
         };
       }
       
@@ -318,7 +308,7 @@ Always use the tools to get the most current and accurate information before res
     try {
       // Use OpenAI directly without tools for fallback
       const fallbackModel = new ChatOpenAI({
-        modelName: "gpt-5-mini",
+        modelName: "gpt-4o",
         
         openAIApiKey: process.env.OPENAI_API_KEY,
       });
@@ -434,7 +424,7 @@ Always use the tools to get the most current and accurate information before res
       
       if (serviceCategory) {
         // Search for current contact information for this service category
-        for (const searchTerm of serviceCategory.searchTerms.slice(0, 3)) { // Limit to first search term
+        for (const searchTerm of serviceCategory.searchTerms.slice(0, 3)) { // Limit to first 3 search terms
           try {
             console.log(`Searching for: ${searchTerm}`);
             const searchResult = await this.tavilySearch.invoke({ query: searchTerm });
@@ -556,7 +546,7 @@ Always use the tools to get the most current and accurate information before res
     try {
       if (!result || typeof result !== 'object') return null;
 
-      // Extract information from the search result
+      // Extract information from the search.
       const title = result.title || "";
       const content = result.content || result.snippet || "";
       const url = result.url || "";
@@ -631,10 +621,10 @@ Always use the tools to get the most current and accurate information before res
   }
 }
 
-// Export the agent factory function
-export function createSriLankanGovRAGAgent(apiKeys: {
-  openaiApiKey: string;
-  tavilyApiKey: string;
-}) {
-  return new SriLankanGovRAGAgent(apiKeys);
+// Create a single, shared instance of the agent
+const agentInstance = new SriLankanGovRAGAgent();
+
+// Export a function that returns the shared instance
+export function getSriLankanGovRAGAgent() {
+  return agentInstance;
 }
