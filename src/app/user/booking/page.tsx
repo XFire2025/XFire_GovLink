@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import QRCodeDisplay from '@/components/user/QRCodeDisplay';
 import Link from "next/link";
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 
@@ -25,6 +26,8 @@ const bookingTranslations: Record<Language, {
   cancel: string;
   cancelling: string;
   viewDetails: string;
+  viewPass: string;
+  qrCode: string;
 }> = {
   en: {
     title: 'Your Bookings',
@@ -41,7 +44,9 @@ const bookingTranslations: Record<Language, {
     view: 'View',
     cancel: 'Cancel',
     cancelling: 'Cancelling...',
-    viewDetails: 'View Details'
+    viewDetails: 'View Details',
+    viewPass: 'View Pass',
+    qrCode: 'QR Code'
   },
   si: {
     title: 'ඔබගේ වෙන්කිරීම්',
@@ -58,7 +63,9 @@ const bookingTranslations: Record<Language, {
     view: 'බලන්න',
     cancel: 'අවලංගු කරන්න',
     cancelling: 'අවලංගු කරමින්...',
-    viewDetails: 'විස්තර බලන්න'
+    viewDetails: 'විස්තර බලන්න',
+    viewPass: 'පාස් බලන්න',
+    qrCode: 'QR කේතය'
   },
   ta: {
     title: 'உங்கள் முன்பதிவுகள்',
@@ -75,7 +82,9 @@ const bookingTranslations: Record<Language, {
     view: 'பார்க்கவும்',
     cancel: 'ரத்து செய்',
     cancelling: 'ரத்து செய்கிறது...',
-    viewDetails: 'விவரங்களைப் பார்க்கவும்'
+    viewDetails: 'விவரங்களைப் பார்க்கவும்',
+    viewPass: 'பாஸைப் பார்க்கவும்',
+    qrCode: 'QR குறியீடு'
   }
 };
 
@@ -109,6 +118,8 @@ type Booking = {
     time: string; // HH:mm
     location?: string;
     status: "upcoming" | "completed" | "cancelled";
+    bookingReference?: string;
+    qrCodeImageUrl?: string;
 };
 
 // A styled status badge component
@@ -129,13 +140,15 @@ const BookingStatusBadge = ({ status }: { status: Booking['status'] }) => {
 export default function BookingListPage() {
     const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
     const [bookings, setBookings] = useState<Booking[]>([
-        { id: "bk-001", designation: "Senior Officer", agent: "N. Silva", date: new Date().toISOString().slice(0, 10), time: new Date(Date.now() + 10 * 60 * 1000).toTimeString().slice(0, 5), location: "GovLink Office - Counter 3", status: "upcoming" },
-        { id: "bk-002", designation: "Officer", agent: "A. Perera", date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10), time: "10:30", location: "GovLink Office - Counter 1", status: "upcoming" },
-        { id: "bk-003", designation: "Manager", agent: "R. Jayasinghe", date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), time: "14:00", location: "GovLink Office - Room 2", status: "upcoming" },
-        { id: "bk-004", designation: "Clerk", agent: "S. Fernando", date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), time: "09:00", location: "GovLink Office - Counter 5", status: "completed" },
+        { id: "bk-001", designation: "Senior Officer", agent: "N. Silva", date: new Date().toISOString().slice(0, 10), time: new Date(Date.now() + 10 * 60 * 1000).toTimeString().slice(0, 5), location: "GovLink Office - Counter 3", status: "upcoming", bookingReference: "GV2024001", qrCodeImageUrl: "/api/placeholder-qr.png" },
+        { id: "bk-002", designation: "Officer", agent: "A. Perera", date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10), time: "10:30", location: "GovLink Office - Counter 1", status: "upcoming", bookingReference: "GV2024002", qrCodeImageUrl: "/api/placeholder-qr.png" },
+        { id: "bk-003", designation: "Manager", agent: "R. Jayasinghe", date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), time: "14:00", location: "GovLink Office - Room 2", status: "upcoming", bookingReference: "GV2024003", qrCodeImageUrl: "/api/placeholder-qr.png" },
+        { id: "bk-004", designation: "Clerk", agent: "S. Fernando", date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10), time: "09:00", location: "GovLink Office - Counter 5", status: "completed", bookingReference: "GV2024004" },
     ]);
 
     const [cancellingId, setCancellingId] = useState<string | null>(null);
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [showQRCode, setShowQRCode] = useState(false);
     const t = bookingTranslations[currentLanguage];
 
     const handleLanguageChange = (newLanguage: Language) => {
@@ -148,6 +161,16 @@ export default function BookingListPage() {
             setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status: "cancelled" } : b)));
             setCancellingId(null);
         }, 700);
+    }
+
+    function showBookingQRCode(booking: Booking) {
+        setSelectedBooking(booking);
+        setShowQRCode(true);
+    }
+
+    function hideQRCode() {
+        setShowQRCode(false);
+        setSelectedBooking(null);
     }
 
     const sortedBookings = useMemo(() => {
@@ -243,9 +266,20 @@ export default function BookingListPage() {
                                                 </div>
                                             </div>
                                             <div className="border-t border-border/50 mt-6 pt-4 flex items-center justify-between">
-                                                <p className="text-xs text-muted-foreground">ID: {b.id}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {b.bookingReference ? `REF: ${b.bookingReference}` : `ID: ${b.id}`}
+                                                </p>
                                                 <div className="flex gap-2">
                                                     <button type="button" className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-lg transition-all duration-300 hover:border-[#FFC72C]/60">{t.view}</button>
+                                                    {b.qrCodeImageUrl && (
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => showBookingQRCode(b)}
+                                                            className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-blue-600 rounded-lg transition-all duration-300"
+                                                        >
+                                                            {t.viewPass}
+                                                        </button>
+                                                    )}
                                                     <button type="button" onClick={() => cancelBooking(b.id)} disabled={cancellingId === b.id} className="px-3 py-1.5 text-sm font-medium text-[#FF5722] hover:text-white bg-[#FF5722]/10 hover:bg-[#FF5722] border border-[#FF5722]/30 hover:border-[#FF5722] rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
                                                         {cancellingId === b.id ? t.cancelling : t.cancel}
                                                     </button>
@@ -292,7 +326,9 @@ export default function BookingListPage() {
                                                 </div>
                                             </div>
                                             <div className="border-t border-border/50 mt-6 pt-4 flex items-center justify-between">
-                                                <p className="text-xs text-muted-foreground">ID: {b.id}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {b.bookingReference ? `REF: ${b.bookingReference}` : `ID: ${b.id}`}
+                                                </p>
                                                 <div className="flex gap-2">
                                                     <button type="button" className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-lg transition-all duration-300 hover:border-[#FFC72C]/60">{t.viewDetails}</button>
                                                 </div>
@@ -304,6 +340,22 @@ export default function BookingListPage() {
                         </section>
                     )}
                 </div>
+            )}
+
+            {/* QR Code Modal */}
+            {showQRCode && selectedBooking && (
+                <QRCodeDisplay
+                    qrCodeImageUrl={selectedBooking.qrCodeImageUrl}
+                    bookingReference={selectedBooking.bookingReference || selectedBooking.id}
+                    appointmentData={{
+                        service: selectedBooking.designation,
+                        date: selectedBooking.date,
+                        time: selectedBooking.time,
+                        agent: selectedBooking.agent,
+                        location: selectedBooking.location
+                    }}
+                    onClose={hideQRCode}
+                />
             )}
         </UserDashboardLayout>
     );

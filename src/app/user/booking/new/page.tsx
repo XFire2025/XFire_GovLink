@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 import { useAuth } from '@/lib/auth/AuthContext';
+import AppointmentSuccessCard from '@/components/user/AppointmentSuccessCard';
 
 // New booking translations
 const newBookingTranslations = {
@@ -536,6 +537,24 @@ export default function NewBookingPage() {
     const [reference, setReference] = useState('');
     const [success, setSuccess] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [appointmentData, setAppointmentData] = useState<{
+        id: string;
+        bookingReference: string;
+        citizenName: string;
+        serviceType: string;
+        department: string;
+        agent: string;
+        agentPosition: string;
+        agentOffice: string;
+        date: string;
+        time: string;
+        status: string;
+        notes?: string;
+        qrCode?: {
+            imageUrl: string;
+            generatedAt: string;
+        } | null;
+    } | null>(null);
 
     // API state
     const [departments, setDepartments] = useState<Department[]>([]);
@@ -835,6 +854,7 @@ export default function NewBookingPage() {
             if (result.success && result.data) {
                 console.log('✅ Appointment created successfully!');
                 setReference(result.data.appointment.bookingReference);
+                setAppointmentData(result.data.appointment);
                 setSubmitted(true);
                 setSuccess(`${t.bookingReceived} ${result.data.appointment.bookingReference}`);
             } else {
@@ -1148,56 +1168,11 @@ export default function NewBookingPage() {
                             </div>
                         </Step>
 
-                        {/* Booking Summary (post-submit) */}
-                        {submitted && (
+                        {/* Appointment Success Card (post-submit) */}
+                        {submitted && appointmentData && (
                             <div className="space-y-6">
                                 <div className="border-t border-border/30"></div>
-                                <div className="border border-border/40 rounded-2xl p-6 bg-card/40 dark:bg-card/50 backdrop-blur-md modern-card">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <CheckCircleIcon className="w-6 h-6 text-[#008060]" />
-                                        <h2 className="text-lg font-bold text-gradient">{t.appointmentSummary}</h2>
-                                    </div>
-                                    <div className="grid md:grid-cols-2 gap-4 text-sm">
-                                        <div className="space-y-1">
-                                            <p className="text-muted-foreground">{t.reference}</p>
-                                            <p className="font-mono text-[#FFC72C] text-sm">{reference}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-muted-foreground">Department</p>
-                                            <p className="font-medium">{getDepartmentName()}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-muted-foreground">Service</p>
-                                            <p className="font-medium">{getServiceName()}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-muted-foreground">{t.agent}</p>
-                                            <p className="font-medium">{getAgentPosition()} - {getAgentName()}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-muted-foreground">{t.dateTime}</p>
-                                            <p className="font-medium">{getSelectedDay()} at {form.slot}</p>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-muted-foreground">Notes</p>
-                                            <p className="font-medium break-words">{form.notes || 'None'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="mt-6">
-                                        <h3 className="text-sm font-semibold mb-2 text-foreground">{t.uploadedDocuments}</h3>
-                                        <ul className="space-y-2 text-sm">
-                                            {requiredDocuments.map(doc => (
-                                                <li key={doc.name} className="flex items-center gap-2">
-                                                    <FileIcon className="w-4 h-4 text-[#FFC72C]" />
-                                                    <span>{doc.label}: </span>
-                                                    <span className="text-muted-foreground">
-                                                        {files[doc.name]?.name || (!doc.required ? `${t.optional} / ${t.notProvided}` : '—')}
-                                                    </span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
+                                <AppointmentSuccessCard appointment={appointmentData} />
                             </div>
                         )}
 
@@ -1210,7 +1185,12 @@ export default function NewBookingPage() {
                                 {submitted && (
                                     <button
                                         type="button"
-                                        onClick={() => { setSubmitted(false); setSuccess(null); setReference(''); }}
+                                        onClick={() => { 
+                                            setSubmitted(false); 
+                                            setSuccess(null); 
+                                            setReference(''); 
+                                            setAppointmentData(null);
+                                        }}
                                         className="px-5 py-3 rounded-xl border border-border/50 bg-card/50 hover:bg-card/70 text-sm font-medium transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105 text-foreground"
                                     >{t.editBooking}</button>
                                 )}
