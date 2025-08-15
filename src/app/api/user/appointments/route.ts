@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Appointment from '@/lib/models/appointmentSchema';
+import type { IAppointment, IAppointmentDocument } from '@/lib/models/appointmentSchema';
 import Department from '@/lib/models/departmentSchema';
 import Agent from '@/lib/models/agentSchema';
 import User from '@/lib/models/userSchema';
@@ -51,13 +52,16 @@ interface AuthResult {
   statusCode: number;
 }
 
-interface UploadedDocument {
+// Local service shape used in department documents
+interface ServiceItem {
+  id: string;
   name: string;
-  originalName: string;
-  url: string;
-  type: string;
-  size: number;
-  uploadedAt: Date;
+  description?: string;
+  category?: string;
+  isActive?: boolean;
+  processingTime?: string;
+  fee?: number;
+  requirements?: string[];
 }
 
 // Generate unique booking reference with collision detection
@@ -237,7 +241,7 @@ export async function POST(request: NextRequest) {
     console.log('✅ Department found:', department.name);
 
     // Verify service exists in department
-    const service = department.services?.find(s => s.id === appointmentData.serviceId && s.isActive);
+    const service = (department.services as ServiceItem[] | undefined)?.find((s: ServiceItem) => s.id === appointmentData.serviceId && s.isActive);
     if (!service) {
       console.error('❌ Service not found:', appointmentData.serviceId);
       return NextResponse.json(
@@ -292,7 +296,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Process file uploads
-    const uploadedDocuments: UploadedDocument[] = [];
+    const uploadedDocuments: IAppointmentDocument[] = [];
 
     // Get all files from formData
     const files = formData.getAll('files') as File[];
@@ -323,29 +327,30 @@ export async function POST(request: NextRequest) {
           
           // Generate unique filename
           const timestamp = Date.now();
-          const fileName = `${timestamp}-${file.name}`;
+          const uniqueFileName = `${timestamp}-${file.name}`;
           const folderPath = `appointments/${user._id}`;
 
-          console.log('⬆️ Uploading file:', fileName);
+          console.log('⬆️ Uploading file:', uniqueFileName);
 
           // Upload to R2
           const uploadResult = await uploadFileToR2(
             fileBuffer,
-            fileName,
+            uniqueFileName,
             file.type,
             folderPath
           );
 
-          if (uploadResult.success) {
+          if (uploadResult.success && uploadResult.key) {
             uploadedDocuments.push({
               name: documentName,
-              originalName: file.name,
-              url: uploadResult.url!,
-              type: file.type,
-              size: file.size,
+              label: documentName.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase()),
+              url: uploadResult.key, // Store the key (path) here
+              fileName: file.name,
+              fileType: file.type,
+              fileSize: file.size,
               uploadedAt: new Date()
             });
-            console.log('✅ File uploaded:', fileName);
+            console.log('✅ File uploaded:', uniqueFileName);
           } else {
             console.error('❌ File upload failed:', uploadResult.message);
             return NextResponse.json(
@@ -373,7 +378,7 @@ export async function POST(request: NextRequest) {
 
     // Map service category to appointment serviceType enum
     let serviceType: string;
-    const categoryLower = service.category.toLowerCase();
+    const categoryLower = (service.category || '').toLowerCase();
     
     // Map categories to valid serviceType enum values
     if (categoryLower.includes('passport')) {
@@ -417,11 +422,8 @@ export async function POST(request: NextRequest) {
       notes: appointmentData.notes,
       priority: appointmentData.priority,
       requirements: service.requirements,
-      bookingReference: bookingReference, // Explicitly set the booking reference
-      // Store document info in notes for now (you could create a separate documents collection)
-      agentNotes: uploadedDocuments.length > 0 
-        ? `Uploaded documents: ${uploadedDocuments.map(doc => doc.originalName).join(', ')}`
-        : undefined
+      bookingReference: bookingReference,
+      documents: uploadedDocuments,
     });
 
     console.log('💾 Saving appointment...');
@@ -445,11 +447,11 @@ export async function POST(request: NextRequest) {
           time: savedAppointment.time,
           status: savedAppointment.status,
           notes: savedAppointment.notes,
-          uploadedDocuments: uploadedDocuments.map(doc => ({
+          uploadedDocuments: savedAppointment.documents.map((doc: IAppointmentDocument) => ({
             name: doc.name,
-            originalName: doc.originalName,
-            size: doc.size,
-            type: doc.type
+            originalName: doc.fileName,
+            size: doc.fileSize,
+            type: doc.fileType
           }))
         }
       }
@@ -548,22 +550,22 @@ export async function GET(request: NextRequest) {
     console.log('✅ Found appointments:', appointments.length);
 
     // Transform appointments
-    const transformedAppointments = appointments.map(apt => ({
-      id: apt._id.toString(),
-      bookingReference: apt.bookingReference,
-      serviceType: apt.serviceType,
-      department: apt.department,
-      date: apt.date.toISOString().split('T')[0],
-      time: apt.time,
-      status: apt.status,
-      priority: apt.priority,
-      notes: apt.notes,
-      assignedAgent: apt.assignedAgent ? {
-        name: (apt.assignedAgent as PopulatedAgent).fullName,
-        position: (apt.assignedAgent as PopulatedAgent).position,
-        office: (apt.assignedAgent as PopulatedAgent).officeName
-      } : null,
-      submittedDate: apt.submittedDate.toISOString().split('T')[0]
+    const transformedAppointments = (appointments as unknown as IAppointment[]).map((apt) => ({
+        id: (apt._id as { toString(): string }).toString(),
+        bookingReference: apt.bookingReference,
+        serviceType: apt.serviceType,
+        department: apt.department,
+        date: (apt.date as Date).toISOString().split('T')[0],
+        time: apt.time,
+        status: apt.status,
+        priority: apt.priority,
+        notes: apt.notes,
+        assignedAgent: apt.assignedAgent ? {
+            name: ((apt.assignedAgent as unknown) as PopulatedAgent).fullName,
+            position: ((apt.assignedAgent as unknown) as PopulatedAgent).position,
+            office: ((apt.assignedAgent as unknown) as PopulatedAgent).officeName
+        } : null,
+        submittedDate: (apt.submittedDate as Date).toISOString().split('T')[0]
     }));
 
     return NextResponse.json({

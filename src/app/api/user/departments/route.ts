@@ -3,6 +3,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Department from '@/lib/models/departmentSchema';
 
+// Local type for department services to avoid implicit any in callbacks
+interface ServiceItem {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  isActive?: boolean;
+  processingTime?: string;
+  fee?: number;
+  requirements?: string[];
+}
+
 // GET /api/user/departments - Fetch all active departments for users (public endpoint)
 export async function GET(request: NextRequest) {
   try {
@@ -55,7 +67,7 @@ export async function GET(request: NextRequest) {
       allowOnlineServices: dept.allowOnlineServices,
       requiresAppointment: dept.requiresAppointment,
       ...(includeServices && {
-        services: dept.services?.filter(service => service.isActive).map(service => ({
+        services: (dept.services as ServiceItem[] | undefined)?.filter((service: ServiceItem) => service.isActive).map((service: ServiceItem) => ({
           id: service.id,
           name: service.name,
           description: service.description,

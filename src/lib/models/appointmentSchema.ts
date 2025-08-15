@@ -17,6 +17,17 @@ export type AppointmentStatus = typeof APPOINTMENT_STATUS[number];
 export const PRIORITY_LEVELS = ['normal', 'urgent'] as const;
 export type PriorityLevel = typeof PRIORITY_LEVELS[number];
 
+// NEW: Define an interface for a single uploaded document
+export interface IAppointmentDocument {
+  name: string; // The logical name from the form, e.g., 'applicationForm'
+  label: string; // The user-facing label, e.g., 'Application Form'
+  url: string; // The URL from R2
+  fileName: string; // The original file name, e.g., 'my_id_scan.pdf'
+  fileType: string; // The MIME type, e.g., 'application/pdf'
+  fileSize: number; // File size in bytes
+  uploadedAt: Date;
+}
+
 export interface IAppointment extends Document {
   // Citizen Information
   citizenId: mongoose.Schema.Types.ObjectId; // Reference to User
@@ -43,6 +54,7 @@ export interface IAppointment extends Document {
   notes?: string;
   agentNotes?: string; // Internal notes by agent
   requirements?: string[]; // Documents/requirements needed
+  documents: IAppointmentDocument[]; // NEW: Add the documents array
   
   // System Information
   bookingReference: string; // Unique booking ID
@@ -177,6 +189,16 @@ const AppointmentSchema: Schema = new Schema({
     type: String,
     trim: true
   }],
+  // NEW: Add the schema definition for the documents array
+  documents: [{
+    name: { type: String, required: true },
+    label: { type: String, required: true },
+    url: { type: String, required: true },
+    fileName: { type: String, required: true },
+    fileType: { type: String, required: true },
+    fileSize: { type: Number, required: true },
+    uploadedAt: { type: Date, default: Date.now }
+  }],
   
   // System Information
   bookingReference: {
@@ -298,3 +320,5 @@ AppointmentSchema.statics.findByAgent = function(agentId: string) {
 const Appointment = mongoose.models.Appointment || mongoose.model<IAppointment>('Appointment', AppointmentSchema);
 
 export default Appointment;
+
+

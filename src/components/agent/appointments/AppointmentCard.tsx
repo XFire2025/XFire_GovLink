@@ -20,6 +20,15 @@ interface Appointment {
   contactEmail: string;
   contactPhone: string;
   submittedDate: string;
+  bookingReference?: string;
+  agentNotes?: string;
+  documents?: {
+    id: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    url: string;
+  }[];
 }
 
 interface AppointmentCardProps {
@@ -41,6 +50,7 @@ const cardTranslations: Record<Language, {
   cancel: string;
   complete: string;
   sendReminder: string;
+  attachments: string;
   statuses: Record<AppointmentStatus, string>;
   services: Record<ServiceType, string>;
 }> = {
@@ -55,6 +65,7 @@ const cardTranslations: Record<Language, {
     cancel: 'Cancel',
     complete: 'Complete',
     sendReminder: 'Send Reminder',
+    attachments: 'attachments',
     statuses: {
       pending: 'Pending Review',
       confirmed: 'Confirmed',
@@ -72,14 +83,15 @@ const cardTranslations: Record<Language, {
   si: {
     time: 'වේලාව',
     citizenId: 'පුරවැසි හැඳුනුම්පත',
-    submitted: 'ගොනු කරන ලදී',
-    urgentPriority: 'ගඩ',
+    submitted: 'ඉදිරිපත් කරන ලදී',
+    urgentPriority: 'හදිසි',
     viewDetails: 'විස්තර බලන්න',
     quickActions: 'ඉක්මන් ක්‍රියා',
     confirm: 'තහවුරු කරන්න',
     cancel: 'අවලංගු කරන්න',
     complete: 'සම්පූර්ණ කරන්න',
     sendReminder: 'මතක් කිරීම යවන්න',
+    attachments: 'ඇමුණුම්',
     statuses: {
       pending: 'සමාලෝචනය අපේක්ෂිත',
       confirmed: 'තහවුරු කළ',
@@ -89,7 +101,7 @@ const cardTranslations: Record<Language, {
     services: {
       passport: 'ගමන් බලපත්‍ර අයදුම්පත',
       license: 'රියදුරු බලපත්‍රය',
-      certificate: 'උප්පන්න සහතිකය',
+      certificate: 'උප්පැන්න සහතිකය',
       registration: 'ව්‍යාපාර ලියාපදිංචිය',
       visa: 'වීසා අයදුම්පත'
     }
@@ -105,8 +117,9 @@ const cardTranslations: Record<Language, {
     cancel: 'ரத்துசெய்',
     complete: 'முடிக்கவும்',
     sendReminder: 'நினைவூட்டல் அனுப்பவும்',
+    attachments: 'இணைப்புகள்',
     statuses: {
-      pending: 'மதிப்பாய்வு நிலவையில்',
+      pending: 'மதிப்பாய்வு நிலுவையில்',
       confirmed: 'உறுதிப்படுத்தப்பட்டது',
       cancelled: 'ரத்துசெய்யப்பட்டது',
       completed: 'முடிக்கப்பட்டது'
@@ -242,7 +255,6 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   };
 
   return (
-    // FIXED: Removed overflow-hidden from main card to prevent dropdown clipping
     <div className="group bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 hover:scale-[1.01] hover:border-[#FFC72C]/70 animate-fade-in-up modern-card relative">
       <div className="flex flex-col lg:flex-row lg:items-center gap-4">
         {/* Left Section - Main Info */}
@@ -305,9 +317,21 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 </div>
               </div>
 
+              {/* Attachments - NEW */}
+              {appointment.documents && appointment.documents.length > 0 && (
+                <div className="flex items-center gap-2 mt-3 text-muted-foreground group-hover:text-[#FFC72C] transition-colors duration-300">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                  </svg>
+                  <span className="text-sm font-medium">
+                    {appointment.documents.length} {t.attachments}
+                  </span>
+                </div>
+              )}
+
               {appointment.notes && (
                 <div className="mt-3 p-3 bg-card/30 rounded-lg border border-border/30">
-                  <p className="text-sm text-muted-foreground italic">&quot;{appointment.notes}&quot;</p>
+                  <p className="text-sm text-muted-foreground italic">&ldquo;{appointment.notes}&rdquo;</p>
                 </div>
               )}
             </div>
@@ -332,7 +356,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
               {t.viewDetails}
             </button>
 
-            {/* FIXED: Quick Actions Dropdown with proper positioning and z-index */}
+            {/* Quick Actions Dropdown */}
             <div className="relative">
               <button
                 ref={buttonRef}
@@ -348,7 +372,6 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 </svg>
               </button>
               
-              {/* FIXED: Sri Lankan themed dropdown with proper colors */}
               {isActionMenuOpen && (
                 <div 
                   ref={dropdownRef}

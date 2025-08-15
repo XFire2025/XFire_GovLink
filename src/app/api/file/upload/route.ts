@@ -30,13 +30,13 @@ export async function POST(request: NextRequest) {
       folderPath || undefined
     );
 
-    if (uploadResult.success) {
+    if (uploadResult.success && uploadResult.key) {
       return NextResponse.json({
         success: true,
         message: "File uploaded successfully",
-        url: uploadResult.url, // Direct url field for easy access
+        url: uploadResult.key, // Using key as the URL/identifier
         data: {
-          url: uploadResult.url,
+          url: uploadResult.key, // R2 object key
           fileName: fileName,
           originalName: originalName,
           mimeType: file.type,

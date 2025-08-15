@@ -26,6 +26,13 @@ interface Appointment {
   submittedDate: string;
   bookingReference?: string;
   agentNotes?: string;
+  documents?: {
+    id: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    url: string;
+  }[];
 }
 
 interface AppointmentStats {

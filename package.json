@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.864.0",
+    "@aws-sdk/s3-request-presigner": "^3.864.0",
     "@langchain/community": "^0.3.50",
     "@langchain/core": "^0.3.70",
     "@langchain/langgraph": "^0.4.4",
