@@ -25,7 +25,7 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   const [isDownloading, setIsDownloading] = useState(false);
 
   const downloadQRCode = async () => {
-    if (!qrCodeImageUrl) return;
+    if (!qrCodeImageUrl || typeof window === 'undefined') return;
     
     setIsDownloading(true);
     try {

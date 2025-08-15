@@ -221,6 +221,8 @@ const SubmissionViewer: React.FC<SubmissionViewerProps> = ({
   };
 
   const handleDownload = (file: SubmissionFile) => {
+    if (typeof window === 'undefined') return;
+    
     console.log(`Downloading file: ${file.fileName}`);
     // In real implementation, this would trigger file download
     const link = document.createElement('a');

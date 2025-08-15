@@ -40,6 +40,8 @@ const NavbarLotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 // Scroll functions
 const smoothScrollTo = (id: string) => {
+  if (typeof window === 'undefined') return;
+  
   const element = document.getElementById(id);
   if (element) {
     element.scrollIntoView({ 

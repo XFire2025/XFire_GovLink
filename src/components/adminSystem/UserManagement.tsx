@@ -232,6 +232,8 @@ function mapAgentDocToUI(doc: AgentDocument): UIUser {
 }
 
 function exportToCsv(filename: string, rows: UIUser[]) {
+  if (typeof window === 'undefined') return;
+  
   const headers = ['Name', 'Email', 'Role', 'Status', 'Verification', 'Join Date', 'Last Active'];
   const csv = [
     headers.join(','),

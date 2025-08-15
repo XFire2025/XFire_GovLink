@@ -50,7 +50,7 @@ const AppointmentSuccessCard: React.FC<AppointmentSuccessCardProps> = ({ appoint
   };
 
   const downloadQRCode = async () => {
-    if (!appointment.qrCode?.imageUrl) return;
+    if (!appointment.qrCode?.imageUrl || typeof window === 'undefined') return;
     
     setIsDownloading(true);
     try {
