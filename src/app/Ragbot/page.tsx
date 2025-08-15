@@ -546,6 +546,8 @@ function ChatContent({ messages, isTyping, language = 'en', onSendMessage }: { m
   const t = chatTranslations[language];
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     setTimeout(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }, 100);
