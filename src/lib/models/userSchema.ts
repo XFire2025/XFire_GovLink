@@ -193,7 +193,6 @@ const UserSchema: Schema = new Schema({
   email: {
     type: String,
     required: [true, 'Email is required'],
-    unique: true,
     lowercase: true,
     trim: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
@@ -209,7 +208,6 @@ const UserSchema: Schema = new Schema({
   nicNumber: {
     type: String,
     required: [true, 'NIC number is required'],
-    unique: true,
     trim: true,
     validate: {
       validator: function(v: string) {
@@ -461,8 +459,8 @@ const UserSchema: Schema = new Schema({
 });
 
 // Indexes for better performance
-UserSchema.index({ email: 1 });
-UserSchema.index({ nicNumber: 1 });
+UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ nicNumber: 1 }, { unique: true });
 UserSchema.index({ mobileNumber: 1 });
 UserSchema.index({ accountStatus: 1 });
 UserSchema.index({ verificationStatus: 1 });

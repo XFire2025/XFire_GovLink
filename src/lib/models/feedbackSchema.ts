@@ -48,8 +48,7 @@ const FeedbackSchema = new Schema<IFeedback>({
   referenceId: {
     type: String,
     required: true,
-    unique: true,
-    index: true
+    unique: true
   },
   name: {
     type: String,
@@ -160,7 +159,6 @@ const FeedbackSchema = new Schema<IFeedback>({
 FeedbackSchema.index({ email: 1, submittedAt: -1 });
 FeedbackSchema.index({ feedbackType: 1, status: 1 });
 FeedbackSchema.index({ priority: 1, status: 1, submittedAt: -1 });
-FeedbackSchema.index({ referenceId: 1 }, { unique: true });
 
 // Virtual for feedback age
 FeedbackSchema.virtual('ageInDays').get(function(this: IFeedback) {
