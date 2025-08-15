@@ -146,6 +146,6 @@ To learn more about Next.js, take a look at the following resources:
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
  
-## CodeRabit
+## CodeRabbit
 
 ![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/XFire2025/govlink?utm_source=oss&utm_medium=github&utm_campaign=XFire2025%2Fgovlink&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
