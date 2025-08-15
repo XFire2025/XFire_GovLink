@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    // Disable static optimization for error pages to avoid SSR issues
+    optimizePackageImports: ['react-markdown', 'rehype-highlight']
+  },
   /* config options here */
 };
 
