@@ -1,4 +1,4 @@
-// src/app/Ragbot/page.tsx
+// src/app/ragbot/page.tsx
 "use client";
 import React, { Suspense, useState, useEffect, useRef } from 'react';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';

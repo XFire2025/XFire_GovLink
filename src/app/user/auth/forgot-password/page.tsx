@@ -1,4 +1,4 @@
-// src/app/User/Auth/ForgotPassword/page.tsx
+// src/app/user/auth/forgot-password/page.tsx
 "use client";
 
 import React, { useState } from 'react';
@@ -205,7 +205,7 @@ export default function ForgotPasswordPage() {
             
             <div className="flex flex-col sm:flex-row gap-4">
               <Link 
-                href="/User/Auth/Login" 
+                href="/user/auth/login" 
                 className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
               >
                 <ArrowLeftIcon className="w-4 h-4" />
@@ -266,7 +266,7 @@ export default function ForgotPasswordPage() {
             {/* Back to Login Link */}
             <div className="text-center">
               <Link 
-                href="/User/Auth/Login" 
+                href="/user/auth/login" 
                 className="inline-flex items-center gap-2 font-medium text-[#FFC72C] hover:text-[#FF5722] transition-colors duration-300 hover:underline"
               >
                 <ArrowLeftIcon className="w-4 h-4" />

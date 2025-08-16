@@ -40,7 +40,7 @@ body:
     id: affected_routes
     attributes:
       label: Affected routes/pages
-      placeholder: e.g., /admin/login, /User/Profile
+      placeholder: e.g., /admin/login, /user/profile
   - type: dropdown
     id: browsers
     attributes:

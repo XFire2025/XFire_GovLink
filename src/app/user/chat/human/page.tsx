@@ -274,7 +274,7 @@ const ChatLayout: React.FC<{
           <div className="flex items-center gap-3 sm:gap-4">
             {/* Back to Dashboard Link */}
             <Link 
-              href="/User/Dashboard" 
+              href="/user/dashboard" 
               className="hidden md:flex text-sm text-muted-foreground hover:text-foreground transition-colors duration-300 hover:scale-105 font-medium"
             >
               {t.backToDashboard}

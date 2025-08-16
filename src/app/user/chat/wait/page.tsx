@@ -238,7 +238,7 @@ const WaitPageLayout: React.FC<{
           <div className="flex items-center gap-3 sm:gap-4">
             {/* Back to Dashboard Link */}
             <Link 
-              href="/User/Dashboard" 
+              href="/user/dashboard" 
               className="hidden md:flex text-sm text-muted-foreground hover:text-foreground transition-colors duration-300 hover:scale-105 font-medium"
             >
               {t.backToDashboard}
@@ -509,7 +509,7 @@ function WaitPageContent() {
 
   const handleConnectToAgent = (agentId: string) => {
     // Navigate to human chat with the selected agent
-    router.push(`/User/Chat/Human?agent=${agentId}`);
+  router.push(`/user/chat/human?agent=${agentId}`);
   };
 
   const handleLanguageChange = (newLanguage: Language) => {
@@ -624,7 +624,7 @@ function WaitPageContent() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
-                href="/User/Chat/Bot"
+                href="/user/chat/bot"
                 className="px-6 py-3 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105 shadow-glow"
               >
                 <div className="flex items-center justify-center gap-2">
