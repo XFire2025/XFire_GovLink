@@ -593,3 +593,32 @@
     }
   }
 }
+
+/* QR Scanner Styles */
+.qr-scanner-container video {
+  width: 100% !important;
+  height: auto !important;
+  border-radius: 8px;
+  max-height: 300px;
+  object-fit: cover;
+}
+
+.qr-scanner-container canvas {
+  display: none !important;
+}
+
+.qr-scanner-container > div {
+  border: none !important;
+  background: transparent !important;
+}
+
+.qr-scanner-container #html5-qrcode-button-camera-start,
+.qr-scanner-container #html5-qrcode-button-camera-stop {
+  display: none !important;
+}
+
+.qr-scanner-container div[style*="position: absolute"] {
+  border: 2px solid #00ff00 !important;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+}
