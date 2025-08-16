@@ -1,16 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyAccessToken } from '@/lib/auth/user-jwt';
-import connectToDatabase from '@/lib/db';
-import User from '@/lib/models/userSchema';
+import { NextRequest, NextResponse } from "next/server";
+import { verifyAccessToken } from "@/lib/auth/user-jwt";
+import connectToDatabase from "@/lib/db";
+import User from "@/lib/models/userSchema";
 
 export async function PUT(request: NextRequest) {
   try {
     // Get access token from cookies
-    const accessToken = request.cookies.get('access_token')?.value;
+    const accessToken = request.cookies.get("access_token")?.value;
 
     if (!accessToken) {
       return NextResponse.json(
-        { error: 'Access token not found' },
+        { error: "Access token not found" },
         { status: 401 }
       );
     }
@@ -21,7 +21,7 @@ export async function PUT(request: NextRequest) {
       decoded = verifyAccessToken(accessToken);
     } catch {
       return NextResponse.json(
-        { error: 'Invalid or expired access token' },
+        { error: "Invalid or expired access token" },
         { status: 401 }
       );
     }
@@ -33,10 +33,7 @@ export async function PUT(request: NextRequest) {
     // Find and update user settings
     const user = await User.findById(decoded.userId);
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Update user preferences
@@ -44,27 +41,26 @@ export async function PUT(request: NextRequest) {
       decoded.userId,
       {
         $set: {
-          'preferences.emailNotifications': emailNotifications,
-          'preferences.language': language,
+          "preferences.emailNotifications": emailNotifications,
+          "preferences.language": language,
           updatedAt: new Date(),
-        }
+        },
       },
       { new: true, runValidators: true }
     );
 
     return NextResponse.json({
       success: true,
-      message: 'Settings updated successfully',
+      message: "Settings updated successfully",
       settings: {
         emailNotifications: updatedUser.preferences?.emailNotifications ?? true,
-        language: updatedUser.preferences?.language ?? 'en',
-      }
+        language: updatedUser.preferences?.language ?? "en",
+      },
     });
-
   } catch (error) {
-    console.error('Error updating user settings:', error);
+    console.error("Error updating user settings:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -73,11 +69,11 @@ export async function PUT(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Get access token from cookies
-    const accessToken = request.cookies.get('access_token')?.value;
+    const accessToken = request.cookies.get("access_token")?.value;
 
     if (!accessToken) {
       return NextResponse.json(
-        { error: 'Access token not found' },
+        { error: "Access token not found" },
         { status: 401 }
       );
     }
@@ -88,33 +84,29 @@ export async function GET(request: NextRequest) {
       decoded = verifyAccessToken(accessToken);
     } catch {
       return NextResponse.json(
-        { error: 'Invalid or expired access token' },
+        { error: "Invalid or expired access token" },
         { status: 401 }
       );
     }
 
     await connectToDatabase();
 
-    const user = await User.findById(decoded.userId).select('preferences');
+    const user = await User.findById(decoded.userId).select("preferences");
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({
       success: true,
       settings: {
         emailNotifications: user.preferences?.emailNotifications ?? true,
-        language: user.preferences?.language ?? 'en',
-      }
+        language: user.preferences?.language ?? "en",
+      },
     });
-
   } catch (error) {
-    console.error('Error fetching user settings:', error);
+    console.error("Error fetching user settings:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
