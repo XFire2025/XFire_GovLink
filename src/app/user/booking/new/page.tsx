@@ -156,11 +156,6 @@ interface DocumentRequirement {
     description?: string;
 }
 
-// Error interface for proper typing
-interface ApiError extends Error {
-  status?: number;
-  code?: string;
-}
 
 // Custom Dropdown Component (keeping existing)
 const CustomDropdown = ({ 
@@ -903,26 +898,6 @@ export default function NewBookingPage() {
         setSubmitting(false);
     }
 
-    // Helper functions to get display names
-    const getDepartmentName = () => {
-        const department = departments.find(d => d.id === form.department);
-        return department ? department.name : '';
-    };
-
-    const getServiceName = () => {
-        const service = services.find(s => s.id === form.service);
-        return service ? service.name : '';
-    };
-
-    const getAgentName = () => {
-        const agent = agents.find(a => a.id === form.agent);
-        return agent ? agent.name : '';
-    };
-
-    const getAgentPosition = () => {
-        const agent = agents.find(a => a.id === form.agent);
-        return agent ? agent.position : '';
-    };
 
     const getSelectedDay = () => {
         const day = days.find(d => d.key === form.day);

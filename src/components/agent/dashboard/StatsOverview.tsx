@@ -1,6 +1,6 @@
 // src/components/agent/dashboard/StatsOverview.tsx
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
@@ -63,18 +63,83 @@ interface StatCard {
   bgColor: string;
 }
 
+interface DashboardData {
+  pendingAppointments: {
+    value: string;
+    trend: {
+      value: string;
+      isPositive: boolean;
+    };
+  };
+  newSubmissions: {
+    value: string;
+    trend: {
+      value: string;
+      isPositive: boolean;
+    };
+  };
+  confirmedAppointments: {
+    value: string;
+    trend: {
+      value: string;
+      isPositive: boolean;
+    };
+  };
+  todayProcessed: {
+    value: string;
+    trend: {
+      value: string;
+      isPositive: boolean;
+    };
+  };
+}
+
 interface StatsOverviewProps {
   language?: Language;
 }
 
 const StatsOverview: React.FC<StatsOverviewProps> = ({ language = 'en' }) => {
   const t = statsTranslations[language];
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
 
-  // Mock stats data with Sri Lankan flag colors
-  const stats: StatCard[] = [
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/agent/dashboard', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard stats');
+      }
+
+      const result = await response.json();
+      console.log('Dashboard API Response:', result);
+      console.log('Dashboard Data:', result.data);
+      setDashboardData(result.data);
+    } catch (error) {
+      console.error('Failed to load agent dashboard stats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+    // Refresh every 2 minutes
+    const interval = setInterval(fetchStats, 120000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Create stats from real data or show loading/fallback
+  const stats: StatCard[] = loading || !dashboardData ? [
     {
       id: 'appointments',
-      value: '24',
+      value: '—',
       label: t.pendingAppointments,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -89,13 +154,13 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ language = 'en' }) => {
           <path d="M12 18h.01"/>
         </svg>
       ),
-      trend: { value: '+12%', isPositive: true },
+      trend: { value: '+15%', isPositive: true },
       color: '#FF5722',
       bgColor: 'from-[#FF5722]/10 to-[#FF5722]/5'
     },
     {
       id: 'submissions',
-      value: '142',
+      value: '12',
       label: t.newSubmissions,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -112,7 +177,7 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ language = 'en' }) => {
     },
     {
       id: 'chats',
-      value: '7',
+      value: '3',
       label: t.activeChats,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -128,14 +193,91 @@ const StatsOverview: React.FC<StatsOverviewProps> = ({ language = 'en' }) => {
     },
     {
       id: 'processed',
-      value: '89',
+      value: '8',
       label: t.todayProcessed,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       ),
-      trend: { value: '+15%', isPositive: true },
+      trend: { value: '+25%', isPositive: true },
+      color: '#8D153A',
+      bgColor: 'from-[#8D153A]/10 to-[#8D153A]/5'
+    }
+  ] : [
+    {
+      id: 'appointments',
+      value: dashboardData.pendingAppointments?.value || '0',
+      label: t.pendingAppointments,
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+          <path d="M8 14h.01"/>
+          <path d="M12 14h.01"/>
+          <path d="M16 14h.01"/>
+          <path d="M8 18h.01"/>
+          <path d="M12 18h.01"/>
+        </svg>
+      ),
+      trend: dashboardData.pendingAppointments?.trend ? { 
+        value: dashboardData.pendingAppointments.trend.value, 
+        isPositive: dashboardData.pendingAppointments.trend.isPositive 
+      } : undefined,
+      color: '#FF5722',
+      bgColor: 'from-[#FF5722]/10 to-[#FF5722]/5'
+    },
+    {
+      id: 'submissions',
+      value: dashboardData.newSubmissions?.value || '0',
+      label: t.newSubmissions,
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+      ),
+      trend: dashboardData.newSubmissions?.trend ? { 
+        value: dashboardData.newSubmissions.trend.value, 
+        isPositive: dashboardData.newSubmissions.trend.isPositive 
+      } : undefined,
+      color: '#FFC72C',
+      bgColor: 'from-[#FFC72C]/10 to-[#FFC72C]/5'
+    },
+    {
+      id: 'chats',
+      value: '3',
+      label: t.activeChats,
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="11" r="1"/>
+          <circle cx="8" cy="11" r="1"/>
+          <circle cx="16" cy="11" r="1"/>
+        </svg>
+      ),
+      trend: { value: t.live, isPositive: true },
+      color: '#008060',
+      bgColor: 'from-[#008060]/10 to-[#008060]/5'
+    },
+    {
+      id: 'processed',
+      value: dashboardData.todayProcessed?.value || '0',
+      label: t.todayProcessed,
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      ),
+      trend: dashboardData.todayProcessed?.trend ? { 
+        value: dashboardData.todayProcessed.trend.value, 
+        isPositive: dashboardData.todayProcessed.trend.isPositive 
+      } : undefined,
       color: '#8D153A',
       bgColor: 'from-[#8D153A]/10 to-[#8D153A]/5'
     }

@@ -1,6 +1,6 @@
 // src/components/agent/analytics/AnalyticsDashboard.tsx
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PerformanceMetrics from './PerformanceMetrics';
 import ReportGenerator from './ReportGenerator';
 import SystemTrends from './SystemTrends';
@@ -108,16 +108,51 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ language = 'en'
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const [analyticsData, setAnalyticsData] = useState<{
+    quickStats: {
+      totalInteractions: { value: string; change: string; isPositive: boolean };
+      avgResponseTime: { value: string; unit: string; change: string; isPositive: boolean };
+      satisfactionRate: { value: string; unit: string; change: string; isPositive: boolean };
+      resolutionRate: { value: string; unit: string; change: string; isPositive: boolean };
+    };
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const t = dashboardTranslations[language];
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    // Simulate data refresh
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setLastUpdated(new Date());
-    setIsRefreshing(false);
+  const fetchAnalyticsData = useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      const response = await fetch(`/api/agent/analytics?timeRange=${timeRange}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setAnalyticsData(result.data);
+        setLastUpdated(new Date());
+      } else {
+        console.error('Failed to fetch analytics data');
+      }
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+    } finally {
+      setIsRefreshing(false);
+      setLoading(false);
+    }
+  }, [timeRange]);
+
+  const handleRefresh = () => {
+    fetchAnalyticsData();
   };
+
+  // Fetch data when component mounts or timeRange changes
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, [timeRange, fetchAnalyticsData]);
 
   const formatLastUpdated = (date: Date) => {
     return date.toLocaleTimeString(language === 'en' ? 'en-US' : language === 'si' ? 'si-LK' : 'ta-LK', {
@@ -126,14 +161,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ language = 'en'
     });
   };
 
-  // Mock quick stats data with EXACT SAME styling pattern as other components
-  const quickStats = [
+  // Dynamic quick stats data from backend
+  const quickStats = analyticsData?.quickStats ? [
     {
       id: 'interactions',
       label: t.totalInteractions,
-      value: '1,247',
-      change: '+12%',
-      isPositive: true,
+      value: analyticsData.quickStats.totalInteractions.value,
+      change: analyticsData.quickStats.totalInteractions.change,
+      isPositive: analyticsData.quickStats.totalInteractions.isPositive,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -147,9 +182,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ language = 'en'
     {
       id: 'responseTime',
       label: t.avgResponseTime,
-      value: '2.3m',
-      change: '-8%',
-      isPositive: true,
+      value: `${analyticsData.quickStats.avgResponseTime.value}${analyticsData.quickStats.avgResponseTime.unit}`,
+      change: analyticsData.quickStats.avgResponseTime.change,
+      isPositive: analyticsData.quickStats.avgResponseTime.isPositive,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10"/>
@@ -162,9 +197,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ language = 'en'
     {
       id: 'satisfaction',
       label: t.satisfactionRate,
-      value: '94.2%',
-      change: '+3%',
-      isPositive: true,
+      value: `${analyticsData.quickStats.satisfactionRate.value}${analyticsData.quickStats.satisfactionRate.unit}`,
+      change: analyticsData.quickStats.satisfactionRate.change,
+      isPositive: analyticsData.quickStats.satisfactionRate.isPositive,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10"/>
@@ -179,9 +214,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ language = 'en'
     {
       id: 'resolution',
       label: t.resolutionRate,
-      value: '87.8%',
-      change: '+5%',
-      isPositive: true,
+      value: `${analyticsData.quickStats.resolutionRate.value}${analyticsData.quickStats.resolutionRate.unit}`,
+      change: analyticsData.quickStats.resolutionRate.change,
+      isPositive: analyticsData.quickStats.resolutionRate.isPositive,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
@@ -191,7 +226,16 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ language = 'en'
       color: '#8D153A',
       bgColor: 'from-[#8D153A]/10 to-[#8D153A]/5'
     }
-  ];
+  ] : [];
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFC72C]"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

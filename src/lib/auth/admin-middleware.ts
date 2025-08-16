@@ -189,6 +189,29 @@ export const adminAuthRateLimit = async (
   };
 };
 
+// Verify admin authentication for API routes (similar to agent middleware pattern)
+export const verifyAdminAuth = async (request: NextRequest) => {
+  const authResult = await authenticateAdmin(request);
+  
+  if (!authResult.success) {
+    return {
+      isValid: false,
+      admin: null,
+      error: authResult.message
+    };
+  }
+
+  // Fetch full admin data
+  await connectDB();
+  const admin = await Admin.findById(authResult.admin!.userId);
+  
+  return {
+    isValid: true,
+    admin,
+    error: null
+  };
+};
+
 // Declare global type for rate limiting
 declare global {
   var adminRateLimitMap: Map<string, { count: number; lastReset: number }>;

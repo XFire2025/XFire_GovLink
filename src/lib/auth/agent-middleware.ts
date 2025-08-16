@@ -173,6 +173,43 @@ export async function authorizeAgentDistrict(
 }
 
 /**
+ * Simplified agent verification for API routes
+ */
+export async function verifyAgentAuth(request: NextRequest): Promise<{
+  isValid: boolean;
+  agent?: {
+    _id: string;
+    officerId: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    position: string;
+    department: string;
+    officeName: string;
+    isActive: boolean;
+    assignedDistricts: string[];
+  };
+  message?: string;
+}> {
+  const authResult = await authenticateAgent(request);
+  
+  if (!authResult.success || !authResult.agent) {
+    return {
+      isValid: false,
+      message: authResult.message
+    };
+  }
+
+  return {
+    isValid: true,
+    agent: {
+      _id: authResult.agent.id,
+      ...authResult.agent
+    }
+  };
+}
+
+/**
  * Clean up expired rate limit entries
  */
 export function cleanupRateLimit(): void {
