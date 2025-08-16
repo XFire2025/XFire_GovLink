@@ -11,6 +11,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  serverExternalPackages: [
+    '@langchain/community',
+    '@langchain/core', 
+    '@langchain/langgraph',
+    '@langchain/openai',
+    '@langchain/tavily',
+    '@tavily/core'
+  ],
   /* config options here */
 };
 

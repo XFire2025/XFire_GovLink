@@ -146,7 +146,7 @@ export class SriLankanGovRAGAgent {
 4. **tavily_extract** - Extract specific information from websites
 
 **MANDATORY SEARCH STRATEGY:**
-1. **ALWAYS START** with local_government_directory for ANY government-related query
+1. **ALWAYS START** with local_government_directory for ANY government-related query. If asked for the available departmets, services, and support agents or government personnel do the same as well.
 2. **ONLY IF** local directory doesn't have sufficient information, then use external tools
 3. When using external tools, prioritize official .gov.lk domains
 4. **CLEARLY INDICATE** when information comes from verified local database vs external sources
