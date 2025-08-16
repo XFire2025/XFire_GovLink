@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, LayoutDashboard, Users, FileText, BarChart3, Settings, Layers } from "lucide-react";
+import { Menu, LayoutDashboard, Users, FileText, BarChart3, Settings, Layers, QrCode } from "lucide-react";
 import { useTranslation } from "@/lib/i18n/hooks/useTranslation";
 
 interface MenuItem {
@@ -22,6 +22,7 @@ const menuItems: MenuItem[] = [
   { id: "agents", labelKey: "agents", icon: Users, href: "/department/agents" },
   { id: "services", labelKey: "services", icon: Layers, href: "/department/services" }, // New menu item
   { id: "submissions", labelKey: "submissions", icon: FileText, href: "/department/submissions" },
+  { id: "qr-validation", labelKey: "qrValidation", icon: QrCode, href: "/department/qr-validation" },
   { id: "reports", labelKey: "reports", icon: BarChart3, href: "/department/analytics" },
   { id: "settings", labelKey: "settings", icon: Settings, href: "/department/config" },
 ];
