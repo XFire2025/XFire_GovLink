@@ -521,6 +521,7 @@ function mockAvailableSlots(agentId: string, date: string, baseSlots: string[]):
 export default function NewBookingPage() {
     const router = useRouter();
     const { user, isAuthenticated, isLoading } = useAuth();
+    const [searchParams, setSearchParams] = useState<URLSearchParams | null>(null);
     
     const [form, setForm] = useState({ 
         department: "",
@@ -537,6 +538,7 @@ export default function NewBookingPage() {
     const [reference, setReference] = useState('');
     const [success, setSuccess] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [isFromChat, setIsFromChat] = useState(false);
     const [appointmentData, setAppointmentData] = useState<{
         id: string;
         bookingReference: string;
@@ -672,6 +674,38 @@ export default function NewBookingPage() {
     // Load departments on mount
     useEffect(() => {
         loadDepartments();
+        
+        // Handle pre-filled data from chat
+        if (typeof window !== 'undefined') {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromChat = urlParams.get('fromChat') === 'true';
+            
+            if (fromChat) {
+                setIsFromChat(true);
+                
+                // Pre-fill form with chat data
+                const chatData = {
+                    department: urlParams.get('department') || '',
+                    service: urlParams.get('service') || '',
+                    position: urlParams.get('agent') || '', // Map agent to position
+                    day: urlParams.get('date') || '',
+                    slot: urlParams.get('time') || '',
+                    notes: urlParams.get('notes') || ''
+                };
+                
+                setForm(prev => ({
+                    ...prev,
+                    ...chatData
+                }));
+                
+                // Clear booking data from localStorage since we're now in the form
+                if (typeof window !== 'undefined') {
+                    localStorage.removeItem('govlink_booking_data');
+                }
+                
+                console.log('Pre-filled form with chat data:', chatData);
+            }
+        }
     }, [loadDepartments]);
 
     // Load services when department changes
