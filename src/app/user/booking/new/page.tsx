@@ -1,4 +1,4 @@
-// src/app/User/Booking/New/page.tsx
+// src/app/user/booking/new/page.tsx
 "use client";
 
 import React, { useMemo, useState, useCallback, useEffect } from "react";
@@ -930,7 +930,7 @@ export default function NewBookingPage() {
                 {/* Back Button */}
                 <div className="mb-8">
                     <Link 
-                        href="/User/Booking"
+                        href="/user/booking"
                         className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
                     >
                         <ArrowLeftIcon className="w-4 h-4" />
@@ -1195,7 +1195,7 @@ export default function NewBookingPage() {
                                     >{t.editBooking}</button>
                                 )}
                                 <Link 
-                                    href="/User/Booking" 
+                                    href="/user/booking" 
                                     className="px-6 py-3 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105 text-center"
                                 >
                                     {t.cancel}
@@ -1226,7 +1226,7 @@ export default function NewBookingPage() {
                                 <li>{t.nextSteps.step3}.</li>
                             </ul>
                             <div className="pt-2 flex flex-wrap gap-3">
-                                <Link href="/User/Dashboard" className="px-5 py-2.5 rounded-xl border border-border/50 bg-card/50 hover:bg-card/70 text-sm font-medium transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105 flex items-center gap-2 text-foreground">
+                                <Link href="/user/dashboard" className="px-5 py-2.5 rounded-xl border border-border/50 bg-card/50 hover:bg-card/70 text-sm font-medium transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105 flex items-center gap-2 text-foreground">
                                     <HomeIcon className="w-4 h-4" /> {t.dashboard}
                                 </Link>
                             </div>
