@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Admin, { AdminRole, AccountStatus } from "@/lib/models/adminSchema";
 import bcrypt from "bcryptjs";

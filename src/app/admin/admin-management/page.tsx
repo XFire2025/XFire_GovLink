@@ -110,7 +110,7 @@ export default function AdminManagement() {
     } else if (!isLoading && !isAuthenticated) {
       router.push("/admin/login");
     }
-  }, [isAuthenticated, admin, isLoading, router]);
+  }, [isAuthenticated, admin, isLoading, router, fetchAdmins]);
 
   // Handle delete admin
   const handleDeleteAdmin = async (adminToDelete: Admin) => {

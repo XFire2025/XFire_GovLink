@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAgentAuth } from '@/lib/auth/agent-middleware';
 import connectDB from '@/lib/db';
-import Appointment from '@/lib/models/appointmentSchema';
-import Submission from '@/lib/models/submissionSchema';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,11 +11,6 @@ export async function GET(request: NextRequest) {
     }
 
     await connectDB();
-
-    const agentId = authResult.agent._id;
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
     // Get appointment statistics for agent-specific dashboard
     const [
