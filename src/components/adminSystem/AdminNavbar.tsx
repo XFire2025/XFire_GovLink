@@ -91,15 +91,7 @@ export default function AdminNavbar() {
           {/* Enhanced Left Section - Breadcrumb/Title */}
           <div className="flex items-center gap-4 ml-12 lg:ml-0">
             <div>
-              <h1 className="text-lg lg:text-xl font-bold">
-                <span className="text-foreground">Admin</span>{' '}
-                <span className="bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
-                  Panel
-                </span>
-              </h1>
-              <p className="text-sm text-muted-foreground hidden sm:block font-medium">
-                Government Link Administration
-              </p>
+             
             </div>
           </div>
 
