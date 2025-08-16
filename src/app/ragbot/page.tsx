@@ -3,6 +3,7 @@
 import React, { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
+
 import { useAuth } from '@/lib/auth/AuthContext';
 import { Header } from '@/components/Header';
 import ReactMarkdown from 'react-markdown';
@@ -274,8 +275,17 @@ const UserMessage = ({ text, timestamp = new Date() }: { text: string; timestamp
   </div>
 );
 
-const TypingIndicator = ({ language = 'en' }: { language?: Language }) => {
+const TypingIndicator = ({ language = 'en', isBookingMode = false }: { language?: Language, isBookingMode?: boolean }) => {
   const t = chatTranslations[language];
+  
+  const bookingMessages = {
+    en: { analyzing: 'Processing your booking details', preparing: 'Preparing your booking questions' },
+    si: { analyzing: 'ඔබගේ වෙන්කරවීම් විස්තර සකසමින්', preparing: 'වෙන්කරවීම් ප්‍රශ්න සූදානම් කරමින්' },
+    ta: { analyzing: 'உங்கள் முன்பதிவு விவரங்களை செயலாக்குகிறது', preparing: 'முன்பதிவு கேள்விகளை தயாரிക்கிறது' }
+  };
+  
+  const messages = isBookingMode ? bookingMessages[language] : t;
+  
   return (
     <div className="flex justify-start my-6 animate-fade-in-up">
       <div className="flex gap-4 max-w-4xl">
@@ -644,32 +654,155 @@ function RAGBotPageContent() {
   const handleSendMessage = useCallback(async (messageText: string) => {
     if (!messageText.trim()) return;
 
-    const userMessage: Message = { type: 'user', text: messageText, timestamp: new Date() };
-    setMessages(prev => [...prev, userMessage]);
-    setIsTyping(true);
+  const handleBookingQuestionGenerated = (question: string) => {
+    const botMessage: Message = {
+      type: 'bot',
+      text: question,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, botMessage]);
+  };
 
+  // Check if user message contains booking intent vs information search intent
+  const checkBookingIntent = (message: string): boolean => {
+    // If we're already in a booking conversation, continue with booking flow
+    // unless user explicitly asks for information search
+    if (isInBookingConversation) {
+      const searchKeywords = [
+        'search', 'find', 'tell me about', 'information about', 'details about',
+        'what is', 'how does', 'explain', 'describe', 'show me', 'lookup',
+        'සොයන්න', 'විස්තර', 'කියන්න', 'පෙන්වන්න',
+        'தேடு', 'விவரங்கள்', 'சொல்லு', 'காட்டு'
+      ];
+      const lowerMessage = message.toLowerCase();
+      const isExplicitSearch = searchKeywords.some(keyword => lowerMessage.includes(keyword));
+      return !isExplicitSearch; // Continue booking unless explicit search request
+    }
+
+    const lowerMessage = message.toLowerCase();
+    
+    // Information search keywords - if these are present, it's NOT a booking intent
+    const searchKeywords = [
+      'search', 'find', 'tell me about', 'information about', 'details about',
+      'what is', 'how does', 'explain', 'describe', 'show me', 'lookup',
+      'සොයන්න', 'විස්තර', 'කියන්න', 'පෙන්වන්න',
+      'தேடு', 'விவரங்கள்', 'சொல்லு', 'காட்டு'
+    ];
+    
+    // If user is explicitly asking for information, return false (not booking)
+    if (searchKeywords.some(keyword => lowerMessage.includes(keyword))) {
+      return false;
+    }
+    
+    // Booking action keywords - these indicate intent to book/schedule
+    const bookingActionKeywords = [
+      'book', 'schedule', 'appointment', 'meeting', 'visit', 'apply for',
+      'register for', 'submit application', 'request appointment', 'need appointment',
+      'want to book', 'would like to schedule', 'can i book', 'වෙන්කරවීම',
+      'හමුවීම ගන්න', 'ලියාපදිංචි වීම', 'முன்பதิवு', 'சந்திப்பு பதிவু'
+    ];
+    
+    // Response patterns that indicate they're providing booking details
+    const responsePatterns = [
+      // These patterns suggest user is responding to booking questions
+      'immigration', 'business registration', 'health services', 'education',
+      'passport', 'license', 'certificate', 'permit', 'renewal',
+      'senior officer', 'customer service', 'agent', 'monday', 'tuesday',
+      'morning', 'afternoon', 'am', 'pm', 'tomorrow', 'next week'
+    ];
+    
+    // Check if it's a booking action or response to booking questions
+    const hasBookingAction = bookingActionKeywords.some(keyword => 
+      lowerMessage.includes(keyword)
+    );
+    
+    const hasResponsePattern = responsePatterns.some(pattern => 
+      lowerMessage.includes(pattern)
+    );
+    
+    return hasBookingAction || hasResponsePattern;
+  };
+
+  // Handle booking conversation flow
+  const handleBookingConversation = async (message: string): Promise<string> => {
     try {
       // Send message to RAG agent - it will handle booking through the booking_assistant tool
       const response = await fetch('/api/ragbot/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: messageText, sessionId }),
+        body: JSON.stringify({ 
+          message, 
+          sessionId,
+          language: currentLanguage 
+        }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || 'Failed to get response from server');
+        throw new Error('Failed to process booking conversation');
       }
 
       const data = await response.json();
-      const botMessage: Message = {
-        type: 'bot',
-        text: data.response,
-        timestamp: new Date(),
-        departmentContacts: data.departmentContacts,
-        sources: data.sources,
-      };
-      setMessages(prev => [...prev, botMessage]);
+      return data.response;
+    } catch (error) {
+      console.error('Error in booking conversation:', error);
+      return "I'd like to help you with booking, but I encountered an error. Please try again or contact support.";
+    }
+  };
+
+  const handleSendMessage = async (messageText: string) => {
+    if (!messageText.trim()) return;
+
+    const userMessage: Message = { type: 'user', text: messageText, timestamp: new Date() };
+    setMessages(prev => [...prev, userMessage]);
+    setLastUserMessage(messageText);
+    setIsTyping(true);
+
+    try {
+      // First check if this is a booking-related message
+      const isBookingIntent = checkBookingIntent(messageText);
+      
+      if (isBookingIntent) {
+        // Set booking conversation state
+        setIsInBookingConversation(true);
+        
+        // Handle booking conversation flow instead of RAG search
+        const bookingResponse = await handleBookingConversation(messageText);
+        const botMessage: Message = {
+          type: 'bot',
+          text: bookingResponse,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, botMessage]);
+        
+        // Check if booking is complete
+        if (bookingResponse.includes('Open Booking Form') || bookingResponse.includes('booking information is ready')) {
+          setIsInBookingConversation(false);
+        }
+      } else {
+        // Reset booking conversation state when switching to information mode
+        setIsInBookingConversation(false);
+        // Original RAG chat flow for general government information
+        const response = await fetch('/api/ragbot/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: messageText, sessionId }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.details || 'Failed to get response from server');
+        }
+
+        const data = await response.json();
+        const botMessage: Message = {
+          type: 'bot',
+          text: data.response,
+          timestamp: new Date(),
+          departmentContacts: data.departmentContacts,
+          sources: data.sources,
+        };
+        setMessages(prev => [...prev, botMessage]);
+      }
 
     } catch (error) {
       console.error('Error sending message:', error);

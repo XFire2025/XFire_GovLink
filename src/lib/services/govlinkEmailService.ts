@@ -1,22 +1,29 @@
 import nodemailer from 'nodemailer';
 
-// Create transporter using Gmail
-const transporter = nodemailer.createTransport({
+// Check if email credentials are provided
+const hasEmailCredentials = process.env.MAIL_ID && process.env.MAIL_PW;
+
+// Create transporter using Gmail only if credentials are available
+const transporter = hasEmailCredentials ? nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.MAIL_ID,
     pass: process.env.MAIL_PW,
   },
-});
+}) : null;
 
-// Verify transporter configuration
-transporter.verify((error: Error | null) => {
-  if (error) {
-    console.error('Email service configuration error:', error);
-  } else {
-    console.log('GovLink email service is ready to send messages');
-  }
-});
+// Verify transporter configuration only if it exists
+if (transporter) {
+  transporter.verify((error: Error | null) => {
+    if (error) {
+      console.error('Email service configuration error:', error);
+    } else {
+      console.log('GovLink email service is ready to send messages');
+    }
+  });
+} else {
+  console.warn('Email service disabled: MAIL_ID and MAIL_PW environment variables not provided');
+}
 
 export interface EmailOptions {
   to: string | string[];
@@ -35,6 +42,16 @@ export interface EmailOptions {
 
 export const sendEmail = async (options: EmailOptions): Promise<{ success: boolean; message: string; messageId?: string; error?: string }> => {
   try {
+    // Check if email service is configured
+    if (!transporter) {
+      console.warn('Email service not configured - SMTP credentials missing');
+      return {
+        success: false,
+        message: 'Email service not configured',
+        error: 'SMTP credentials not provided'
+      };
+    }
+
     const mailOptions = {
       from: `"${process.env.GOV_SERVICE_NAME}" <${process.env.MAIL_ID}>`,
       to: Array.isArray(options.to) ? options.to.join(', ') : options.to,
