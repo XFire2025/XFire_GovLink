@@ -84,6 +84,13 @@ const getMenuItems = (adminRole: "ADMIN" | "SUPERADMIN" | null): MenuItem[] => {
       icon: FileText,
       href: "/admin/reports",
     },
+    
+    {
+      id: "create-department",
+      label: "Departments",
+      icon: Shield,
+      href: "/admin/create-department",
+    },
     {
       id: "system-configuration",
       label: "System Configuration",
