@@ -443,6 +443,18 @@ const BotMessage = ({ message, language = 'en' }: { message: Message; language?:
                   ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
                   li: ({ children }) => <li className="text-foreground leading-relaxed">{children}</li>,
                   strong: ({ children }) => <strong className="font-semibold text-[#FFC72C]">{children}</strong>,
+                  a: ({ href, children }) => (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gradient-to-r from-[#FFC72C]/10 to-[#FF5722]/10 border border-[#FFC72C]/30 text-[#FFC72C] hover:text-[#FF5722] hover:border-[#FF5722]/50 transition-all duration-300 font-medium text-sm shadow-sm hover:shadow-md backdrop-blur-sm"
+                    >
+                      <span className="text-xs">🔗</span>
+                      {children}
+                      <span className="text-xs opacity-70">↗</span>
+                    </a>
+                  ),
                 }}
               >
                 {text}
