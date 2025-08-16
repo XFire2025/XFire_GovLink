@@ -31,6 +31,13 @@ const notoSansTamil = Noto_Sans_Tamil({
 export const metadata: Metadata = {
   title: 'GovLink Sri Lanka',
   description: 'Simplifying Government for Every Sri Lankan',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+    ],
+    apple: '/apple-icon.svg',
+  },
 };
 
 export default function RootLayout({
