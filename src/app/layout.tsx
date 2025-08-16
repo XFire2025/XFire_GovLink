@@ -5,6 +5,7 @@ import { Noto_Sans, Noto_Sans_Sinhala, Noto_Sans_Tamil } from 'next/font/google'
 import './globals.css';
 import { Providers } from './providers';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/next';
 
 // 2. Configure Noto Sans for Latin characters (English)
 const notoSans = Noto_Sans({
@@ -45,6 +46,7 @@ export default function RootLayout({
       >
         <Providers>{children}</Providers>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
