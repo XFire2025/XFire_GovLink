@@ -1,6 +1,5 @@
 // src/app/api/ragbot/history/[sessionId]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getSriLankanGovRAGAgent } from '@/lib/ragAgent';
 
 export async function GET(
   request: NextRequest,
@@ -27,8 +26,9 @@ export async function GET(
       );
     }
 
-    // Create RAG agent
-    const ragAgent = getSriLankanGovRAGAgent();
+    // Create RAG agent (lazy import to avoid build-time side-effects)  
+    const { getSriLankanGovRAGAgent } = await import('@/lib/ragAgent');  
+    const ragAgent = getSriLankanGovRAGAgent();  
 
     // Get chat history
     const messages = await ragAgent.getChatHistory(sessionId);
@@ -81,9 +81,10 @@ export async function DELETE(
       );
     }
 
-    // Create RAG agent
-    const ragAgent = getSriLankanGovRAGAgent();
-
+    // Create RAG agent (lazy import to avoid build-time side-effects)  
+    const { getSriLankanGovRAGAgent } = await import('@/lib/ragAgent');  
+    const ragAgent = getSriLankanGovRAGAgent();  
+    
     // Clear chat history
     await ragAgent.clearChatHistory(sessionId);
 
