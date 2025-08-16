@@ -21,27 +21,27 @@ interface Translation {
 // Translation data
 const translations: Record<Language, Translation> = {
   en: {
-    profile: 'Profile',
-    agentPortal: 'Agent Portal',
-    backToDashboard: '← Back to Dashboard',
+  profile: 'Profile',
+  agentPortal: 'Agent Portal',
+  backToDashboard: 'Back to Dashboard',
     logout: 'Logout',
     settings: 'Settings',
     help: 'Help',
     notifications: 'Notifications'
   },
   si: {
-    profile: 'පැතිකඩ',
-    agentPortal: 'නිලධාරි පෝට්ලය',
-    backToDashboard: '← පාලනයට ආපසු',
+  profile: 'පැතිකඩ',
+  agentPortal: 'නිලධාරි පෝට්ලය',
+  backToDashboard: 'පාලනයට ආපසු',
     logout: 'ඉවත්වන්න',
     settings: 'සැකසුම්',
     help: 'උදව්',
     notifications: 'දැනුම්දීම්'
   },
   ta: {
-    profile: 'சுயவிவரம்',
-    agentPortal: 'அதிகாரி போர்டல்',
-    backToDashboard: '← டாஷ்போர்டுக்கு திரும்பு',
+  profile: 'சுயவிவரம்',
+  agentPortal: 'அதிகாரி போர்டல்',
+  backToDashboard: 'டாஷ்போர்டுக்கு திரும்பு',
     logout: 'வெளியேறு',
     settings: 'அமைப்புகள்',
     help: 'உதவி',
@@ -174,7 +174,7 @@ const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 12H5m7-7-7 7 7 7"/>
               </svg>
-              <span>{t.backToDashboard.replace('← ', '')}</span>
+              <span>{t.backToDashboard}</span>
             </Link>
 
             {/* Notification Bell */}

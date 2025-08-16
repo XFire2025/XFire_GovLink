@@ -1,6 +1,8 @@
 // components/agent/appointments/AppointmentCard.tsx
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { createPortal } from 'react-dom';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
@@ -143,6 +145,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const [menuStyle, setMenuStyle] = useState<React.CSSProperties | null>(null);
   const t = cardTranslations[language];
 
   // Close dropdown when clicking outside
@@ -160,6 +163,35 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Position the portal dropdown relative to the trigger button so it can overlap other cards
+  useEffect(() => {
+    if (!isActionMenuOpen || !buttonRef.current) {
+      setMenuStyle(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const btn = buttonRef.current!;
+      const rect = btn.getBoundingClientRect();
+      const preferredWidth = Math.max(220, rect.width);
+      let left = rect.left + window.scrollX + rect.width - preferredWidth; // right-align to button
+      if (left + preferredWidth > window.innerWidth) left = window.innerWidth - preferredWidth - 8;
+      if (left < 8) left = 8;
+      const top = rect.bottom + window.scrollY + 8; // small gap
+
+      setMenuStyle({ position: 'absolute', left: `${left}px`, top: `${top}px`, minWidth: `${preferredWidth}px`, zIndex: 99999 });
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [isActionMenuOpen]);
 
   const getStatusColor = (status: AppointmentStatus) => {
     switch (status) {
@@ -250,8 +282,31 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   };
 
   const handleSendReminder = () => {
-    console.log(`Sending reminder to ${appointment.contactEmail}`);
-    setIsActionMenuOpen(false);
+    // Send reminder via backend API, and schedule 24-hour reminder there
+    (async () => {
+      try {
+        setIsActionMenuOpen(false);
+        toast.loading('Sending reminder...');
+        const res = await fetch(`/api/agent/appointments/${appointment.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'sendNotification', notificationType: 'email' })
+        });
+
+        const data = await res.json();
+        toast.dismiss();
+        if (res.ok && data.success) {
+          toast.success('Reminder email sent and scheduled successfully');
+        } else {
+          console.error('Send reminder failed', data);
+          toast.error(data?.message || 'Failed to send reminder');
+        }
+      } catch (err) {
+        toast.dismiss();
+        console.error('Error sending reminder:', err);
+        toast.error('An error occurred while sending reminder');
+      }
+    })();
   };
 
   return (
@@ -372,25 +427,25 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                 </svg>
               </button>
               
-              {isActionMenuOpen && (
-                <div 
-                  ref={dropdownRef}
-                  className="absolute right-0 top-full mt-2 bg-background/98 dark:bg-card/98 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl overflow-hidden animate-fade-in-up z-50 min-w-48 max-w-xs modern-card"
-                  style={{ 
-                    zIndex: 9999,
-                    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 199, 44, 0.1)'
-                  }}
-                >
+              {isActionMenuOpen && createPortal(
+                  <div 
+                    ref={dropdownRef}
+                    className="bg-background/98 dark:bg-card/98 backdrop-blur-md border border-border/50 rounded-xl shadow-2xl overflow-hidden animate-fade-in-up modern-card"
+                    style={{ 
+                      ...(menuStyle || {}),
+                      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 199, 44, 0.1)'
+                    }}
+                  >
                   {appointment.status === 'pending' && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleStatusUpdate('confirmed');
                       }}
-                      className="w-full text-left px-4 py-3 text-sm font-medium text-foreground hover:bg-[#008060]/10 hover:text-[#008060] transition-all duration-200 flex items-center gap-3 border-b border-border/30 last:border-b-0 hover:scale-[1.02] hover:backdrop-blur-md"
+                      className="w-full text-left px-4 py-3 text-sm font-medium text-[#008060] bg-[#008060]/10 hover:bg-[#008060]/20 transition-all duration-200 flex items-center gap-3 border-b border-[#008060]/30 last:border-b-0 hover:scale-[1.02] hover:backdrop-blur-md"
                     >
-                      <div className="w-6 h-6 rounded-full bg-[#008060]/10 flex items-center justify-center transition-all duration-200 group-hover:bg-[#008060]/20">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#008060" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <div className="w-6 h-6 rounded-full bg-[#008060]/20 flex items-center justify-center transition-colors duration-200 hover:bg-[#008060]/30">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#006644" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       </div>
@@ -450,7 +505,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
                     </div>
                     <span className="font-medium">{t.sendReminder}</span>
                   </button>
-                </div>
+                  </div>, document.body
               )}
             </div>
           </div>

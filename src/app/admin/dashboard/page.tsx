@@ -6,6 +6,9 @@ import {
   UserCheck,
   AlertCircle,
   UserCog,
+  FileText,
+  Clock,
+  // CheckCircle,
   ArrowUpRight,
   ArrowDownRight,
   RefreshCw,
@@ -156,6 +159,168 @@ const DashboardStats = () => {
   );
 };
 
+// Admin analytics panel: users, agents, departments, appointments
+interface ApptOverview {
+  total?: number;
+  pending?: number;
+  confirmed?: number;
+  completed?: number;
+  cancelled?: number;
+}
+
+const AdminAnalytics = () => {
+  const { getAuthHeaders } = useAdminAuth();
+  const [loading, setLoading] = useState(false);
+  const [counts, setCounts] = useState({ users: 0, agents: 0, departments: 0 });
+  const [apptOverview, setApptOverview] = useState<ApptOverview | null>(null);
+  const [dailyAppts, setDailyAppts] = useState<Array<{ date: string; count: number }>>([]);
+
+  const fetchAnalytics = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const [usersRes, agentsRes, deptsRes, apptRes] = await Promise.all([
+        fetch('/api/admin/users?limit=1', { credentials: 'include', headers: getAuthHeaders() }),
+        fetch('/api/admin/agents?limit=1', { credentials: 'include', headers: getAuthHeaders() }),
+        fetch('/api/admin/departments?limit=1', { credentials: 'include', headers: getAuthHeaders() }),
+        fetch('/api/agent/appointments', { method: 'POST', credentials: 'include', headers: { ...getAuthHeaders() }, body: JSON.stringify({ action: 'getStats' }) }),
+      ]);
+
+      const [usersJson, agentsJson, deptsJson, apptJson] = await Promise.all([
+        usersRes.ok ? usersRes.json() : Promise.resolve({ total: 0 }),
+        agentsRes.ok ? agentsRes.json() : Promise.resolve({ total: 0 }),
+        deptsRes.ok ? deptsRes.json() : Promise.resolve({ data: { pagination: { total: 0 } } }),
+        apptRes.ok ? apptRes.json() : Promise.resolve({ data: null }),
+      ]);
+
+      const usersTotal = usersJson.total ?? 0;
+      const agentsTotal = agentsJson.total ?? 0;
+      const deptsTotal = deptsJson?.data?.pagination?.total ?? 0;
+
+      setCounts({ users: usersTotal, agents: agentsTotal, departments: deptsTotal });
+
+      if (apptJson?.data) {
+        setApptOverview(apptJson.data.overview ?? null);
+        setDailyAppts(Array.isArray(apptJson.data.dailyStats) ? apptJson.data.dailyStats : []);
+      } else {
+        setApptOverview(null);
+        setDailyAppts([]);
+      }
+    } catch (error) {
+      console.error('Failed to load admin analytics', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [getAuthHeaders]);
+
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
+
+  // Small SVG bar chart for daily appointments
+  const DailyBarChart = ({ data }: { data: Array<{ date: string; count: number }> }) => {
+    if (!data || data.length === 0) return <div className="text-xs text-muted-foreground">No data</div>;
+    const max = Math.max(...data.map(d => d.count), 1);
+    const width = 160;
+    const height = 48;
+    const barWidth = Math.floor(width / data.length) - 4;
+
+    return (
+      <svg width={width} height={height} className="block">
+        {data.map((d, i) => {
+          const h = Math.round((d.count / max) * (height - 8));
+          const x = i * (barWidth + 4) + 4;
+          const y = height - h - 4;
+          return <rect key={d.date} x={x} y={y} width={barWidth} height={h} rx={2} fill="#008060" />;
+        })}
+      </svg>
+    );
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 animate-fade-in-up">
+      <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-card/90 p-5 rounded-2xl border border-border/50">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-r from-[#8D153A]/10 to-[#8D153A]/5" style={{ border: '2px solid #8D153A30' }}>
+                <Users className="w-5 h-5" style={{ color: '#8D153A' }} />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Total Users</div>
+                <div className="text-2xl font-bold">{loading ? '—' : counts.users.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-card/90 p-5 rounded-2xl border border-border/50">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-r from-[#008060]/10 to-[#008060]/5" style={{ border: '2px solid #00806030' }}>
+                <UserCog className="w-5 h-5" style={{ color: '#008060' }} />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Active Agents</div>
+                <div className="text-2xl font-bold">{loading ? '—' : counts.agents.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-card/90 p-5 rounded-2xl border border-border/50">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-r from-[#FFC72C]/10 to-[#FFC72C]/5" style={{ border: '2px solid #FFC72C30' }}>
+                <FileText className="w-5 h-5" style={{ color: '#FFC72C' }} />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Departments</div>
+                <div className="text-2xl font-bold">{loading ? '—' : counts.departments.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-card/90 p-5 rounded-2xl border border-border/50">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-r from-[#FF5722]/10 to-[#FF5722]/5" style={{ border: '2px solid #FF572230' }}>
+                <Clock className="w-5 h-5" style={{ color: '#FF5722' }} />
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Total Appointments</div>
+                <div className="text-2xl font-bold">{loading ? '—' : apptOverview?.total?.toLocaleString() ?? '—'}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-card/90 p-5 rounded-2xl border border-border/50 flex flex-col justify-between">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="text-sm font-semibold">Appointments (7d)</div>
+            <div className="text-xs text-muted-foreground">Daily counts</div>
+          </div>
+          <button onClick={fetchAnalytics} className="text-sm text-muted-foreground hover:text-foreground">
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+
+        <div className="mt-2">
+          <DailyBarChart data={dailyAppts} />
+        </div>
+
+        <div className="mt-3 flex gap-3 text-sm text-muted-foreground">
+          <div>Pending: <span className="text-foreground font-medium">{apptOverview?.pending ?? '—'}</span></div>
+          <div>Confirmed: <span className="text-foreground font-medium">{apptOverview?.confirmed ?? '—'}</span></div>
+          <div>Completed: <span className="text-foreground font-medium">{apptOverview?.completed ?? '—'}</span></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function DashboardPage() {
   const { getAuthHeaders } = useAdminAuth();
   const [activities, setActivities] = useState<Array<{ id: string; message: string; time: string; type?: string }>>([]);
@@ -223,6 +388,9 @@ export default function DashboardPage() {
               <DashboardStats />
             </div>
           </div>
+
+          {/* Admin analytics block */}
+          <AdminAnalytics />
 
           {/* Enhanced Recent Activity following agent dashboard style */}
           <div className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow hover:shadow-2xl transition-all duration-500 modern-card group relative overflow-hidden animate-fade-in-up" style={{animationDelay: '0.6s'}}>
