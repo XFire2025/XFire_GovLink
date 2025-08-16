@@ -12,6 +12,11 @@ export interface AgentLoginData {
   rememberMe?: boolean;
 }
 
+export interface ProfileUpdateData {
+  fullName?: string;
+  phoneNumber?: string;
+}
+
 export interface AgentTokens {
   accessToken: string;
   refreshToken: string;
@@ -304,6 +309,54 @@ class AgentAuthService {
         success: false,
         message: 'Internal server error',
         errors: ['Failed to retrieve agent profile']
+      };
+    }
+  }
+
+  /**
+   * Update agent profile
+   */
+  static async updateAgentProfile(agentId: string, updateData: ProfileUpdateData): Promise<AgentAuthResult> {
+    try {
+      await connectDB();
+
+      const updatedAgent = await Agent.findByIdAndUpdate(
+        agentId,
+        { ...updateData, updatedAt: new Date() },
+        { new: true, runValidators: true, select: '-password' }
+      );
+
+      if (!updatedAgent) {
+        return {
+          success: false,
+          message: 'Agent not found',
+          errors: ['Agent not found']
+        };
+      }
+
+      return {
+        success: true,
+        message: 'Profile updated successfully',
+        agent: {
+          id: updatedAgent._id.toString(),
+          officerId: updatedAgent.officerId,
+          fullName: updatedAgent.fullName,
+          email: updatedAgent.email,
+          phoneNumber: updatedAgent.phoneNumber,
+          position: updatedAgent.position,
+          department: updatedAgent.department || '',
+          officeName: updatedAgent.officeName,
+          isActive: updatedAgent.isActive,
+          assignedDistricts: updatedAgent.assignedDistricts || []
+        }
+      };
+
+    } catch (error) {
+      console.error('Update agent profile error:', error);
+      return {
+        success: false,
+        message: 'Internal server error',
+        errors: ['Failed to update agent profile']
       };
     }
   }
