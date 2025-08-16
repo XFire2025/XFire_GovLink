@@ -29,9 +29,9 @@ interface Translation {
 // Translation data
 const translations: Record<Language, Translation> = {
   en: {
-    liveChat: 'Live Chat',
-    agentPortal: 'Agent Portal',
-    backToDashboard: '← Back to Dashboard',
+  liveChat: 'Live Chat',
+  agentPortal: 'Agent Portal',
+  backToDashboard: 'Back to Dashboard',
     logout: 'Logout',
     profile: 'Profile',
     settings: 'Settings',
@@ -43,9 +43,9 @@ const translations: Record<Language, Translation> = {
     away: 'Away'
   },
   si: {
-    liveChat: 'සජීවී කතාබස්',
-    agentPortal: 'නිලධාරි පෝට්ලය',
-    backToDashboard: '← පාලනයට ආපසු',
+  liveChat: 'සජීවී කතාබස්',
+  agentPortal: 'නිලධාරි පෝට්ලය',
+  backToDashboard: 'පාලනයට ආපසු',
     logout: 'ඉවත්වන්න',
     profile: 'පැතිකඩ',
     settings: 'සැකසුම්',
@@ -57,9 +57,9 @@ const translations: Record<Language, Translation> = {
     away: 'ඉවත්'
   },
   ta: {
-    liveChat: 'நேரடி அரட்டை',
-    agentPortal: 'அதிகாரி போர்டல்',
-    backToDashboard: '← டாஷ்போர்டுக்கு திரும்பு',
+  liveChat: 'நேரடி அரட்டை',
+  agentPortal: 'அதிகாரி போர்டல்',
+  backToDashboard: 'டாஷ்போர்டுக்கு திரும்பு',
     logout: 'வெளியேறு',
     profile: 'சுயவிவரம்',
     settings: 'அமைப்புகள்',

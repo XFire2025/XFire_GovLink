@@ -1,6 +1,7 @@
 // components/agent/appointments/AppointmentModal.tsx
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import AppointmentViewer from './AppointmentViewer';
 import appointmentService from '@/lib/services/appointmentService';
 
@@ -313,6 +314,25 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
 
   const t = modalTranslations[language];
 
+  // Create a portal container attached to document.body so modal always sits above other stacking contexts
+  const [portalContainer] = useState(() => {
+    if (typeof document === 'undefined') return null;
+    const el = document.createElement('div');
+    el.className = 'govlink-modal-portal';
+    // default will be overridden by inline styles on the modal overlay, but keep safe guard
+    el.style.position = 'relative';
+    el.style.zIndex = '100000';
+    return el;
+  });
+
+  useEffect(() => {
+    if (!portalContainer) return;
+    document.body.appendChild(portalContainer);
+    return () => {
+      if (portalContainer.parentElement) portalContainer.parentElement.removeChild(portalContainer);
+    };
+  }, [portalContainer]);
+
   const loadAppointmentDetails = useCallback(async () => {
     if (!appointment.id) return;
     setIsLoadingDetails(true);
@@ -535,12 +555,12 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
     }
   };
 
-  return (
+  return portalContainer ? createPortal(
     <>
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[60] animate-fade-in-up" style={{ zIndex: 60 }}>
-        <div className="bg-background/98 dark:bg-card/98 backdrop-blur-md border border-border/50 shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto rounded-2xl modern-card relative z-[61]" style={{ zIndex: 61 }}>
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[99999] animate-fade-in-up" style={{ zIndex: 99999 }}>
+        <div className="bg-background/98 dark:bg-card/98 backdrop-blur-md border border-border/50 shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto rounded-2xl modern-card relative z-[100000]" style={{ zIndex: 100000 }}>
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-border/50 bg-card/90 dark:bg-card/95 backdrop-blur-md sticky top-0 z-[62]" style={{ zIndex: 62 }}>
+          <div className="flex items-center justify-between p-6 border-b border-border/50 bg-card/90 dark:bg-card/95 backdrop-blur-md sticky top-0 z-[100001]" style={{ zIndex: 100001 }}>
             <div>
               <h2 className="text-2xl font-bold text-foreground">{t.appointmentDetails}</h2>
               <div className="flex items-center gap-4 mt-1">
@@ -554,8 +574,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-3 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 text-foreground hover:bg-card/80 dark:hover:bg-card/90 hover:border-[#FF5722]/60 transition-all duration-300 hover:scale-105 relative z-[63]"
-              style={{ zIndex: 63 }}
+              className="p-3 rounded-xl bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 text-foreground hover:bg-card/80 dark:hover:bg-card/90 hover:border-[#FF5722]/60 transition-all duration-300 hover:scale-105 relative z-[100002]"
+              style={{ zIndex: 100002 }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -1014,8 +1034,8 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
           citizenName={appointment.citizenName}
         />
       )}
-    </>
-  );
+    </>, portalContainer
+  ) : null;
 };
 
 export default AppointmentModal;
