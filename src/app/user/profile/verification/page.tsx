@@ -1,4 +1,4 @@
-// src/app/User/Profile/Verification/page.tsx
+// src/app/user/profile/verification/page.tsx
 "use client";
 
 import React, { useRef, useState, useCallback } from "react";
@@ -636,7 +636,7 @@ export default function VerificationPage() {
       
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Link 
-          href="/User/Dashboard" 
+          href="/user/dashboard" 
           className="px-6 py-3 bg-gradient-to-r from-[#FFC72C] to-[#FF5722] hover:from-[#FF5722] hover:to-[#8D153A] text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-2xl"
         >
           {t.backToDashboard}
@@ -675,7 +675,7 @@ export default function VerificationPage() {
           {/* Back Button */}
           <div className="mb-8">
             <Link 
-              href="/User/Profile"
+              href="/user/profile"
               className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105 group"
             >
               <ArrowLeftIcon className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />

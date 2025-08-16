@@ -433,7 +433,7 @@ export default function ProfilePage() {
         {/* Back Button */}
         <div className="mb-8">
           <Link 
-            href="/User/Dashboard"
+            href="/user/dashboard"
             className="inline-flex items-center gap-2 px-4 py-2 font-medium text-muted-foreground hover:text-foreground bg-card/50 hover:bg-card/70 border border-border/50 rounded-xl transition-all duration-300 hover:border-[#FFC72C]/60 hover:scale-105"
           >
             <ArrowLeftIcon className="w-4 h-4" />
@@ -565,7 +565,7 @@ export default function ProfilePage() {
                             
                             {!isVerified && (
                               <Link 
-                                href="/User/Profile/Verification"
+                                href="/user/profile/verification"
                                 className="inline-flex items-center justify-center w-full px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#FF5722] to-[#8D153A] hover:from-[#8D153A] hover:to-[#FF5722] rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-2xl group"
                               >
                                 <ShieldIcon className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
@@ -709,7 +709,7 @@ export default function ProfilePage() {
                             {t.verificationDesc}
                           </p>
                           <Link 
-                            href="/User/Profile/Verification"
+                            href="/user/profile/verification"
                             className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-[#FF5722] to-[#8D153A] hover:from-[#8D153A] hover:to-[#FF5722] rounded-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-2xl group"
                           >
                             <ShieldIcon className="w-4 h-4 group-hover:scale-110 transition-transform duration-300" />
