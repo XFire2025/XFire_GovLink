@@ -1,6 +1,6 @@
 // src/components/agent/analytics/SystemTrends.tsx
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
@@ -238,86 +238,60 @@ const SystemTrends: React.FC<SystemTrendsProps> = ({
   const [selectedMetric, setSelectedMetric] = useState<MetricType>('traffic');
   const [isRealTime, setIsRealTime] = useState(true);
   const [trendsData, setTrendsData] = useState<TrendDataPoint[]>([]);
+  const [systemData, setSystemData] = useState<{
+    trendsData?: TrendDataPoint[];
+    peakHoursData?: Array<{ hour: string; traffic: number; label: string }>;
+    commonQueriesData?: Array<{ type: string; count: number; percentage: number; trend: string }>;
+    bottlenecksData?: Array<{ id: string; title: string; severity: string; impact: string; recommendation: string; trend: string }>;
+    resourceData?: Array<{ name: string; value: number; max: number; color: string; status: string }>;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const t = trendsTranslations[language];
 
-  // Generate mock trends data based on time range
-  useEffect(() => {
-    const generateTrendsData = (): TrendDataPoint[] => {
-      const dataPoints = timeRange === 'today' ? 24 : 
-                        timeRange === 'week' ? 7 : 
-                        timeRange === 'month' ? 30 : 90;
-      
-      return Array.from({ length: dataPoints }, (_, i) => ({
-        period: i + 1,
-        traffic: Math.floor(Math.random() * 500 + 100), // 100-600 requests
-        responseTime: Math.random() * 3 + 1, // 1-4 seconds
-        cpuUsage: Math.random() * 40 + 40, // 40-80%
-        memoryUsage: Math.random() * 30 + 50, // 50-80%
-        errorRate: Math.random() * 2, // 0-2%
-        activeUsers: Math.floor(Math.random() * 200 + 50) // 50-250 users
-      }));
-    };
+  // Fetch trends data from backend
+  const fetchTrendsData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/agent/analytics/trends?timeRange=${timeRange}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
 
-    setTrendsData(generateTrendsData());
+      if (response.ok) {
+        const result = await response.json();
+        setSystemData(result.data);
+        setTrendsData(result.data.trendsData || []);
+      } else {
+        console.error('Failed to fetch trends data');
+      }
+    } catch (error) {
+      console.error('Error fetching trends data:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [timeRange]);
 
-  // Mock peak hours data
-  const peakHoursData = [
-    { hour: '09:00', traffic: 95, label: t.peakTraffic },
-    { hour: '10:00', traffic: 88, label: t.peakTraffic },
-    { hour: '11:00', traffic: 92, label: t.peakTraffic },
-    { hour: '14:00', traffic: 87, label: t.peakTraffic },
-    { hour: '15:00', traffic: 85, label: t.peakTraffic },
-    { hour: '16:00', traffic: 78, label: t.avgTraffic },
-    { hour: '02:00', traffic: 15, label: t.lowTraffic },
-    { hour: '03:00', traffic: 12, label: t.lowTraffic }
-  ];
+  useEffect(() => {
+    fetchTrendsData();
+  }, [timeRange, fetchTrendsData]);
 
-  // Mock common queries data
-  const commonQueriesData = [
-    { type: 'Passport Applications', count: 1247, percentage: 35, trend: 'up' },
-    { type: 'Visa Inquiries', count: 892, percentage: 25, trend: 'up' },
-    { type: 'Document Status', count: 634, percentage: 18, trend: 'stable' },
-    { type: 'Appointment Booking', count: 445, percentage: 12, trend: 'down' },
-    { type: 'General Information', count: 356, percentage: 10, trend: 'up' }
-  ];
+  // Use data from backend or fallback to empty arrays
+  const peakHoursData = systemData?.peakHoursData || [];
+  const commonQueriesData = systemData?.commonQueriesData || [];
+  const bottlenecksData = systemData?.bottlenecksData || [];
+  const resourceData = systemData?.resourceData || [];
 
-  // Mock system bottlenecks
-  const bottlenecksData = [
-    {
-      id: 'db_queries',
-      title: 'Database Query Performance',
-      severity: 'warning',
-      impact: '23% slower response time',
-      recommendation: t.optimizePerformance,
-      trend: 'increasing'
-    },
-    {
-      id: 'server_load',
-      title: 'Server Resource Usage',
-      severity: 'critical',
-      impact: 'CPU usage at 85%',
-      recommendation: t.scaleResources,
-      trend: 'stable'
-    },
-    {
-      id: 'queue_length',
-      title: 'Request Queue Length',
-      severity: 'normal',
-      impact: 'Average wait time 2.3 minutes',
-      recommendation: t.updateProcesses,
-      trend: 'decreasing'
-    }
-  ];
-
-  // Mock resource utilization
-  const resourceData = [
-    { name: t.cpuUsage, value: 67, max: 100, color: '#FF5722', status: 'warning' },
-    { name: t.memoryUsage, value: 74, max: 100, color: '#FFC72C', status: 'normal' },
-    { name: t.diskSpace, value: 45, max: 100, color: '#008060', status: 'excellent' },
-    { name: t.networkLoad, value: 89, max: 100, color: '#8D153A', status: 'critical' }
-  ];
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFC72C]"></div>
+      </div>
+    );
+  }
 
   // Simple chart component for trends
   const TrendChart = ({ data, metric, color }: { data: TrendDataPoint[], metric: keyof TrendDataPoint, color: string }) => {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Admin from "@/lib/models/adminSchema";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await connectDB();
 

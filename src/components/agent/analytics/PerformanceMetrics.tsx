@@ -1,6 +1,6 @@
 // src/components/agent/analytics/PerformanceMetrics.tsx
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
@@ -160,56 +160,68 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
 }) => {
   const [selectedView, setSelectedView] = useState<'personal' | 'team'>('personal');
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [performanceData, setPerformanceData] = useState<{
+    personalMetrics?: Record<string, { value: string; unit: string; trend: number; isPositive: boolean }>;
+    skillsData?: Array<{ skill: string; score: number; color: string }>;
+    teamRankingData?: Array<{ name: string; score: number; rank: number; isCurrentUser: boolean }>;
+    chartData?: ChartDataPoint[];
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const t = metricsTranslations[language];
 
-  // Generate mock chart data based on time range
+  // Fetch performance data from backend
+  const fetchPerformanceData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/agent/analytics/performance?timeRange=${timeRange}&view=${selectedView}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setPerformanceData(result.data);
+        setChartData(result.data.chartData || []);
+      } else {
+        console.error('Failed to fetch performance data');
+      }
+    } catch (error) {
+      console.error('Error fetching performance data:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [timeRange, selectedView]);
+
   useEffect(() => {
-    const generateChartData = () => {
-      const dataPoints = timeRange === 'today' ? 24 : 
-                        timeRange === 'week' ? 7 : 
-                        timeRange === 'month' ? 30 : 90;
-      
-      return Array.from({ length: dataPoints }, (_, i) => ({
-        period: i + 1,
-        responseTime: Math.random() * 5 + 1, // 1-6 minutes
-        satisfaction: Math.random() * 20 + 80, // 80-100%
-        resolution: Math.random() * 15 + 85, // 85-100%
-        tickets: Math.floor(Math.random() * 20 + 5) // 5-25 tickets
-      }));
-    };
+    fetchPerformanceData();
+  }, [timeRange, selectedView, fetchPerformanceData]);
 
-    setChartData(generateChartData());
-  }, [timeRange]);
-
-  // Mock personal metrics data
-  const personalMetrics = {
-    responseTime: { value: '2.3', unit: t.minutesAbbr, trend: -12, isPositive: true },
-    resolutionRate: { value: '94.2', unit: '%', trend: 5, isPositive: true },
-    satisfactionScore: { value: '4.8', unit: '/5', trend: 3, isPositive: true },
-    ticketsHandled: { value: '127', unit: '', trend: 15, isPositive: true },
-    avgResolutionTime: { value: '4.2', unit: t.hoursAbbr, trend: -8, isPositive: true },
-    firstContactResolution: { value: '78', unit: '%', trend: 12, isPositive: true }
-  };
-  
+  // Use data from backend or fallback to default
+  const personalMetrics = performanceData?.personalMetrics || {};
   const personalMetricKeys = Object.keys(personalMetrics) as (keyof typeof personalMetrics)[];
 
-  // Mock skills assessment data
-  const skillsData = [
-    { skill: t.communicationSkills, score: 92, color: '#FFC72C' },
-    { skill: t.technicalKnowledge, score: 88, color: '#008060' },
-    { skill: t.problemSolving, score: 95, color: '#FF5722' },
-    { skill: t.efficiency, score: 90, color: '#8D153A' }
+  // Skills data from backend or mock
+  const skillsData = performanceData?.skillsData || [
+    { skill: t.communicationSkills, score: 0, color: '#FFC72C' },
+    { skill: t.technicalKnowledge, score: 0, color: '#008060' },
+    { skill: t.problemSolving, score: 0, color: '#FF5722' },
+    { skill: t.efficiency, score: 0, color: '#8D153A' }
   ];
 
-  // Mock team ranking data
-  const teamRankingData = [
-    { name: 'You (DEMO1234)', score: 94.2, rank: 2, isCurrentUser: true },
-    { name: 'AGENT5678', score: 96.8, rank: 1, isCurrentUser: false },
-    { name: 'AGENT9012', score: 91.5, rank: 3, isCurrentUser: false },
-    { name: 'AGENT3456', score: 89.3, rank: 4, isCurrentUser: false },
-    { name: 'AGENT7890', score: 87.1, rank: 5, isCurrentUser: false }
-  ];
+  // Team ranking data from backend or mock
+  const teamRankingData = performanceData?.teamRankingData || [];
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFC72C]"></div>
+      </div>
+    );
+  }
 
   // Simple chart component
   const SimpleChart = ({ data, type }: { data: ChartDataPoint[], type: PlottableMetric }) => {
@@ -269,7 +281,7 @@ const PerformanceMetrics: React.FC<PerformanceMetricsProps> = ({
               <div key={key} className="bg-card/90 dark:bg-card/95 backdrop-blur-md border border-border/50 rounded-xl p-4 shadow-glow transition-all duration-500 hover:shadow-2xl hover:scale-105 modern-card group">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors duration-300">
-                    {t[key]}
+                    {t[key as keyof MetricsTranslation]}
                   </h4>
                   <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold backdrop-blur-md border transition-all duration-300 hover:scale-105 ${
                     metric.isPositive 

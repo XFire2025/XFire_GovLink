@@ -2,7 +2,7 @@
 "use client";
 import { useState } from 'react';
 import AnalyticsLayout from '@/components/agent/analytics/AnalyticsLayout';
-import AnalyticsDashboard from '@/components/agent/analytics/AnalyticsDashboard';
+import SimplifiedAnalytics from '@/components/agent/analytics/SimplifiedAnalytics';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
@@ -49,7 +49,7 @@ export default function AnalyticsPage() {
       language={currentLanguage}
       onLanguageChange={handleLanguageChange}
     >
-      <AnalyticsDashboard language={currentLanguage} />
+      <SimplifiedAnalytics language={currentLanguage} />
     </AnalyticsLayout>
   );
 }

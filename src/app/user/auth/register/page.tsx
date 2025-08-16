@@ -196,7 +196,7 @@ const CheckCircleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 // Form Components
-const PasswordStrengthIndicator = ({ password, language = 'en' }: { password: string; language?: Language }) => {
+const PasswordStrengthIndicator = ({ password }: { password: string; language?: Language }) => {
   const getStrength = () => {
     if (password.length === 0) return { score: 0, label: '', color: '' };
     if (password.length < 6) return { score: 1, label: 'Weak', color: '#FF5722' };

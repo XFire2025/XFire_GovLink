@@ -1,6 +1,6 @@
 // src/components/agent/analytics/ReportGenerator.tsx
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
@@ -21,6 +21,16 @@ interface ReportConfig {
   includeDetails: boolean;
   recipients: string[];
   schedule: ReportSchedule;
+}
+
+interface Report {
+  id: string;
+  title: string;
+  type: ReportType;
+  format: ReportFormat;
+  generatedAt: string;
+  size: string;
+  status: 'completed' | 'generating' | 'failed';
 }
 
 interface ReportTranslation {
@@ -278,39 +288,34 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({ language = 'en' }) =>
   const [isGenerating, setIsGenerating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [activeTab, setActiveTab] = useState<'quick' | 'custom' | 'history'>('quick');
+  const [recentReports, setRecentReports] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const t = reportTranslations[language];
 
-  // Mock recent reports data
-  const recentReports = [
-    {
-      id: '1',
-      title: 'Weekly Performance Report',
-      type: 'performance',
-      format: 'pdf',
-      generatedDate: '2025-08-07T10:30:00',
-      size: '2.4 MB',
-      status: 'completed'
-    },
-    {
-      id: '2',
-      title: 'Monthly Service Analytics',
-      type: 'service',
-      format: 'excel',
-      generatedDate: '2025-08-05T14:15:00',
-      size: '1.8 MB',
-      status: 'completed'
-    },
-    {
-      id: '3',
-      title: 'Q3 Operational Summary',
-      type: 'operational',
-      format: 'pdf',
-      generatedDate: '2025-08-01T09:00:00',
-      size: '3.2 MB',
-      status: 'completed'
+  // Fetch real report data from backend
+  // Fetch real report data from backend
+  const fetchReportData = async () => {
+    try {
+      setLoading(true);
+      const historyResponse = await fetch('/api/agent/analytics/reports?action=getHistory', {
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+
+      if (historyResponse.ok) {
+        const historyData = await historyResponse.json();
+        setRecentReports(historyData.data.recentReports || []);
+      }
+    } catch (error) {
+      console.error('Error fetching report data:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+  useEffect(() => {
+    fetchReportData();
+  }, []);
 
   const handleConfigChange = <K extends keyof ReportConfig>(
     key: K,
@@ -323,20 +328,70 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({ language = 'en' }) =>
   };
 
   const handleGenerateReport = async () => {
-    setIsGenerating(true);
-    // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    setIsGenerating(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    try {
+      setIsGenerating(true);
+      const response = await fetch('/api/agent/analytics/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          action: reportConfig.schedule === 'once' ? 'generateReport' : 'scheduleReport',
+          reportConfig
+        })
+      });
+
+      if (response.ok) {
+        await response.json();
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+        
+        // Refresh report history
+        await fetchReportData();
+      } else {
+        console.error('Failed to generate report');
+      }
+    } catch (error) {
+      console.error('Error generating report:', error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const handleQuickReport = async () => {
-    setIsGenerating(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsGenerating(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+  const handleQuickReport = async (reportType: ReportType = 'performance') => {
+    try {
+      setIsGenerating(true);
+      const quickConfig = {
+        title: `Quick ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`,
+        type: reportType,
+        format: 'pdf' as ReportFormat,
+        period: 'weekly' as ReportPeriod,
+        includeCharts: true,
+        includeComparisons: true,
+        includeDetails: false
+      };
+
+      const response = await fetch('/api/agent/analytics/reports', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          action: 'generateReport',
+          reportConfig: quickConfig
+        })
+      });
+
+      if (response.ok) {
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+        
+        // Refresh report history
+        await fetchReportData();
+      }
+    } catch (error) {
+      console.error('Error generating quick report:', error);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const inputStyles = "w-full bg-card/60 dark:bg-card/80 backdrop-blur-md border border-border/50 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:border-[#FFC72C] transition-all duration-300 shadow-md hover:shadow-lg modern-card";
@@ -421,7 +476,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({ language = 'en' }) =>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Quick Template Cards - EXACT SAME styling as DashboardCard */}
             <div className="group relative bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow transition-all duration-500 hover:border-[#FFC72C]/70 hover:shadow-2xl hover-lift cursor-pointer modern-card flex flex-col h-full min-h-[240px]"
-                 onClick={() => handleQuickReport()}>
+                 onClick={() => handleQuickReport('performance')}>
               <div className="p-6 flex flex-col h-full">
                 {/* Icon Container */}
                 <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl mb-4 transition-all duration-500 flex-shrink-0"
@@ -481,7 +536,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({ language = 'en' }) =>
             </div>
 
             <div className="group relative bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow transition-all duration-500 hover:border-[#008060]/70 hover:shadow-2xl hover-lift cursor-pointer modern-card flex flex-col h-full min-h-[240px]"
-                 onClick={() => handleQuickReport()}>
+                 onClick={() => handleQuickReport('service')}>
               <div className="p-6 flex flex-col h-full">
                 <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl mb-4 transition-all duration-500 flex-shrink-0"
                      style={{
@@ -535,7 +590,7 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({ language = 'en' }) =>
             </div>
 
             <div className="group relative bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow transition-all duration-500 hover:border-[#FF5722]/70 hover:shadow-2xl hover-lift cursor-pointer modern-card flex flex-col h-full min-h-[240px]"
-                 onClick={() => handleQuickReport()}>
+                 onClick={() => handleQuickReport('operational')}>
               <div className="p-6 flex flex-col h-full">
                 <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl mb-4 transition-all duration-500 flex-shrink-0"
                      style={{
@@ -773,56 +828,74 @@ const ReportGenerator: React.FC<ReportGeneratorProps> = ({ language = 'en' }) =>
 
       {activeTab === 'history' && (
         <div className="space-y-6">
-          <div className="space-y-4">
-            {recentReports.map((report) => (
-              <div key={report.id} className="flex items-center justify-between p-6 bg-card/90 dark:bg-card/95 backdrop-blur-md border border-border/50 rounded-xl hover:bg-card/80 dark:hover:bg-card/90 hover:border-[#FFC72C]/60 transition-all duration-300 shadow-glow hover:shadow-2xl modern-card">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-gradient-to-r from-[#008060]/10 to-[#FFC72C]/10 rounded-xl">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#008060" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14 2 14 8 20 8"/>
-                      <line x1="16" y1="13" x2="8" y2="13"/>
-                      <line x1="16" y1="17" x2="8" y2="17"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-foreground">{report.title}</h4>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{t.reportTypes[report.type as ReportType]}</span>
-                      <span>•</span>
-                      <span>{report.format.toUpperCase()}</span>
-                      <span>•</span>
-                      <span>{report.size}</span>
-                      <span>•</span>
-                      <span>{formatDate(report.generatedDate)}</span>
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFC72C]"></div>
+            </div>
+          ) : recentReports.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="p-4 bg-muted/20 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">No Reports Yet</h3>
+              <p className="text-muted-foreground">Generate your first report to see it here.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+                {recentReports.map((report) => (
+                  <div key={report.id} className="flex items-center justify-between p-6 bg-card/90 dark:bg-card/95 backdrop-blur-md border border-border/50 rounded-xl hover:bg-card/80 dark:hover:bg-card/90 hover:border-[#FFC72C]/60 transition-all duration-300 shadow-glow hover:shadow-2xl modern-card">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 bg-gradient-to-r from-[#008060]/10 to-[#FFC72C]/10 rounded-xl">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#008060" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-foreground">{report.title}</h4>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>{t.reportTypes[report.type as ReportType]}</span>
+                          <span>•</span>
+                          <span>{report.format.toUpperCase()}</span>
+                          <span>•</span>
+                          <span>{report.size}</span>
+                          <span>•</span>
+                          <span>{formatDate(report.generatedAt)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <button className="p-2 bg-[#008060]/10 text-[#008060] rounded-lg hover:bg-[#008060]/20 transition-all duration-300 hover:scale-105">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                          <polyline points="7 10 12 15 17 10"/>
+                          <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                      </button>
+                      <button className="p-2 bg-[#FFC72C]/10 text-[#FFC72C] rounded-lg hover:bg-[#FFC72C]/20 transition-all duration-300 hover:scale-105">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      </button>
+                      <button className="p-2 bg-[#FF5722]/10 text-[#FF5722] rounded-lg hover:bg-[#FF5722]/20 transition-all duration-300 hover:scale-105">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                      </button>
                     </div>
                   </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <button className="p-2 bg-[#008060]/10 text-[#008060] rounded-lg hover:bg-[#008060]/20 transition-all duration-300 hover:scale-105">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="7 10 12 15 17 10"/>
-                      <line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
-                  </button>
-                  <button className="p-2 bg-[#FFC72C]/10 text-[#FFC72C] rounded-lg hover:bg-[#FFC72C]/20 transition-all duration-300 hover:scale-105">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                  </button>
-                  <button className="p-2 bg-[#FF5722]/10 text-[#FF5722] rounded-lg hover:bg-[#FF5722]/20 transition-all duration-300 hover:scale-105">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                  </button>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
+            )
+          }
         </div>
       )}
     </div>
