@@ -4,6 +4,8 @@ import mongoose from 'mongoose';
 import connect from '@/lib/db';
 import Appointment, { AppointmentStatus, IAppointmentDocument } from '@/lib/models/appointmentSchema';
 import { getPresignedUrlForR2 } from '@/lib/r2';
+import { govLinkEmailTemplates, sendEmail } from '@/lib/services/govlinkEmailService';
+import ScheduledEmail from '@/lib/models/scheduledEmail';
 
 // Define interfaces for better type safety
 // Helper narrowers to avoid `any` usage in multiple handlers
@@ -385,46 +387,102 @@ export async function POST(
       }, { status: 404 });
     }
 
-    // Mock notification sending (in real implementation, integrate with SMS/Email service)
-    const notificationData = {
-      appointmentId: appointment._id,
-      citizenName: appointment.citizenName,
-      serviceType: appointment.serviceType,
-      date: appointment.date.toISOString().split('T')[0],
-      time: appointment.time,
-      bookingReference: appointment.bookingReference,
-      email: appointment.contactEmail,
-      phone: appointment.contactPhone
-    };
+    const shouldSendEmail = notificationType === 'email' || notificationType === 'both';
 
-    // Simulate notification sending
-    const notificationResult = {
-      email: notificationType === 'email' || notificationType === 'both',
-      sms: notificationType === 'sms' || notificationType === 'both',
-      sentAt: new Date()
-    };
+  const citizenObj = appointment.citizenId && typeof appointment.citizenId === 'object' ? appointment.citizenId as Record<string, unknown> : null;
+  const citizenName = citizenObj && typeof citizenObj['fullName'] === 'string' ? citizenObj['fullName'] as string : appointment.citizenName;
+
+  const agentObj = appointment.assignedAgent && typeof appointment.assignedAgent === 'object' ? appointment.assignedAgent as Record<string, unknown> : null;
+  const agentName = agentObj && typeof agentObj['fullName'] === 'string' ? agentObj['fullName'] as string : 'Agent';
+
+    let emailResult: { success: boolean; message: string; messageId?: string; error?: string } | null = null;
+    // If email is requested, send immediate reminder email
+    if (shouldSendEmail && appointment.contactEmail) {
+      try {
+        const template = govLinkEmailTemplates.appointmentReminder(
+          citizenName,
+          {
+            service: appointment.serviceType,
+            date: appointment.date.toISOString().split('T')[0],
+            time: appointment.time,
+            agent: agentName,
+            location: typeof (appointment as Record<string, unknown>)['location'] === 'string' ? (appointment as Record<string, unknown>)['location'] as string : undefined
+          }
+        );
+
+        emailResult = await sendEmail({
+          to: appointment.contactEmail,
+          subject: template.subject,
+          html: template.html
+        });
+      } catch (err) {
+        console.error('Failed to send immediate reminder email:', err);
+        emailResult = { success: false, message: 'Failed to send email', error: String(err) };
+      }
+    }
+
+    // Create scheduled email for 24 hours before appointment
+    try {
+      const apptDate = appointment.date instanceof Date ? appointment.date : new Date(String(appointment.date));
+      const scheduledAt = new Date(apptDate.getTime() - 24 * 60 * 60 * 1000);
+
+      const reminderTemplate = govLinkEmailTemplates.appointmentReminder(
+        citizenName,
+        {
+          service: appointment.serviceType,
+          date: apptDate.toISOString().split('T')[0],
+          time: appointment.time,
+          agent: agentName,
+          location: typeof (appointment as Record<string, unknown>)['location'] === 'string' ? (appointment as Record<string, unknown>)['location'] as string : undefined
+        }
+      );
+
+      // Avoid duplicate scheduled reminders for the same appointment and scheduledAt
+      const existing = await ScheduledEmail.findOne({
+        appointmentId: appointment._id,
+        // match scheduledAt within a 60 second window to account for timezone/precision
+        scheduledAt: { $gte: new Date(scheduledAt.getTime() - 60000), $lte: new Date(scheduledAt.getTime() + 60000) }
+      });
+
+      if (!existing) {
+        const scheduled = new ScheduledEmail({
+          appointmentId: appointment._id,
+          to: appointment.contactEmail || (citizenObj && typeof citizenObj['email'] === 'string' ? citizenObj['email'] as string : ''),
+          subject: reminderTemplate.subject,
+          html: reminderTemplate.html,
+          scheduledAt,
+          sent: false
+        });
+
+        await scheduled.save();
+      } else {
+        // already scheduled; skip creating duplicate
+        console.log('Scheduled reminder already exists for appointment', appointment._id.toString());
+      }
+    } catch (err) {
+      console.error('Failed to create scheduled reminder:', err);
+      // don't fail the whole request for scheduled creation errors; log and continue
+    }
 
     // Update notification status in appointment
     await Appointment.findByIdAndUpdate(id, {
       notificationsSent: {
-        email: notificationResult.email,
-        sms: notificationResult.sms,
-        lastSentAt: notificationResult.sentAt
+        email: shouldSendEmail,
+        sms: notificationType === 'sms' || notificationType === 'both',
+        lastSentAt: shouldSendEmail ? new Date() : undefined
       }
     });
 
-    console.log('Notification sent:', notificationData, notificationResult);
-
     return NextResponse.json({
       success: true,
-      message: 'Notification sent successfully',
+      message: 'Notification processed',
       data: {
         notificationType,
         sentTo: {
-          email: notificationResult.email ? appointment.contactEmail : null,
-          phone: notificationResult.sms ? appointment.contactPhone : null
+          email: shouldSendEmail ? appointment.contactEmail : null,
+          phone: notificationType === 'sms' || notificationType === 'both' ? appointment.contactPhone : null
         },
-        sentAt: notificationResult.sentAt
+        emailResult
       }
     }, { status: 200 });
 

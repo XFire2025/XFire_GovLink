@@ -271,11 +271,10 @@ interface ServiceCardProps {
   description: string;
   href: string;
   icon: React.ReactNode;
-  color: string;
   animationDelay: string;
 }
 
-const ServiceCard = ({ title, description, href, icon, color, animationDelay }: ServiceCardProps) => (
+const ServiceCard = ({ title, description, href, icon, animationDelay }: ServiceCardProps) => (
   <Link href={href}>
     <div 
       className="group relative bg-card/90 dark:bg-card/95 backdrop-blur-md rounded-2xl border border-border/50 shadow-glow transition-all duration-500 animate-fade-in-up modern-card hover:border-[#FFC72C]/70 hover:shadow-2xl hover-lift cursor-pointer p-6 h-full min-h-[280px] flex flex-col"
@@ -486,14 +485,13 @@ export default function UserDashboardPage() {
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
               }
-              color="#FF5722"
               animationDelay="0.1s"
             />
 
             <ServiceCard
               title={t.services.submitApplication.title}
               description={t.services.submitApplication.description}
-              href="/User/Submission"
+              href="/user/submission"
               icon={
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -502,14 +500,13 @@ export default function UserDashboardPage() {
                   <line x1="16" y1="17" x2="8" y2="17"/>
                 </svg>
               }
-              color="#FFC72C"
               animationDelay="0.2s"
             />
 
             <ServiceCard
               title={t.services.liveSupport.title}
               description={t.services.liveSupport.description}
-              href="/User/Chat/Bot"
+              href="/user/chat/bot"
               icon={
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
@@ -518,21 +515,19 @@ export default function UserDashboardPage() {
                   <circle cx="16" cy="11" r="1"/>
                 </svg>
               }
-              color="#008060"
               animationDelay="0.3s"
             />
 
             <ServiceCard
               title={t.services.trackStatus.title}
               description={t.services.trackStatus.description}
-              href="/User/Submission"
+              href="/user/submission"
               icon={
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/>
                   <polyline points="12 6 12 12 16 14"/>
                 </svg>
               }
-              color="#8D153A"
               animationDelay="0.4s"
             />
           </div>
