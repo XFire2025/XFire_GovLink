@@ -64,10 +64,12 @@ export default function SubmissionManagement() {
   const StatusBadge = ({ status }: { status: string }) => {
     const statusMap: Record<string, { text: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
       PENDING: { text: t('submissions.pending'), icon: Clock, color: 'text-[#FFC72C] bg-[#FFC72C]/10' },
+      CONFIRMED: { text: 'Confirmed', icon: CheckCircle, color: 'text-[#008060] bg-[#008060]/10' },
+      CANCELLED: { text: 'Cancelled', icon: XCircle, color: 'text-[#FF5722] bg-[#FF5722]/10' },
+      COMPLETED: { text: t('submissions.completed'), icon: CheckCircle, color: 'text-[#008060] bg-[#008060]/10' },
       APPROVED: { text: t('submissions.approved'), icon: CheckCircle, color: 'text-[#008060] bg-[#008060]/10' },
       REJECTED: { text: t('submissions.rejected'), icon: XCircle, color: 'text-[#FF5722] bg-[#FF5722]/10' },
       IN_REVIEW: { text: t('submissions.inReview'), icon: HelpCircle, color: 'text-[#8D153A] bg-[#8D153A]/10' },
-      COMPLETED: { text: t('submissions.completed'), icon: CheckCircle, color: 'text-[#008060] bg-[#008060]/10' },
     };
     
     const statusInfo = statusMap[status] || { 
@@ -86,16 +88,16 @@ export default function SubmissionManagement() {
   };
 
   return (
-    <div className="relative min-h-full">
-      <div className="space-y-8">
+    <div className="relative min-h-full w-full">
+      <div className="space-y-8 w-full max-w-full">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold flex items-center gap-3">
                 <FileText className="w-8 h-8 text-[#008060]" />
-                {t('submissions.title')}
+                Appointments Management
               </h1>
-              <p className="text-muted-foreground">{t('submissions.description')}</p>
+              <p className="text-muted-foreground">Review, process, and manage all citizen appointments for your department.</p>
             </div>
             <button 
               onClick={refetch}
@@ -127,10 +129,12 @@ export default function SubmissionManagement() {
             >
               <option value="all">{t('submissions.all')}</option>
               <option value="PENDING">{t('submissions.pending')}</option>
+              <option value="CONFIRMED">Confirmed</option>
+              <option value="COMPLETED">{t('submissions.completed')}</option>
+              <option value="CANCELLED">Cancelled</option>
               <option value="IN_REVIEW">{t('submissions.inReview')}</option>
               <option value="APPROVED">{t('submissions.approved')}</option>
               <option value="REJECTED">{t('submissions.rejected')}</option>
-              <option value="COMPLETED">{t('submissions.completed')}</option>
             </select>
           </div>
         </motion.div>
@@ -169,7 +173,7 @@ export default function SubmissionManagement() {
           ) : submissions.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <p className="text-muted-foreground mb-2">No submissions found</p>
+              <p className="text-muted-foreground mb-2">No appointments found</p>
               {searchTerm && (
                 <p className="text-sm text-muted-foreground">
                   Try adjusting your search or filters
@@ -181,13 +185,13 @@ export default function SubmissionManagement() {
               <table className="w-full">
                 <thead className="bg-gradient-to-r from-[#008060]/5 to-[#FF5722]/5 border-b border-border/30">
                   <tr>
-                    <th className="p-4 text-left font-semibold">{t('submissions.table.citizen')}</th>
-                    <th className="p-4 text-left font-semibold">{t('submissions.table.service')}</th>
+                    <th className="p-4 text-left font-semibold">Citizen</th>
+                    <th className="p-4 text-left font-semibold">Appointment Details</th>
                     <th className="p-4 text-left font-semibold">Priority</th>
-                    <th className="p-4 text-left font-semibold">{t('submissions.table.status')}</th>
-                    <th className="p-4 text-left font-semibold">{t('submissions.table.submittedOn')}</th>
+                    <th className="p-4 text-left font-semibold">Status</th>
+                    <th className="p-4 text-left font-semibold">Submitted On</th>
                     <th className="p-4 text-left font-semibold">Agent</th>
-                    <th className="p-4 text-left font-semibold">{t('submissions.table.actions')}</th>
+                    <th className="p-4 text-left font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -196,10 +200,21 @@ export default function SubmissionManagement() {
                       <td className="p-4">
                         <div className="font-medium">{sub.applicantName}</div>
                         <div className="text-sm text-muted-foreground">{sub.applicantEmail}</div>
+                        {sub.citizenNIC && (
+                          <div className="text-xs text-muted-foreground">NIC: {sub.citizenNIC}</div>
+                        )}
+                        {sub.contactPhone && (
+                          <div className="text-xs text-muted-foreground">📱 {sub.contactPhone}</div>
+                        )}
                       </td>
                       <td className="p-4">
                         <div className="font-medium">{sub.title}</div>
-                        <div className="text-sm text-muted-foreground">ID: {sub.submissionId}</div>
+                        <div className="text-sm text-muted-foreground">Ref: {sub.bookingReference || sub.submissionId}</div>
+                        {sub.appointmentDate && (
+                          <div className="text-sm text-blue-600">
+                            📅 {new Date(sub.appointmentDate).toLocaleDateString()} at {sub.appointmentTime}
+                          </div>
+                        )}
                       </td>
                       <td className="p-4">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -215,7 +230,21 @@ export default function SubmissionManagement() {
                         {new Date(sub.submittedAt).toLocaleDateString()}
                       </td>
                       <td className="p-4 text-muted-foreground">
-                        {sub.agentId || 'Unassigned'}
+                        {sub.agentName ? (
+                          <div>
+                            <div className="font-medium text-gray-900 dark:text-gray-100">{sub.agentName}</div>
+                            <div className="text-xs text-muted-foreground">{sub.agentEmail}</div>
+                            {sub.agentStatus === 'INACTIVE' && (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-700 mt-1">
+                                Inactive
+                              </span>
+                            )}
+                          </div>
+                        ) : sub.status === 'PENDING' ? (
+                          <span className="text-orange-600 font-medium">Unaccepted</span>
+                        ) : (
+                          <span className="text-gray-500">Unassigned</span>
+                        )}
                       </td>
                       <td className="p-4">
                         <button 

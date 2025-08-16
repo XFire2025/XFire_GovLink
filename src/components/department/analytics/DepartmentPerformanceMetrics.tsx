@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTranslation } from '@/lib/i18n/hooks/useTranslation';
 
-// Simple chart component, as seen in agent analytics
+// Simple chart component
 const SimpleChart = ({ data, colorFrom, colorTo }: { data: number[], colorFrom: string, colorTo: string }) => {
   if (data.length === 0) return <div className="h-48" />;
   const maxValue = Math.max(...data);
@@ -31,12 +31,14 @@ const SimpleChart = ({ data, colorFrom, colorTo }: { data: number[], colorFrom: 
 export default function DepartmentPerformanceMetrics() {
   const { t } = useTranslation('department');
 
-  // Mock data for visualizations
+  // Dummy data for visualizations
   const submissionsTrendData = [120, 150, 130, 180, 200, 190, 220, 250, 230, 280, 300, 290];
   const topAgents = [
-    { name: "Nimali Gunaratne", score: 98.2, isCurrentUser: false, rank: 1 },
-    { name: "Bhanuka Rajapaksa", score: 95.5, isCurrentUser: false, rank: 2 },
-    { name: "Priya De Silva", score: 92.1, isCurrentUser: false, rank: 3 },
+    { name: "Nimali Gunaratne", score: "98.2", isCurrentUser: false, rank: 1, completed: 45 },
+    { name: "Bhanuka Rajapaksa", score: "95.5", isCurrentUser: false, rank: 2, completed: 42 },
+    { name: "Priya De Silva", score: "92.1", isCurrentUser: false, rank: 3, completed: 38 },
+    { name: "Kasun Perera", score: "89.8", isCurrentUser: false, rank: 4, completed: 35 },
+    { name: "Sanduni Fernando", score: "87.3", isCurrentUser: false, rank: 5, completed: 32 },
   ];
 
   return (
@@ -52,11 +54,14 @@ export default function DepartmentPerformanceMetrics() {
         <div className="bg-card/90 modern-card rounded-xl p-6 shadow-glow">
           <h4 className="text-lg font-semibold text-foreground mb-6">{t('analytics.metrics.topPerformingAgents')}</h4>
           <div className="space-y-3">
-            {topAgents.map((agent) => (
-              <div key={agent.name} className="flex items-center justify-between p-4 rounded-xl bg-card/50 border border-border/30">
+            {topAgents.slice(0, 5).map((agent) => (
+              <div key={`${agent.name}-${agent.rank}`} className="flex items-center justify-between p-4 rounded-xl bg-card/50 border border-border/30">
                 <div className="flex items-center gap-4">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm bg-muted text-muted-foreground">#{agent.rank}</div>
-                  <div className="font-semibold text-foreground">{agent.name}</div>
+                  <div>
+                    <div className="font-semibold text-foreground">{agent.name}</div>
+                    <div className="text-sm text-muted-foreground">{agent.completed} completed</div>
+                  </div>
                 </div>
                 <div className="text-lg font-bold text-[#008060]">{agent.score}%</div>
               </div>

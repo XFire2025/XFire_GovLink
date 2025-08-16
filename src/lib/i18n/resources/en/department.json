@@ -86,11 +86,13 @@
       "month": "This Month",
       "quarter": "This Quarter"
     },
-    "quickStats": "Department-wide Statistics",
-    "totalSubmissions": "Total Submissions",
-    "avgResolutionTime": "Avg. Resolution Time",
-    "approvalRate": "Approval Rate",
-    "citizenSatisfaction": "Citizen Satisfaction",
+    "quickStats": {
+      "title": "Department-wide Statistics",
+      "totalSubmissions": "Total Submissions",
+      "avgResolutionTime": "Avg. Resolution Time",
+      "approvalRate": "Approval Rate",
+      "citizenSatisfaction": "Citizen Satisfaction"
+    },
     "refreshData": "Refresh Data",
     "lastUpdated": "Last Updated",
     "metrics": {
