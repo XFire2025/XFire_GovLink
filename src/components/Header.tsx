@@ -89,7 +89,7 @@ export const Header: React.FC = () => {
 
           {/* CTA Button - Desktop */}
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/User/Chat/Bot" className="px-6 py-2.5 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white rounded-xl font-medium hover:from-[#7A1235] hover:to-[#E64A19] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 relative group overflow-hidden">
+            <Link href="/user/chat/bot" className="px-6 py-2.5 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white rounded-xl font-medium hover:from-[#7A1235] hover:to-[#E64A19] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 relative group overflow-hidden">
               <span className="relative z-10">{t('navigation.contact')}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             </Link>
@@ -206,7 +206,7 @@ export const Header: React.FC = () => {
                     </Link>
                   </div>
                   
-                  <Link href="/User/Chat/Bot" onClick={() => setMobileMenuOpen(false)} className="block w-full">
+                  <Link href="/user/chat/bot" onClick={() => setMobileMenuOpen(false)} className="block w-full">
                     <div className="px-6 py-3 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white rounded-xl font-medium text-center hover:from-[#7A1235] hover:to-[#E64A19] transition-all duration-300 shadow-lg relative group overflow-hidden">
                       <span className="relative z-10">{t('navigation.contact')}</span>
                       <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>

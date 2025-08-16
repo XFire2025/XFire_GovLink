@@ -1,4 +1,4 @@
-// src/app/User/Chat/Bot/page.tsx
+// src/app/user/chat/bot/page.tsx
 "use client";
 import React, { Suspense, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -360,7 +360,7 @@ const ChatInput = ({ onSendMessage, language = 'en' }: { onSendMessage: (message
             
             {/* Wait for Agent Button */}
             <Link 
-              href="/User/Chat/Wait"
+              href="/user/chat/wait"
               className="px-4 py-2 bg-gradient-to-r from-[#008060] to-[#FFC72C] hover:from-[#FFC72C] hover:to-[#FF5722] text-white rounded-full text-xs font-semibold transition-all duration-300 hover:scale-105 shadow-md hover:shadow-lg"
             >
               {t.suggestions.waitForAgent}
