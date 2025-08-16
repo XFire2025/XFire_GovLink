@@ -21,6 +21,12 @@ interface AgentLoginData {
   rememberMe?: boolean;
 }
 
+// Profile update data interface
+interface ProfileUpdateData {
+  fullName?: string;
+  phoneNumber?: string;
+}
+
 // Auth state interface
 interface AgentAuthState {
   agent: Agent | null;
@@ -217,6 +223,56 @@ export function useAgentAuth() {
   }, []);
 
   /**
+   * Update agent profile
+   */
+  const updateProfile = useCallback(async (updateData: ProfileUpdateData): Promise<AgentAuthResponse> => {
+    try {
+      setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
+
+      const response = await fetch('/api/auth/agent/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(updateData)
+      });
+
+      const data: AgentAuthResponse = await response.json();
+
+      if (data.success && data.agent) {
+        setAuthState(prev => ({
+          ...prev,
+          agent: data.agent || null,
+          isLoading: false,
+          error: null
+        }));
+      } else {
+        setAuthState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: data.message || 'Profile update failed'
+        }));
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      const errorMsg = 'Profile update failed due to network error';
+      setAuthState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: errorMsg
+      }));
+      return {
+        success: false,
+        message: errorMsg,
+        errors: [errorMsg]
+      };
+    }
+  }, []);
+
+  /**
    * Clear error
    */
   const clearError = useCallback(() => {
@@ -248,6 +304,7 @@ export function useAgentAuth() {
     logout,
     refreshToken,
     checkAuth,
+    updateProfile,
     clearError
   };
 }

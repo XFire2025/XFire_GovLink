@@ -20,10 +20,38 @@
 // - BATCH_SIZE=1000 (optional)
 // - COLLECTION=departments (optional)
 
-import 'dotenv/config';
-import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
+
+// Load environment variables from .env file
+function loadEnv() {
+  const envPath = path.join(__dirname, "..", ".env");
+  try {
+    const envContent = fs.readFileSync(envPath, "utf8");
+    const envLines = envContent.split("\n");
+
+    envLines.forEach((line) => {
+      const trimmedLine = line.trim();
+      if (trimmedLine && !trimmedLine.startsWith("#")) {
+        const [key, ...valueParts] = trimmedLine.split("=");
+        if (key && valueParts.length > 0) {
+          const value = valueParts.join("=");
+          process.env[key.trim()] = value.trim();
+        }
+      }
+    });
+
+    console.log("✅ Environment variables loaded");
+  } catch (error) {
+    console.error("❌ Error loading .env file:", error);
+  }
+}
+
+// Load environment variables
+loadEnv();
 
 const {
   MONGODB_URI,
