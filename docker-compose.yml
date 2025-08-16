@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # GovLink Next.js Application
+  govlink-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - SKIP_DB_VALIDATION=true
+    container_name: govlink-app
+    restart: unless-stopped
+    environment:
+      # Database (MongoDB Atlas)
+      MONGODB_URI: ${MONGODB_URI}
+      
+      # JWT Secrets
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      
+      # Token Expiration
+      ACCESS_TOKEN_EXPIRY: ${ACCESS_TOKEN_EXPIRY:-15m}
+      REFRESH_TOKEN_EXPIRY: ${REFRESH_TOKEN_EXPIRY:-7d}
+      EMAIL_TOKEN_EXPIRY: ${EMAIL_TOKEN_EXPIRY:-24h}
+      RESET_TOKEN_EXPIRY: ${RESET_TOKEN_EXPIRY:-1h}
+      
+      # Cloudflare R2 Storage
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_BUCKET_NAME: ${R2_BUCKET_NAME:-govlink}
+      
+      # OpenAI Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4}
+      
+      # Tavily Search API
+      TAVILY_API_KEY: ${TAVILY_API_KEY}
+      
+      # Email Configuration
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@govlink.lk}
+      
+      # Email Service (Alternative naming)
+      MAIL_ID: ${MAIL_ID:-}
+      MAIL_PW: ${MAIL_PW:-}
+      GOV_SERVICE_NAME: ${GOV_SERVICE_NAME:-GovLink Sri Lanka}
+      
+      # Application Settings
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: 1
+      PORT: 3000
+      
+      # Security
+      BCRYPT_SALT_ROUNDS: ${BCRYPT_SALT_ROUNDS:-12}
+      
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: curl -f http://localhost:3000/api/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
