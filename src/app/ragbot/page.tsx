@@ -1,4 +1,4 @@
-// src/app/Ragbot/page.tsx
+// src/app/ragbot/page.tsx
 "use client";
 import React, { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';

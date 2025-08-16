@@ -1,4 +1,4 @@
-// src/app/User/Booking/page.tsx
+// src/app/user/booking/page.tsx
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
@@ -417,7 +417,7 @@ export default function BookingListPage() {
                         <EmptyCalendarIcon className="w-16 h-16 text-muted-foreground/50 mb-4" />
                         <h3 className="text-xl font-bold mb-2 text-foreground">{t.noBookings}</h3>
                         <p className="text-muted-foreground mb-6">{t.noBookingsDesc}</p>
-                        <Link href="/User/Booking/New" className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-xl hover:from-[#FF5722] hover:to-[#8D153A] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl">
+                        <Link href="/user/booking/new" className="inline-flex items-center gap-2 px-6 py-3 font-semibold text-white bg-gradient-to-r from-[#FFC72C] to-[#FF5722] rounded-xl hover:from-[#FF5722] hover:to-[#8D153A] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-2xl">
                             <PlusIcon className="w-5 h-5" />
                             {t.createBooking}
                         </Link>
