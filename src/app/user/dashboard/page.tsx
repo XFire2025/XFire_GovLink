@@ -485,7 +485,6 @@ export default function UserDashboardPage() {
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
               }
-              color="#FF5722"
               animationDelay="0.1s"
             />
 
@@ -501,7 +500,6 @@ export default function UserDashboardPage() {
                   <line x1="16" y1="17" x2="8" y2="17"/>
                 </svg>
               }
-              color="#FFC72C"
               animationDelay="0.2s"
             />
 
@@ -517,7 +515,6 @@ export default function UserDashboardPage() {
                   <circle cx="16" cy="11" r="1"/>
                 </svg>
               }
-              color="#008060"
               animationDelay="0.3s"
             />
 
@@ -531,7 +528,6 @@ export default function UserDashboardPage() {
                   <polyline points="12 6 12 12 16 14"/>
                 </svg>
               }
-              color="#8D153A"
               animationDelay="0.4s"
             />
           </div>
