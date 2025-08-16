@@ -81,8 +81,17 @@ export interface Submission {
   priority: string;
   serviceId: string;
   agentId?: string;
+  agentName?: string;
+  agentEmail?: string;
+  agentStatus?: string;
   submittedAt: string;
   updatedAt: string;
+  // Additional appointment-specific fields
+  appointmentDate?: string;
+  appointmentTime?: string;
+  bookingReference?: string;
+  contactPhone?: string;
+  citizenNIC?: string;
 }
 
 export interface DepartmentProfile {
@@ -392,7 +401,14 @@ class DepartmentApiService {
       if (filters?.priority) searchParams.set('priority', filters.priority);
       if (filters?.search) searchParams.set('search', filters.search);
       if (filters?.limit) searchParams.set('limit', filters.limit.toString());
-      if (filters?.offset) searchParams.set('offset', filters.offset.toString());
+      
+      // Convert offset to page number (API expects page, not offset)
+      if (filters?.offset !== undefined && filters?.limit) {
+        const page = Math.floor(filters.offset / filters.limit) + 1;
+        searchParams.set('page', page.toString());
+      } else if (filters?.offset === 0 || !filters?.offset) {
+        searchParams.set('page', '1');
+      }
 
       const response = await fetch(`/api/department/submissions?${searchParams.toString()}`, {
         method: 'GET',
