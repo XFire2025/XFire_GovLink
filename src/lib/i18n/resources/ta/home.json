@@ -10,7 +10,12 @@
     "settings": "அமைப்புகள்",
     "help": "உதவி",
     "notifications": "அறிவிப்புகள்",
-    "messages": "செய்திகள்"
+    "messages": "செய்திகள்",
+    "login": "உள்நுழைவு",
+    "loginOptions": "உள்நுழைவு விருப்பங்கள்",
+    "userLogin": "பயனர் உள்நுழைவு",
+    "agentLogin": "முகவர் உள்நுழைவு",
+    "departmentLogin": "துறை உள்நுழைவு"
   },
   "hero": {
     "title1": "அரசாங்க சேவைகளுடன்",

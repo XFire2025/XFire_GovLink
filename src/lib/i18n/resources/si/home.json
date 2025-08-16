@@ -10,7 +10,12 @@
     "settings": "සැකසුම්",
     "help": "උදව්",
     "notifications": "දැනුම් දීම්",
-    "messages": "පණිවිඩ"
+    "messages": "පණිවිඩ",
+    "login": "ප්‍රවේශය",
+    "loginOptions": "ප්‍රවේශ විකල්ප",
+    "userLogin": "පරිශීලක ප්‍රවේශය",
+    "agentLogin": "නියෝජිත ප්‍රවේශය",
+    "departmentLogin": "දෙපාර්තමේන්තු ප්‍රවේශය"
   },
   "hero": {
     "title1": "රජයේ සේවා සමඟ",
