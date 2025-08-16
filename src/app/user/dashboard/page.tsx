@@ -1,9 +1,10 @@
 // src/app/user/dashboard/page.tsx
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { CitizenProtectedRoute } from '@/lib/auth/ProtectedRoute';
+import { useDashboard } from '@/lib/hooks/useDashboard';
 import Link from 'next/link';
 
 // Types
@@ -41,7 +42,7 @@ const dashboardTranslations: Record<Language, {
   };
 }> = {
   en: {
-    welcome: 'Citizen Dashboard',
+    welcome: 'Hello',
     subtitle: 'Access government services and manage your applications',
     overview: 'Services Overview',
     quickActions: 'Quick Actions',
@@ -143,13 +144,34 @@ interface StatCard {
   trend?: string;
 }
 
-const StatsOverview = ({ language = 'en' }: { language: Language }) => {
+interface StatsOverviewProps {
+  language: Language;
+  stats?: {
+    activeBookings: number;
+    applications: number;
+    messages: number;
+    completed: number;
+  };
+  loading?: boolean;
+}
+
+const StatsOverview = ({ language = 'en', stats, loading = false }: StatsOverviewProps) => {
   const t = dashboardTranslations[language];
 
-  const stats: StatCard[] = [
+  // Default stats if none provided
+  const defaultStats = {
+    activeBookings: 0,
+    applications: 0,
+    messages: 0,
+    completed: 0
+  };
+
+  const currentStats = stats || defaultStats;
+
+  const statsCards: StatCard[] = [
     {
       id: 'bookings',
-      value: '3',
+      value: loading ? '...' : currentStats.activeBookings.toString(),
       label: t.stats.activeBookings,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -161,11 +183,11 @@ const StatsOverview = ({ language = 'en' }: { language: Language }) => {
       ),
       color: '#FF5722',
       bgColor: 'from-[#FF5722]/10 to-[#FF5722]/5',
-      trend: '+2'
+      trend: loading ? undefined : currentStats.activeBookings > 0 ? `+${currentStats.activeBookings}` : undefined
     },
     {
       id: 'applications',
-      value: '7',
+      value: loading ? '...' : currentStats.applications.toString(),
       label: t.stats.applications,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -177,11 +199,11 @@ const StatsOverview = ({ language = 'en' }: { language: Language }) => {
       ),
       color: '#FFC72C',
       bgColor: 'from-[#FFC72C]/10 to-[#FFC72C]/5',
-      trend: '+1'
+      trend: loading ? undefined : currentStats.applications > 0 ? `+${currentStats.applications}` : undefined
     },
     {
       id: 'messages',
-      value: '12',
+      value: loading ? '...' : currentStats.messages.toString(),
       label: t.stats.messages,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -190,11 +212,11 @@ const StatsOverview = ({ language = 'en' }: { language: Language }) => {
       ),
       color: '#008060',
       bgColor: 'from-[#008060]/10 to-[#008060]/5',
-      trend: '+5'
+      trend: loading ? undefined : currentStats.messages > 0 ? `+${currentStats.messages}` : undefined
     },
     {
       id: 'completed',
-      value: '24',
+      value: loading ? '...' : currentStats.completed.toString(),
       label: t.stats.completed,
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -203,13 +225,13 @@ const StatsOverview = ({ language = 'en' }: { language: Language }) => {
       ),
       color: '#8D153A',
       bgColor: 'from-[#8D153A]/10 to-[#8D153A]/5',
-      trend: '+3'
+      trend: loading ? undefined : currentStats.completed > 0 ? `+${currentStats.completed}` : undefined
     }
   ];
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-      {stats.map((stat, index) => (
+      {statsCards.map((stat, index) => (
         <div 
           key={stat.id} 
           className="group bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow transition-all duration-500 hover:shadow-2xl hover-lift animate-fade-in-up modern-card relative overflow-hidden"
@@ -351,6 +373,7 @@ const ServiceCard = ({ title, description, href, icon, animationDelay }: Service
 export default function UserDashboardPage() {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   const { user } = useAuth();
+  const { data: dashboardData, loading: dashboardLoading } = useDashboard();
   
   const t = dashboardTranslations[currentLanguage];
 
@@ -358,24 +381,37 @@ export default function UserDashboardPage() {
     setCurrentLanguage(newLanguage);
   };
 
+  // Debug logging to track data changes
+  useEffect(() => {
+    console.log('Dashboard data changed:', dashboardData);
+  }, [dashboardData]);
+
+  useEffect(() => {
+    console.log('Auth user changed:', user);
+  }, [user]);
+
+  useEffect(() => {
+    console.log('Dashboard loading state:', dashboardLoading);
+  }, [dashboardLoading]);
+
   return (
     <CitizenProtectedRoute>
       <UserDashboardLayout
         title={
           <span className="animate-title-wave">
-            <span className="text-foreground">{t.welcome.split(' ')[0]}</span>{' '}
+            <span className="text-foreground">{t.welcome}</span>{' '}
             <span className="text-gradient">
-              {user?.firstName || user?.email?.split('@')[0] || 'User'}
+              {dashboardLoading ? '...' : (dashboardData?.user?.firstName || user?.firstName || user?.email?.split('@')[0] || 'User')}!
             </span>
           </span>
         }
-        subtitle={`Welcome to GovLink, ${user?.firstName || 'Citizen'}! ${t.subtitle}`}
+        subtitle={`Welcome to GovLink, ${dashboardLoading ? '...' : (dashboardData?.user?.firstName || user?.firstName || 'Citizen')}! ${t.subtitle}`}
         language={currentLanguage}
         onLanguageChange={handleLanguageChange}
       >
       <div className="space-y-12">
         {/* Profile Completion Banner */}
-        {user && !user.isProfileComplete && (
+        {dashboardData?.user && !dashboardData.user.isProfileComplete && (
           <section className="animate-fade-in-up">
             <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800 rounded-2xl p-6 shadow-lg">
               <div className="flex items-start gap-4">
@@ -389,12 +425,12 @@ export default function UserDashboardPage() {
                     Complete Your Profile
                   </h3>
                   <p className="text-yellow-700 dark:text-yellow-300 mb-4">
-                    Complete your profile to access all government services. Your profile is {user.profileCompletionPercentage}% complete.
+                    Complete your profile to access all government services. Your profile is {dashboardData.user.profileCompletionPercentage}% complete.
                   </p>
                   <div className="w-full bg-yellow-200 dark:bg-yellow-800 rounded-full h-2 mb-4">
                     <div 
                       className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${user.profileCompletionPercentage}%` }}
+                      style={{ width: `${dashboardData.user.profileCompletionPercentage}%` }}
                     ></div>
                   </div>
                   <Link 
@@ -413,16 +449,16 @@ export default function UserDashboardPage() {
         )}
 
         {/* Account Status Banner */}
-        {user && user.accountStatus !== 'active' && (
+        {dashboardData?.user && dashboardData.user.accountStatus !== 'active' && (
           <section className="animate-fade-in-up">
             <div className={`border rounded-2xl p-6 shadow-lg ${
-              user.accountStatus === 'pending' 
+              dashboardData.user.accountStatus === 'pending_verification' 
                 ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800'
                 : 'bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border-red-200 dark:border-red-800'
             }`}>
               <div className="flex items-start gap-4">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  user.accountStatus === 'pending' ? 'bg-blue-500' : 'bg-red-500'
+                  dashboardData.user.accountStatus === 'pending_verification' ? 'bg-blue-500' : 'bg-red-500'
                 }`}>
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -430,18 +466,18 @@ export default function UserDashboardPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className={`text-lg font-semibold mb-2 ${
-                    user.accountStatus === 'pending' 
+                    dashboardData.user.accountStatus === 'pending_verification' 
                       ? 'text-blue-800 dark:text-blue-200' 
                       : 'text-red-800 dark:text-red-200'
                   }`}>
-                    Account {user.accountStatus === 'pending' ? 'Pending Verification' : 'Issue'}
+                    Account {dashboardData.user.accountStatus === 'pending_verification' ? 'Pending Verification' : 'Issue'}
                   </h3>
                   <p className={`${
-                    user.accountStatus === 'pending' 
+                    dashboardData.user.accountStatus === 'pending_verification' 
                       ? 'text-blue-700 dark:text-blue-300' 
                       : 'text-red-700 dark:text-red-300'
                   }`}>
-                    {user.accountStatus === 'pending' 
+                    {dashboardData.user.accountStatus === 'pending_verification' 
                       ? 'Your account is pending verification. Some services may be limited until verification is complete.'
                       : 'There is an issue with your account. Please contact support for assistance.'
                     }
@@ -460,7 +496,11 @@ export default function UserDashboardPage() {
               <span className="text-xs sm:text-sm font-medium text-foreground">{t.overview}</span>
             </div>
           </div>
-          <StatsOverview language={currentLanguage} />
+          <StatsOverview 
+            language={currentLanguage} 
+            stats={dashboardData?.stats}
+            loading={dashboardLoading}
+          />
         </section>
 
         {/* Main Services Grid */}
@@ -544,25 +584,39 @@ export default function UserDashboardPage() {
                 </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 group-hover:text-[#FFC72C] transition-colors duration-300">
-                Welcome, Sanduni Perera
+                Welcome, {dashboardLoading ? '...' : (dashboardData?.user?.fullName || user?.firstName || 'User')}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Citizen ID: 199512345678
+                Citizen ID: {dashboardLoading ? 'Loading...' : (dashboardData?.user?.nicNumber || 'Not available')}
               </p>
               
               {/* Status Indicators */}
               <div className="flex flex-wrap justify-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#008060]/10 text-[#008060] rounded-full text-xs font-medium border border-[#008060]/20">
-                  <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse"></div>
-                  <span>Account Verified</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FFC72C]/10 text-[#FFC72C] rounded-full text-xs font-medium border border-[#FFC72C]/20">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 12l2 2 4-4"/>
-                    <circle cx="12" cy="12" r="10"/>
-                  </svg>
-                  <span>Profile Complete</span>
-                </div>
+                {dashboardData?.user?.isEmailVerified && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#008060]/10 text-[#008060] rounded-full text-xs font-medium border border-[#008060]/20">
+                    <div className="w-2 h-2 bg-[#008060] rounded-full animate-pulse"></div>
+                    <span>Account Verified</span>
+                  </div>
+                )}
+                {dashboardData?.user?.isProfileComplete && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FFC72C]/10 text-[#FFC72C] rounded-full text-xs font-medium border border-[#FFC72C]/20">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 12l2 2 4-4"/>
+                      <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                    <span>Profile Complete</span>
+                  </div>
+                )}
+                {!dashboardData?.user?.isProfileComplete && dashboardData?.user && (
+                  <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FF5722]/10 text-[#FF5722] rounded-full text-xs font-medium border border-[#FF5722]/20">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="12" y1="8" x2="12" y2="12"/>
+                      <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>Profile {dashboardData.user.profileCompletionPercentage}% Complete</span>
+                  </div>
+                )}
               </div>
             </div>
             
