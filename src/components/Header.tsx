@@ -8,35 +8,9 @@ import { Menu, X, User, ChevronDown } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { CompactLanguageSwitcher } from "./LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n/hooks/useTranslation";
+import { LotusIcon as NavbarLotusIcon } from '@/components/Icons/LotusIcon';
 
-// Beautiful Lotus Icon for Navbar
-const NavbarLotusIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} viewBox="0 0 100 100">
-    {/* Outer layer petals */}
-    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8"/>
-    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(72 50 50)"/>
-    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(144 50 50)"/>
-    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(216 50 50)"/>
-    <path d="M50,20 Q40,35 45,50 Q50,45 55,50 Q60,35 50,20 Z" fill="#8D153A" opacity="0.8" transform="rotate(288 50 50)"/>
-
-    {/* Middle layer petals */}
-    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(36 50 50)"/>
-    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(108 50 50)"/>
-    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(180 50 50)"/>
-    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(252 50 50)"/>
-    <path d="M50,25 Q42,37 46,50 Q50,47 54,50 Q58,37 50,25 Z" fill="#FF5722" opacity="0.9" transform="rotate(324 50 50)"/>
-
-    {/* Inner petals */}
-    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C"/>
-    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(90 50 50)"/>
-    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(180 50 50)"/>
-    <path d="M50,32 Q45,40 47,50 Q50,48 53,50 Q55,40 50,32 Z" fill="#FFC72C" transform="rotate(270 50 50)"/>
-
-    {/* Center */}
-    <circle cx="50" cy="50" r="6" fill="#FFC72C"/>
-    <circle cx="50" cy="50" r="3" fill="#FF8F00"/>
-  </svg>
-);
+// Navbar lotus icon now imported from shared Icons
 
 // Scroll functions
 const smoothScrollTo = (id: string) => {
@@ -83,8 +57,8 @@ export const Header: React.FC = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="relative">
-              <NavbarLotusIcon className="w-8 h-8 sm:w-10 sm:h-10 transition-transform duration-500 group-hover:rotate-12" />
-              <div className="absolute inset-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-[#FFC72C]/20 to-[#FF5722]/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <NavbarLotusIcon className="w-10 h-10 sm:w-12 sm:h-12 transition-transform duration-500 group-hover:rotate-12" />
+              <div className="absolute inset-0 w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-[#FFC72C]/20 to-[#FF5722]/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             </div>
             <div className="flex flex-col">
               <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-[#8D153A] to-[#FF5722] bg-clip-text text-transparent">
