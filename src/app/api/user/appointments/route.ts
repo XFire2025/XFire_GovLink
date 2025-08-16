@@ -8,6 +8,13 @@ import Agent from '@/lib/models/agentSchema';
 import User from '@/lib/models/userSchema';
 import { uploadFileToR2 } from '@/lib/r2';
 import { verifyAccessToken } from '@/lib/auth/user-jwt';
+import { 
+  generateQRCodeData, 
+  generateQRCodeImage, 
+  generateVerificationUrl, 
+  sendQRCodeEmail,
+  type QRCodeData 
+} from '@/lib/services/qrCodeService';
 
 // Define interfaces for better type safety
 interface AppointmentFormData {
@@ -430,6 +437,62 @@ export async function POST(request: NextRequest) {
     const savedAppointment = await newAppointment.save();
     console.log('✅ Appointment saved successfully:', savedAppointment._id);
 
+    // Generate QR code and send email
+    console.log('🔄 Generating QR code and sending email...');
+    try {
+      // Generate verification URL
+      const verificationUrl = generateVerificationUrl(bookingReference);
+
+      // Prepare QR code data
+      const qrCodeData: QRCodeData = {
+        bookingReference: bookingReference,
+        citizenName: savedAppointment.citizenName,
+        serviceType: service.name,
+        department: department.name,
+        date: savedAppointment.date.toISOString().split('T')[0],
+        time: savedAppointment.time,
+        agentName: agent.fullName,
+        office: agent.officeName,
+        verificationUrl: verificationUrl
+      };
+
+      // Generate QR code data string
+      const qrDataString = generateQRCodeData(qrCodeData);
+
+      // Generate QR code image and upload to R2
+      const qrCodeResult = await generateQRCodeImage(qrDataString, bookingReference);
+
+      if (qrCodeResult.success && qrCodeResult.imageUrl) {
+        // Update appointment with QR code data
+        savedAppointment.qrCode = {
+          data: qrDataString,
+          imageUrl: qrCodeResult.imageUrl,
+          generatedAt: new Date()
+        };
+        await savedAppointment.save();
+        console.log('✅ QR code generated and saved to appointment');
+
+        // Send QR code email
+        const emailResult = await sendQRCodeEmail(
+          savedAppointment.citizenName,
+          savedAppointment.contactEmail,
+          qrCodeData,
+          qrCodeResult.imageUrl
+        );
+
+        if (emailResult.success) {
+          console.log('✅ QR code email sent successfully');
+        } else {
+          console.error('⚠️ Failed to send QR code email:', emailResult.message);
+        }
+      } else {
+        console.error('⚠️ Failed to generate QR code:', qrCodeResult.message);
+      }
+    } catch (qrError) {
+      console.error('⚠️ QR code generation/email error:', qrError);
+      // Don't fail the appointment creation if QR code fails
+    }
+
     // Return success response
     return NextResponse.json({
       success: true,
@@ -443,10 +506,15 @@ export async function POST(request: NextRequest) {
           department: department.name,
           agent: agent.fullName,
           agentPosition: agent.position,
+          agentOffice: agent.officeName,
           date: savedAppointment.date.toISOString().split('T')[0],
           time: savedAppointment.time,
           status: savedAppointment.status,
           notes: savedAppointment.notes,
+          qrCode: savedAppointment.qrCode ? {
+            imageUrl: savedAppointment.qrCode.imageUrl,
+            generatedAt: savedAppointment.qrCode.generatedAt
+          } : null,
           uploadedDocuments: savedAppointment.documents.map((doc: IAppointmentDocument) => ({
             name: doc.name,
             originalName: doc.fileName,

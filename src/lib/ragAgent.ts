@@ -619,10 +619,13 @@ Always prioritize and clearly distinguish between verified local database inform
   }
 }
 
-// Create a single, shared instance of the agent
-const agentInstance = new SriLankanGovRAGAgent();
+// Lazy singleton pattern - only create instance when needed
+let agentInstance: SriLankanGovRAGAgent | null = null;
 
-// Export a function that returns the shared instance
+// Export a function that returns the shared instance (lazy initialization)
 export function getSriLankanGovRAGAgent() {
+  if (!agentInstance) {
+    agentInstance = new SriLankanGovRAGAgent();
+  }
   return agentInstance;
 }
