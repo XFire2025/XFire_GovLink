@@ -188,13 +188,18 @@ export function useSubmissions(filters?: {
   const fetchData = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
+      console.log('Fetching submissions with filters:', filters);
       const response = await DepartmentApiService.getSubmissions(filters);
+      console.log('Submissions API response:', response);
       if (response.success && response.data) {
+        console.log('Submissions data:', response.data);
         setState({ data: response.data, loading: false, error: null });
       } else {
+        console.error('Failed to fetch submissions:', response.message);
         setState({ data: null, loading: false, error: response.message });
       }
     } catch (error) {
+      console.error('Fetch submissions error:', error);
       setState({ data: null, loading: false, error: (error as Error).message });
     }
   }, [filters]);

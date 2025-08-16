@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
-import Submission from '@/lib/models/submissionSchema';
+import Appointment from '@/lib/models/appointmentSchema';
 import { departmentAuthMiddleware } from '@/lib/auth/department-middleware';
 
-// GET /api/department/submissions - Get department's submissions
+// GET /api/department/submissions - Get department's appointments (showing as submissions)
 export async function GET(request: NextRequest) {
   try {
     // Authenticate department
     const authResult = await departmentAuthMiddleware(request);
     if (!authResult.success) {
+      console.error('Department auth failed:', authResult.message);
       return NextResponse.json(
         { success: false, message: authResult.message },
         { status: authResult.statusCode }
       );
     }
+
+    console.log('Department authenticated:', authResult.department?.departmentId);
 
     await connectDB();
 
@@ -27,20 +30,26 @@ export async function GET(request: NextRequest) {
     const fromDate = searchParams.get('fromDate');
     const toDate = searchParams.get('toDate');
 
-    // Build filter object
-    const filter: Record<string, unknown> = { departmentId: authResult.department!.departmentId };
+    // Build filter object - match appointments by department
+    const filter: Record<string, unknown> = { department: authResult.department!.departmentId };
     
-    if (status) filter.status = status;
-    if (priority) filter.priority = priority;
-    if (agentId) filter.agentId = agentId;
+    console.log('Searching for appointments with department:', authResult.department!.departmentId);
+    
+    if (status) {
+      // Map submission status to appointment status
+      const appointmentStatus = status.toLowerCase();
+      filter.status = appointmentStatus;
+    }
+    if (priority) filter.priority = priority.toLowerCase();
+    if (agentId) filter.assignedAgent = agentId;
     
     if (search) {
       filter.$or = [
-        { submissionId: { $regex: search, $options: 'i' } },
-        { title: { $regex: search, $options: 'i' } },
-        { applicantName: { $regex: search, $options: 'i' } },
-        { applicantEmail: { $regex: search, $options: 'i' } },
-        { applicantNIC: { $regex: search, $options: 'i' } }
+        { bookingReference: { $regex: search, $options: 'i' } },
+        { citizenName: { $regex: search, $options: 'i' } },
+        { contactEmail: { $regex: search, $options: 'i' } },
+        { citizenNIC: { $regex: search, $options: 'i' } },
+        { serviceType: { $regex: search, $options: 'i' } }
       ];
     }
 
@@ -49,31 +58,62 @@ export async function GET(request: NextRequest) {
       const dateFilter: { $gte?: Date; $lte?: Date } = {};
       if (fromDate) dateFilter.$gte = new Date(fromDate);
       if (toDate) dateFilter.$lte = new Date(toDate);
-      filter.submittedAt = dateFilter;
+      filter.date = dateFilter;
     }
 
     // Calculate skip value for pagination
     const skip = (page - 1) * limit;
 
-    // Get submissions with pagination
-    const submissions = await Submission.find(filter)
-      .sort({ submittedAt: -1 })
+    // Get appointments with pagination
+    const appointments = await Appointment.find(filter)
+      .sort({ submittedDate: -1 })
       .skip(skip)
       .limit(limit)
-      .select('-formData -documents'); // Exclude large fields for list view
+      .populate('assignedAgent', 'name email status')
+      .populate('citizenId', 'fullName email')
+      .select('-documents -agentNotes'); // Exclude large fields for list view
+
+    console.log('Found appointments:', appointments.length);
+    console.log('Filter used:', JSON.stringify(filter, null, 2));
 
     // Get total count for pagination
-    const total = await Submission.countDocuments(filter);
+    const total = await Appointment.countDocuments(filter);
+    
+    console.log('Total appointments count:', total);
 
     // Get status counts for dashboard
-    const statusCounts = await Submission.aggregate([
-      { $match: { departmentId: authResult.department!.departmentId } },
+    const statusCounts = await Appointment.aggregate([
+      { $match: { department: authResult.department!.departmentId } },
       { $group: { _id: '$status', count: { $sum: 1 } } }
     ]);
 
+    // Transform appointments to match submission interface
+    const submissions = appointments.map(apt => ({
+      id: apt._id.toString(),
+      submissionId: apt.bookingReference,
+      title: `${apt.serviceType.charAt(0).toUpperCase() + apt.serviceType.slice(1)} Appointment`,
+      applicantName: apt.citizenName,
+      applicantEmail: apt.contactEmail,
+      status: apt.status.toUpperCase(),
+      priority: apt.priority.toUpperCase(),
+      serviceId: apt.serviceType,
+      agentId: apt.assignedAgent?._id?.toString() || null,
+      agentName: apt.assignedAgent?.name || null,
+      agentEmail: apt.assignedAgent?.email || null,
+      agentStatus: apt.assignedAgent?.status || null,
+      submittedAt: apt.submittedDate.toISOString(),
+      updatedAt: apt.updatedAt.toISOString(),
+      // Additional appointment-specific fields
+      appointmentDate: apt.date.toISOString(),
+      appointmentTime: apt.time,
+      bookingReference: apt.bookingReference,
+      contactPhone: apt.contactPhone,
+      citizenNIC: apt.citizenNIC
+    }));
+
     return NextResponse.json({
       success: true,
-      message: 'Submissions retrieved successfully',
+      message: 'Appointments retrieved successfully',
       data: {
         submissions,
         pagination: {
@@ -82,17 +122,17 @@ export async function GET(request: NextRequest) {
           total,
           pages: Math.ceil(total / limit)
         },
-        statusCounts: statusCounts.reduce((acc, item) => {
-          acc[item._id] = item.count;
+        statusCounts: statusCounts.reduce((acc: Record<string, number>, item: { _id: string; count: number }) => {
+          acc[item._id.toUpperCase()] = item.count;
           return acc;
         }, {})
       }
     });
 
   } catch (error) {
-    console.error('Get submissions error:', error);
+    console.error('Get appointments error:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to retrieve submissions' },
+      { success: false, message: 'Failed to retrieve appointments' },
       { status: 500 }
     );
   }

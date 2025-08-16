@@ -1,0 +1,30 @@
+{
+  "name": "GovLink Sri Lanka",
+  "short_name": "GovLink",
+  "description": "Simplifying Government for Every Sri Lankan",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#008060",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/lotus-favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/apple-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["government", "productivity", "utilities"],
+  "lang": "en-US"
+}

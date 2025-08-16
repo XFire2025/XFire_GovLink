@@ -3,7 +3,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Users, FileText, Clock, CheckCircle, ArrowUpRight, RefreshCw, AlertCircle } from "lucide-react";
-import { useTranslation } from "@/lib/i18n/hooks/useTranslation";
 import { useDashboardData } from "@/lib/hooks/useDepartmentApi";
 
 // Define a specific interface for a Stat object
@@ -89,7 +88,6 @@ const ErrorCard = ({ message, onRetry }: { message: string; onRetry: () => void 
 );
 
 export default function DepartmentDashboardPage() {
-  const { t } = useTranslation('department');
   const { data: dashboardData, loading, error, refetch } = useDashboardData();
 
   // Create stats array from API data or show loading/error state
@@ -99,7 +97,7 @@ export default function DepartmentDashboardPage() {
     return [
       { 
         index: 0, 
-        title: t('dashboard.stats.total_submissions'), 
+        title: 'Total Submissions', 
         value: dashboardData.stats.totalSubmissions.toLocaleString(), 
         change: dashboardData.changes.submissionChange, 
         icon: FileText, 
@@ -108,7 +106,7 @@ export default function DepartmentDashboardPage() {
       },
       { 
         index: 1, 
-        title: t('dashboard.stats.assigned_agents'), 
+        title: 'Assigned Agents', 
         value: dashboardData.stats.activeAgents.toString(), 
         change: `${dashboardData.stats.totalAgents} total`, 
         icon: Users, 
@@ -117,7 +115,7 @@ export default function DepartmentDashboardPage() {
       },
       { 
         index: 2, 
-        title: t('dashboard.stats.pending_reviews'), 
+        title: 'Pending Reviews', 
         value: dashboardData.stats.pendingSubmissions.toString(), 
         change: "pending", 
         icon: Clock, 
@@ -126,7 +124,7 @@ export default function DepartmentDashboardPage() {
       },
       { 
         index: 3, 
-        title: t('dashboard.stats.service_uptime'), 
+        title: 'Service Uptime', 
         value: `${dashboardData.stats.serviceUptime}%`, 
         change: `${dashboardData.stats.activeServices}/${dashboardData.stats.totalServices}`, 
         icon: CheckCircle, 
@@ -145,10 +143,10 @@ export default function DepartmentDashboardPage() {
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">
               <span className="bg-gradient-to-r from-[#008060] to-[#FF5722] bg-clip-text text-transparent">
-                {t('dashboard.title')}
+                Department Dashboard
               </span>
             </h1>
-            <p className="text-muted-foreground">{t('dashboard.welcome')}</p>
+            <p className="text-muted-foreground">Welcome to your department dashboard</p>
           </div>
           <button
             onClick={refetch}
@@ -156,7 +154,7 @@ export default function DepartmentDashboardPage() {
             className="flex items-center gap-2 px-4 py-2 text-sm bg-card border border-border rounded-lg hover:bg-muted/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            {t('activity.refresh')}
+            Refresh
           </button>
         </div>
       </motion.div>
@@ -182,7 +180,7 @@ export default function DepartmentDashboardPage() {
         className="bg-card/90 dark:bg-card/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-glow modern-card"
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-foreground">{t('activity.title')}</h3>
+          <h3 className="text-lg font-semibold text-foreground">Recent Activity</h3>
           <div className="flex items-center gap-2">
             {dashboardData?.recentSubmissions && dashboardData.recentSubmissions.length > 0 && (
               <span className="text-xs text-muted-foreground">
@@ -194,7 +192,7 @@ export default function DepartmentDashboardPage() {
               className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/30 rounded-lg transition-all"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              {t('activity.refresh')}
+              Refresh
             </button>
           </div>
         </div>
