@@ -5,6 +5,7 @@
     "agents": "Manage Agents",
     "services": "Manage Services",
     "submissions": "Review Submissions",
+    "qrValidation": "QR Validation",
     "reports": "Generate Reports",
     "settings": "Settings"
   },
