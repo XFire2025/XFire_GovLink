@@ -5,6 +5,7 @@ import { TavilySearch, TavilyCrawl, TavilyExtract } from "@langchain/tavily";
 import { MemorySaver } from "@langchain/langgraph";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { createLocalDirectoryTool } from "./tools/localDirectoryTool";
+import { createBookingAssistantTool } from "./tools/bookingAssistantTool";
 
 interface SearchResult {
   url: string;
@@ -116,6 +117,7 @@ export class SriLankanGovRAGAgent {
     // Define tools for the agent - LOCAL DIRECTORY FIRST, then external tools
     const tools = [
       createLocalDirectoryTool(), // PRIORITY: Use local government directory first
+      createBookingAssistantTool(), // Booking assistance and form pre-filling
       this.tavilySearch,
       this.tavilyCrawl,
       this.tavilyExtract,
@@ -143,9 +145,19 @@ export class SriLankanGovRAGAgent {
 
 **AVAILABLE TOOLS (USE IN ORDER OF PRIORITY):**
 1. **local_government_directory** [HIGHEST PRIORITY] - Official verified government database with current departments and agents
-2. **tavily_search** - External search for current web information
-3. **tavily_crawl** - Deep crawl of government websites 
-4. **tavily_extract** - Extract specific information from websites
+2. **booking_assistant** [FOR BOOKING QUERIES] - Assists with appointment booking by providing department/service options and generating pre-filled booking URLs
+3. **tavily_search** - External search for current web information
+4. **tavily_crawl** - Deep crawl of government websites 
+5. **tavily_extract** - Extract specific information from websites
+
+**BOOKING ASSISTANCE WORKFLOW:**
+When users want to book appointments, schedule meetings, or reserve time slots:
+1. Use **booking_assistant** with action "suggest_from_query" to get smart suggestions based on their query
+2. If suggestions are found, present them to the user and ask them to choose
+3. If no suggestions match, use action "list_departments" to show all available departments
+4. Once user selects a department, use action "list_services" to show available services
+5. When user makes final selection, use action "generate_booking_url" to create a pre-filled booking link
+6. Guide the user to click the generated booking URL to complete their appointment booking
 
 **MANDATORY SEARCH STRATEGY:**
 1. **ALWAYS START** with local_government_directory for ANY government-related query. If asked for the available departmets, services, and support agents or government personnel do the same as well.

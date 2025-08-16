@@ -1,9 +1,9 @@
 // src/app/user/booking/new/page.tsx
 "use client";
 
-import React, { useMemo, useState, useCallback, useEffect } from "react";
+import React, { useMemo, useState, useCallback, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import UserDashboardLayout from '@/components/user/dashboard/UserDashboardLayout';
 import { useAuth } from '@/lib/auth/AuthContext';
 import AppointmentSuccessCard from '@/components/user/AppointmentSuccessCard';
@@ -154,12 +154,6 @@ interface DocumentRequirement {
     required: boolean;
     accept: string;
     description?: string;
-}
-
-// Error interface for proper typing
-interface ApiError extends Error {
-  status?: number;
-  code?: string;
 }
 
 // Custom Dropdown Component (keeping existing)
@@ -518,8 +512,9 @@ function mockAvailableSlots(agentId: string, date: string, baseSlots: string[]):
 }
 
 // MAIN PAGE COMPONENT
-export default function NewBookingPage() {
+function NewBookingPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { user, isAuthenticated, isLoading } = useAuth();
     
     const [form, setForm] = useState({ 
@@ -674,6 +669,75 @@ export default function NewBookingPage() {
         loadDepartments();
     }, [loadDepartments]);
 
+    // Track which fields were pre-filled from URL parameters
+    const [preFilledFields, setPreFilledFields] = useState<{ department: boolean; service: boolean }>({
+        department: false,
+        service: false
+    });
+    const [preFilledNames, setPreFilledNames] = useState<{ departmentName: string; serviceName: string }>({
+        departmentName: '',
+        serviceName: ''
+    });
+
+    // Handle URL parameters for pre-filling form
+    useEffect(() => {
+        const prefillDepartment = searchParams?.get('department');
+        const prefillService = searchParams?.get('service');
+
+        if (prefillDepartment || prefillService) {
+            console.log('🔗 Pre-filling form from URL params:', { 
+                department: prefillDepartment, 
+                service: prefillService 
+            });
+
+            // Wait for departments to load before pre-filling
+            if (departments.length > 0) {
+                // Find department name from ID
+                const selectedDepartment = departments.find(dept => dept.id === prefillDepartment);
+                const departmentName = selectedDepartment?.name || 'Unknown Department';
+
+                setForm(prev => ({
+                    ...prev,
+                    ...(prefillDepartment && { department: prefillDepartment }),
+                    ...(prefillService && { service: prefillService })
+                }));
+
+                // Track which fields were pre-filled
+                setPreFilledFields({
+                    department: !!prefillDepartment,
+                    service: !!prefillService
+                });
+
+                // Track the names for visual indicators
+                setPreFilledNames(prev => ({
+                    ...prev,
+                    departmentName: departmentName
+                }));
+
+                // Show success message with actual names
+                if (prefillDepartment || prefillService) {
+                    const prefilledItems = [];
+                    if (prefillDepartment) {
+                        prefilledItems.push(`Department: "${departmentName}"`);
+                    }
+                    if (prefillService) {
+                        prefilledItems.push('Service selection');
+                    }
+                    
+                    setSuccess(`✨ ${prefilledItems.join(' and ')} pre-filled from your RAG chatbot conversation! Your booking assistant has automatically selected the most relevant options for you.`);
+                    setTimeout(() => setSuccess(null), 8000); // Clear after 8 seconds
+                }
+
+                // If service ID is provided, load services for the department and then set the service
+                if (prefillService && prefillDepartment) {
+                    loadServices(prefillDepartment).then(() => {
+                        // This will be handled in the services loading effect
+                    });
+                }
+            }
+        }
+    }, [searchParams, departments, loadServices]);
+
     // Load services when department changes
     useEffect(() => {
         if (form.department) {
@@ -682,6 +746,40 @@ export default function NewBookingPage() {
             setServices([]);
         }
     }, [form.department, loadServices]);
+
+    // Handle service pre-filling after services are loaded
+    useEffect(() => {
+        const prefillService = searchParams?.get('service');
+        
+        if (prefillService && services.length > 0 && !form.service) {
+            // Find service name from ID
+            const selectedService = services.find(service => service.id === prefillService);
+            const serviceName = selectedService?.name || 'Unknown Service';
+
+            console.log('🎯 Setting pre-filled service:', { id: prefillService, name: serviceName });
+            
+            setForm(prev => ({
+                ...prev,
+                service: prefillService
+            }));
+
+            // Track the service name for visual indicators
+            setPreFilledNames(prev => ({
+                ...prev,
+                serviceName: serviceName
+            }));
+
+            // Update success message to include service name
+            const prefillDepartment = searchParams?.get('department');
+            if (prefillDepartment) {
+                const selectedDepartment = departments.find(dept => dept.id === prefillDepartment);
+                const departmentName = selectedDepartment?.name || 'Unknown Department';
+
+                setSuccess(`✨ Department: "${departmentName}" and Service: "${serviceName}" pre-filled from your RAG chatbot conversation! Your booking assistant has automatically selected the most relevant options for you.`);
+                setTimeout(() => setSuccess(null), 10000); // Clear after 10 seconds
+            }
+        }
+    }, [services, searchParams, departments, form.service]);
 
     // Load agents when department changes
     useEffect(() => {
@@ -869,27 +967,6 @@ export default function NewBookingPage() {
         setSubmitting(false);
     }
 
-    // Helper functions to get display names
-    const getDepartmentName = () => {
-        const department = departments.find(d => d.id === form.department);
-        return department ? department.name : '';
-    };
-
-    const getServiceName = () => {
-        const service = services.find(s => s.id === form.service);
-        return service ? service.name : '';
-    };
-
-    const getAgentName = () => {
-        const agent = agents.find(a => a.id === form.agent);
-        return agent ? agent.name : '';
-    };
-
-    const getAgentPosition = () => {
-        const agent = agents.find(a => a.id === form.agent);
-        return agent ? agent.position : '';
-    };
-
     const getSelectedDay = () => {
         const day = days.find(d => d.key === form.day);
         return day ? day.label : '';
@@ -946,7 +1023,14 @@ export default function NewBookingPage() {
                         {/* Step 1: Department & Service Selection */}
                         <Step icon={UserCheckIcon} title={t.step1Title} description={t.step1Desc}>
                             <div>
-                                <label htmlFor="department" className="block text-sm font-medium text-muted-foreground mb-2">{t.department}</label>
+                                <label htmlFor="department" className="block text-sm font-medium text-muted-foreground mb-2">
+                                    {t.department}
+                                    {preFilledFields.department && preFilledNames.departmentName && (
+                                        <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                            🤖 AI Selected: {preFilledNames.departmentName}
+                                        </span>
+                                    )}
+                                </label>
                                 <CustomDropdown
                                     id="department"
                                     name="department"
@@ -958,7 +1042,14 @@ export default function NewBookingPage() {
                                 />
                             </div>
                             <div>
-                                <label htmlFor="service" className="block text-sm font-medium text-muted-foreground mb-2">{t.service}</label>
+                                <label htmlFor="service" className="block text-sm font-medium text-muted-foreground mb-2">
+                                    {t.service}
+                                    {preFilledFields.service && preFilledNames.serviceName && (
+                                        <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                            🤖 AI Selected: {preFilledNames.serviceName}
+                                        </span>
+                                    )}
+                                </label>
                                 <CustomDropdown
                                     id="service"
                                     name="service"
@@ -1235,5 +1326,23 @@ export default function NewBookingPage() {
                 )}
             </div>
         </UserDashboardLayout>
+    );
+}
+
+// Wrapper component to handle Suspense for searchParams
+export default function NewBookingPageWrapper() {
+    return (
+        <Suspense fallback={
+            <UserDashboardLayout title="Book Appointment" subtitle="Schedule your appointment with government services">
+                <div className="min-h-screen flex items-center justify-center">
+                    <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FFC72C] mx-auto mb-4"></div>
+                        <p className="text-muted-foreground">Loading booking form...</p>
+                    </div>
+                </div>
+            </UserDashboardLayout>
+        }>
+            <NewBookingPage />
+        </Suspense>
     );
 }

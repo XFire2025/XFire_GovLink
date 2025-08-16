@@ -11,86 +11,6 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import 'highlight.js/styles/github-dark.css';
 
-// --- BOOKING DETECTION UTILITY ---
-const detectBookingIntent = (message: string): boolean => {
-  const bookingKeywords = [
-    // Direct booking terms
-    'book', 'booking', 'appointment', 'schedule', 'session', 'meeting',
-    'reserve', 'reservation', 'slot', 'time slot', 'visit', 'consultation',
-    
-    // Action phrases
-    'book a session', 'book appointment', 'schedule appointment', 'book a meeting',
-    'make appointment', 'arrange meeting', 'set up meeting', 'schedule a visit',
-    'book a consultation', 'reserve a slot', 'get an appointment',
-    
-    // Intent variations
-    'i want to book', 'i need to book', 'can i book', 'how to book',
-    'i want an appointment', 'i need an appointment', 'can i schedule',
-    'when can i meet', 'arrange a meeting', 'set appointment',
-    
-    // Sri Lankan context
-    'මුණගැසීම', 'හමුවීම', 'කාලය', 'වේලාව', // Sinhala
-    'சந்திப்பு', 'நேரம்', 'முன்பதிவு' // Tamil
-  ];
-  
-  const messageWords = message.toLowerCase();
-  return bookingKeywords.some(keyword => 
-    messageWords.includes(keyword.toLowerCase())
-  );
-};
-
-const createBookingResponse = (isAuthenticated: boolean, router?: ReturnType<typeof useRouter>): Message => {
-  if (isAuthenticated) {
-    // Auto-redirect authenticated users after a short delay
-    setTimeout(() => {
-      if (router) {
-        router.push('/user/booking');
-      }
-    }, 2000);
-
-    return {
-      type: 'bot',
-      text: `🎯 **Perfect! Redirecting you to the booking system...**
-
-I've detected that you want to book a session or appointment. Since you're logged in, I'm automatically redirecting you to our booking system where you can:
-
-✅ **Choose your preferred service**
-✅ **Select available time slots**  
-✅ **Pick the right department**
-✅ **Get instant confirmation**
-
-🔄 **Redirecting in 2 seconds...**
-
-If the redirect doesn't work, [🔗 **click here to access the booking system**](/user/booking/new)
-
-*You can also continue asking me questions about government services!*`,
-      timestamp: new Date(),
-      sources: []
-    };
-  } else {
-    return {
-      type: 'bot',
-      text: `🔐 **I'd love to help you book an appointment!**
-
-To book a session or appointment with government services, you'll need to **create an account** or **log in** first. This ensures:
-
-🛡️ **Secure booking** - Your appointments are protected
-📧 **Email confirmations** - Get booking confirmations and reminders  
-📱 **Manage appointments** - View, reschedule, or cancel easily
-👤 **Personalized service** - Faster booking with saved preferences
-
-**Ready to get started?**
-
-[🚀 **Create Account**](/user/auth/register) | [🔑 **Login**](/user/auth/login)
-
-After logging in, I can redirect you directly to our booking system! 
-
-*Feel free to ask me any other questions about government services in the meantime.*`,
-      timestamp: new Date(),
-      sources: []
-    };
-  }
-};
 type Language = 'en' | 'si' | 'ta';
 
 interface DepartmentContact {
@@ -719,7 +639,6 @@ function RAGBotPageContent() {
   const lastProcessedQueryRef = useRef<string | null>(null);
   const { user, isAuthenticated, isLoading } = useAuth();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const t = chatTranslations[currentLanguage];
 
   const handleSendMessage = useCallback(async (messageText: string) => {
@@ -730,15 +649,7 @@ function RAGBotPageContent() {
     setIsTyping(true);
 
     try {
-      // Check for booking intent first
-      if (detectBookingIntent(messageText)) {
-        const bookingResponse = createBookingResponse(isAuthenticated, router);
-        setMessages(prev => [...prev, bookingResponse]);
-        setIsTyping(false);
-        return;
-      }
-
-      // Continue with normal RAG processing
+      // Send message to RAG agent - it will handle booking through the booking_assistant tool
       const response = await fetch('/api/ragbot/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -773,7 +684,7 @@ function RAGBotPageContent() {
     } finally {
       setIsTyping(false);
     }
-  }, [sessionId, isAuthenticated, router]);
+  }, [sessionId]);
 
   // Handle initial query from URL parameters
   useEffect(() => {
