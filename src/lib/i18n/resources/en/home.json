@@ -10,7 +10,12 @@
     "settings": "Settings",
     "help": "Help",
     "notifications": "Notifications",
-    "messages": "Messages"
+    "messages": "Messages",
+    "login": "Login",
+    "loginOptions": "Login Options",
+    "userLogin": "User Login",
+    "agentLogin": "Agent Login",
+    "departmentLogin": "Department Login"
   },
   "hero": {
     "title1": "Connect with Government",
