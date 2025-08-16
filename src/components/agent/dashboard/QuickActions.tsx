@@ -13,10 +13,6 @@ interface ActionsTranslation {
     title: string;
     description: string;
   };
-  viewSubmissions: {
-    title: string;
-    description: string;
-  };
   liveChat: {
     title: string;
     description: string;
@@ -35,10 +31,6 @@ const actionsTranslations: Record<Language, ActionsTranslation> = {
       title: 'View Appointments',
       description: 'Manage citizen appointment bookings, schedules, and confirmations across all government departments.'
     },
-    viewSubmissions: {
-      title: 'User Form Submissions',
-      description: 'Review and process citizen form submissions, applications, and document requests efficiently.'
-    },
     liveChat: {
       title: 'Live Chat Support',
       description: 'Provide real-time assistance to citizens with their government service inquiries and issues.'
@@ -54,10 +46,6 @@ const actionsTranslations: Record<Language, ActionsTranslation> = {
       title: 'නියමයන් බලන්න',
       description: 'සියලුම රාජ්‍ය දෙපාර්තමේන්තු හරහා පුරවැසි නියමයන්, කාල සටහන් සහ තහවුරු කිරීම් කළමනාකරණය කරන්න.'
     },
-    viewSubmissions: {
-      title: 'පරිශීලක ආකෘති ගොනුකිරීම්',
-      description: 'පුරවැසියන්ගේ ආකෘති ගොනුකිරීම්, අයදුම්පත් සහ ලේඛන ඉල්ලීම් කාර්යක්ෂමව සමාලෝචනය කර සැකසීම.'
-    },
     liveChat: {
       title: 'සජීවී කතාබස් සහාය',
       description: 'පුරවැසියන්ට ඔවුන්ගේ රාජ්‍ය සේවා විමසීම් සහ ගැටලු සම්බන්ධයෙන් තත්‍ය කාලීන සහාය ලබා දීම.'
@@ -72,10 +60,6 @@ const actionsTranslations: Record<Language, ActionsTranslation> = {
     viewAppointments: {
       title: 'சந்திப்புகளைப் பார்க்கவும்',
       description: 'அனைத்து அரசாங்க துறைகளிலும் குடிமக்கள் சந்திப்பு முன்பதிவுகள், அட்டவணைகள் மற்றும் உறுதிப்படுத்தல்களை நிர்வகிக்கவும்.'
-    },
-    viewSubmissions: {
-      title: 'பயனர் படிவ சமர்ப்பிப்புகள்',
-      description: 'குடிமக்களின் படிவ சமர்ப்பிப்புகள், விண்ணப்பங்கள் மற்றும் ஆவண கோரிக்கைகளை திறமையாக மதிப்பாய்வு செய்து செயலாக்கவும்.'
     },
     liveChat: {
       title: 'நேரடி அரட்டை ஆதரவு',
@@ -111,7 +95,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ language = 'en' }) => {
       </div>
 
       {/* Actions Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* View Appointments Card */}
         <DashboardCard
           title={t.viewAppointments.title}
@@ -135,25 +119,6 @@ const QuickActions: React.FC<QuickActionsProps> = ({ language = 'en' }) => {
           animationDelay="0.1s"
         />
 
-        {/* View User Form Submissions Card */}
-        <DashboardCard
-          title={t.viewSubmissions.title}
-          description={t.viewSubmissions.description}
-          icon={
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
-          }
-          onClick={() => handleNavigation('/agent/submissions')}
-          badge="142"
-          badgeColor="info"
-          animationDelay="0.2s"
-        />
-
         {/* Live Chat Support Card */}
         <DashboardCard
           title={t.liveChat.title}
@@ -169,7 +134,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ language = 'en' }) => {
           onClick={() => handleNavigation('/agent/chat')}
           badge="7"
           badgeColor="success"
-          animationDelay="0.3s"
+          animationDelay="0.2s"
         />
 
         {/* Analytics Dashboard Card */}
@@ -186,7 +151,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ language = 'en' }) => {
           onClick={() => handleNavigation('/agent/analytics')}
           badge="New"
           badgeColor="primary"
-          animationDelay="0.4s"
+          animationDelay="0.3s"
         />
       </div>
 
