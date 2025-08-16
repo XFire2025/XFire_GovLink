@@ -42,7 +42,7 @@ const dashboardTranslations: Record<Language, {
   };
 }> = {
   en: {
-    welcome: 'Citizen Dashboard',
+    welcome: 'Hello',
     subtitle: 'Access government services and manage your applications',
     overview: 'Services Overview',
     quickActions: 'Quick Actions',
@@ -399,13 +399,13 @@ export default function UserDashboardPage() {
       <UserDashboardLayout
         title={
           <span className="animate-title-wave">
-            <span className="text-foreground">{t.welcome.split(' ')[0]}</span>{' '}
+            <span className="text-foreground">{t.welcome}</span>{' '}
             <span className="text-gradient">
-              {dashboardData?.user?.firstName || user?.firstName || user?.email?.split('@')[0] || 'User'}
+              {dashboardLoading ? '...' : (dashboardData?.user?.firstName || user?.firstName || user?.email?.split('@')[0] || 'User')}!
             </span>
           </span>
         }
-        subtitle={`Welcome to GovLink, ${dashboardData?.user?.firstName || user?.firstName || 'Citizen'}! ${t.subtitle}`}
+        subtitle={`Welcome to GovLink, ${dashboardLoading ? '...' : (dashboardData?.user?.firstName || user?.firstName || 'Citizen')}! ${t.subtitle}`}
         language={currentLanguage}
         onLanguageChange={handleLanguageChange}
       >
@@ -584,10 +584,10 @@ export default function UserDashboardPage() {
                 </svg>
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 group-hover:text-[#FFC72C] transition-colors duration-300">
-                Welcome, {dashboardData?.user?.fullName || user?.firstName || 'User'}
+                Welcome, {dashboardLoading ? '...' : (dashboardData?.user?.fullName || user?.firstName || 'User')}
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Citizen ID: {dashboardData?.user?.nicNumber || 'Loading...'}
+                Citizen ID: {dashboardLoading ? 'Loading...' : (dashboardData?.user?.nicNumber || 'Not available')}
               </p>
               
               {/* Status Indicators */}
