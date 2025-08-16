@@ -58,7 +58,7 @@ const translations: Record<Language, Translation> = {
   en: {
     analytics: 'Analytics',
     agentPortal: 'Agent Portal',
-    backToDashboard: '← Back to Dashboard',
+    backToDashboard: 'Back to Dashboard',
     logout: 'Logout',
     profile: 'Profile',
     settings: 'Settings',
@@ -68,7 +68,7 @@ const translations: Record<Language, Translation> = {
   si: {
     analytics: 'විශ්ලේෂණ',
     agentPortal: 'නිලධාරි පෝට්ලය',
-    backToDashboard: '← පාලනයට ආපසු',
+    backToDashboard: 'පාලනයට ආපසු',
     logout: 'ඉවත්වන්න',
     profile: 'පැතිකඩ',
     settings: 'සැකසුම්',
@@ -78,7 +78,7 @@ const translations: Record<Language, Translation> = {
   ta: {
     analytics: 'பகுப்பாய்வு',
     agentPortal: 'அதிகாரி போர்டல்',
-    backToDashboard: '← டாஷ்போர்டுக்கு திரும்பு',
+    backToDashboard: 'டாஷ்போர்டுக்கு திரும்பு',
     logout: 'வெளியேறு',
     profile: 'சுயவிவரம்',
     settings: 'அமைப்புகள்',

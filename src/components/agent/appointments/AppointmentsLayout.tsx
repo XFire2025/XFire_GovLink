@@ -23,9 +23,9 @@ interface Translation {
 // Translation data
 const translations: Record<Language, Translation> = {
   en: {
-    appointments: 'Appointments',
-    agentPortal: 'Agent Portal',
-    backToDashboard: '← Back to Dashboard',
+  appointments: 'Appointments',
+  agentPortal: 'Agent Portal',
+  backToDashboard: 'Back to Dashboard',
     logout: 'Logout',
     profile: 'Profile',
     settings: 'Settings',
@@ -33,9 +33,9 @@ const translations: Record<Language, Translation> = {
     notifications: 'Notifications'
   },
   si: {
-    appointments: 'නියමයන්',
-    agentPortal: 'නිලධාරි පෝර්ටලය',
-    backToDashboard: '← පැලනයට ආපසු',
+  appointments: 'නියමයන්',
+  agentPortal: 'නිලධාරි පෝර්ටලය',
+  backToDashboard: 'පැලනයට ආපසු',
     logout: 'ඉවත්වන්න',
     profile: 'පැතිකඩ',
     settings: 'සැකසුම්',
@@ -43,9 +43,9 @@ const translations: Record<Language, Translation> = {
     notifications: 'දැනුම්දීම්'
   },
   ta: {
-    appointments: 'சந்திப்புகள்',
-    agentPortal: 'அதிகாரி போர்டல்',
-    backToDashboard: '← டாஷ்போர்டுக்கு திரும்ப',
+  appointments: 'சந்திப்புகள்',
+  agentPortal: 'அதிகாரி போர்டல்',
+  backToDashboard: 'டாஷ்போர்டுக்கு திரும்ப',
     logout: 'வெளியேறு',
     profile: 'சுயவிவரம்',
     settings: 'அமைப்புகள்',
