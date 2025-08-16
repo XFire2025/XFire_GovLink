@@ -215,9 +215,12 @@ const AgentAuthLayout: React.FC<AgentAuthLayoutProps> = ({
           <div className="text-center mt-6 sm:mt-8 animate-fade-in-up" style={{animationDelay: '0.4s'}}>
             <p className="text-xs sm:text-sm text-muted-foreground">
               {t.technicalAssistance}{' '}
-              <button className="text-[#FFC72C] hover:text-[#FF5722] transition-all duration-300 underline font-medium hover:scale-105">
+              <Link 
+                href="/user/chat/bot" 
+                className="text-[#FFC72C] hover:text-[#FF5722] transition-all duration-300 underline font-medium hover:scale-105 inline-block"
+              >
                 {t.contactItSupport}
-              </button>
+              </Link>
             </p>
           </div>
         </div>
