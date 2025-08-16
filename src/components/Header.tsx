@@ -8,7 +8,7 @@ import { Menu, X, User, ChevronDown } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { CompactLanguageSwitcher } from "./LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n/hooks/useTranslation";
-import { LotusIcon as NavbarLotusIcon } from '@/components/Icons/LotusIcon';
+import { LotusIcon as NavbarLotusIcon } from "@/components/Icons/LotusIcon";
 
 // Navbar lotus icon now imported from shared Icons
 
@@ -16,9 +16,9 @@ import { LotusIcon as NavbarLotusIcon } from '@/components/Icons/LotusIcon';
 const smoothScrollTo = (id: string) => {
   const element = document.getElementById(id);
   if (element) {
-    element.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'start'
+    element.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
     });
   }
 };
@@ -26,7 +26,7 @@ const smoothScrollTo = (id: string) => {
 export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
-  const { t } = useTranslation('home');
+  const { t } = useTranslation("home");
   const loginDropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
@@ -34,19 +34,22 @@ export const Header: React.FC = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (loginDropdownRef.current && !loginDropdownRef.current.contains(event.target as Node)) {
+      if (
+        loginDropdownRef.current &&
+        !loginDropdownRef.current.contains(event.target as Node)
+      ) {
         setLoginDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   return (
-    <motion.header 
+    <motion.header
       className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -72,25 +75,36 @@ export const Header: React.FC = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
-            <button onClick={() => smoothScrollTo('services')} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-300 relative group">
-              <span className="relative z-10">{t('navigation.services')}</span>
+            <button
+              onClick={() => smoothScrollTo("services")}
+              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-300 relative group"
+            >
+              <span className="relative z-10">{t("navigation.services")}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-[#FFC72C]/0 to-[#FF5722]/0 group-hover:from-[#FFC72C]/5 group-hover:to-[#FF5722]/5 rounded-lg transition-all duration-300"></div>
             </button>
-            <button onClick={() => smoothScrollTo('about')} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-300 relative group">
-              <span className="relative z-10">{t('navigation.about')}</span>
+            <button
+              onClick={() => smoothScrollTo("about")}
+              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-300 relative group"
+            >
+              <span className="relative z-10">{t("navigation.about")}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-[#FFC72C]/0 to-[#FF5722]/0 group-hover:from-[#FFC72C]/5 group-hover:to-[#FF5722]/5 rounded-lg transition-all duration-300"></div>
             </button>
-            <button onClick={() => smoothScrollTo('contact')} className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-300 relative group">
-              <span className="relative z-10">{t('navigation.contact')}</span>
+            <button
+              onClick={() => smoothScrollTo("contact")}
+              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-300 relative group"
+            >
+              <span className="relative z-10">{t("navigation.contact")}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-[#FFC72C]/0 to-[#FF5722]/0 group-hover:from-[#FFC72C]/5 group-hover:to-[#FF5722]/5 rounded-lg transition-all duration-300"></div>
             </button>
-            
           </div>
 
           {/* CTA Button - Desktop */}
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/user/chat/bot" className="px-6 py-2.5 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white rounded-xl font-medium hover:from-[#7A1235] hover:to-[#E64A19] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 relative group overflow-hidden">
-              <span className="relative z-10">{t('navigation.contact')}</span>
+            <Link
+              href="/user/chat/bot"
+              className="px-6 py-2.5 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white rounded-xl font-medium hover:from-[#7A1235] hover:to-[#E64A19] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 relative group overflow-hidden"
+            >
+              <span className="relative z-10">{t("navigation.contact")}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             </Link>
 
@@ -100,6 +114,15 @@ export const Header: React.FC = () => {
             <div className="w-px h-6 bg-border/50"></div>
             <ThemeToggle />
 
+            {/* Sign Up Button */}
+            <Link
+              href="/user/auth/register"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-300 relative group"
+            >
+              <User className="w-4 h-4" />
+              <span className="relative z-10">{t("navigation.signUp")}</span>
+            </Link>
+
             {/* Right-most Login Dropdown (after ThemeToggle) */}
             <div className="relative ml-2" ref={loginDropdownRef}>
               <button
@@ -107,8 +130,12 @@ export const Header: React.FC = () => {
                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-300 relative group"
               >
                 <User className="w-4 h-4" />
-                <span className="relative z-10">{t('navigation.login')}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${loginDropdownOpen ? 'rotate-180' : ''}`} />
+                <span className="relative z-10">{t("navigation.login")}</span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    loginDropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
               </button>
 
               <AnimatePresence>
@@ -127,7 +154,7 @@ export const Header: React.FC = () => {
                         className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
                       >
                         <User className="w-4 h-4" />
-                        <span>{t('navigation.userLogin')}</span>
+                        <span>{t("navigation.userLogin")}</span>
                       </Link>
                       <Link
                         href="/agent/login"
@@ -135,7 +162,7 @@ export const Header: React.FC = () => {
                         className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
                       >
                         <User className="w-4 h-4" />
-                        <span>{t('navigation.agentLogin')}</span>
+                        <span>{t("navigation.agentLogin")}</span>
                       </Link>
                       <Link
                         href="/department/login"
@@ -143,13 +170,12 @@ export const Header: React.FC = () => {
                         className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
                       >
                         <User className="w-4 h-4" />
-                        <span>{t('navigation.departmentLogin')}</span>
+                        <span>{t("navigation.departmentLogin")}</span>
                       </Link>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
-
             </div>
           </div>
 
@@ -158,7 +184,10 @@ export const Header: React.FC = () => {
             {/* Mobile Language Selector */}
             <CompactLanguageSwitcher className="text-xs" />
             <ThemeToggle />
-            <button onClick={toggleMobileMenu} className="p-2.5 hover:bg-accent/70 rounded-xl transition-all duration-300 hover:scale-105 border border-border/30">
+            <button
+              onClick={toggleMobileMenu}
+              className="p-2.5 hover:bg-accent/70 rounded-xl transition-all duration-300 hover:scale-105 border border-border/30"
+            >
               <Menu className="h-5 w-5" />
               <span className="sr-only">Open menu</span>
             </button>
@@ -177,45 +206,95 @@ export const Header: React.FC = () => {
             >
               <div className="px-4 py-6 space-y-4">
                 <div className="flex flex-col space-y-3">
-                  <button onClick={() => { smoothScrollTo('services'); setMobileMenuOpen(false); }} className="text-left px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200">
-                    {t('navigation.services')}
+                  <button
+                    onClick={() => {
+                      smoothScrollTo("services");
+                      setMobileMenuOpen(false);
+                    }}
+                    className="text-left px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200"
+                  >
+                    {t("navigation.services")}
                   </button>
-                  <button onClick={() => { smoothScrollTo('about'); setMobileMenuOpen(false); }} className="text-left px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200">
-                    {t('navigation.about')}
+                  <button
+                    onClick={() => {
+                      smoothScrollTo("about");
+                      setMobileMenuOpen(false);
+                    }}
+                    className="text-left px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200"
+                  >
+                    {t("navigation.about")}
                   </button>
-                  <button onClick={() => { smoothScrollTo('contact'); setMobileMenuOpen(false); }} className="text-left px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200">
-                    {t('navigation.contact')}
+                  <button
+                    onClick={() => {
+                      smoothScrollTo("contact");
+                      setMobileMenuOpen(false);
+                    }}
+                    className="text-left px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200"
+                  >
+                    {t("navigation.contact")}
                   </button>
-                  
+
                   {/* Mobile Login Options */}
                   <div className="border-t border-border/30 pt-3 mt-3">
                     <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                      {t('navigation.loginOptions')}
+                      {t("navigation.loginOptions")}
                     </div>
-                    <Link href="/user/auth/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200">
+
+                    {/* Sign Up Button for Mobile */}
+                    <Link
+                      href="/user/auth/register"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200"
+                    >
                       <User className="w-4 h-4" />
-                      <span>{t('navigation.userLogin')}</span>
+                      <span>{t("navigation.signUp")}</span>
                     </Link>
-                    <Link href="/agent/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200">
+
+                    <Link
+                      href="/user/auth/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200"
+                    >
                       <User className="w-4 h-4" />
-                      <span>{t('navigation.agentLogin')}</span>
+                      <span>{t("navigation.userLogin")}</span>
                     </Link>
-                    <Link href="/department/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200">
+                    <Link
+                      href="/agent/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200"
+                    >
                       <User className="w-4 h-4" />
-                      <span>{t('navigation.departmentLogin')}</span>
+                      <span>{t("navigation.agentLogin")}</span>
+                    </Link>
+                    <Link
+                      href="/department/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200"
+                    >
+                      <User className="w-4 h-4" />
+                      <span>{t("navigation.departmentLogin")}</span>
                     </Link>
                   </div>
-                  
-                  <Link href="/user/chat/bot" onClick={() => setMobileMenuOpen(false)} className="block w-full">
+
+                  <Link
+                    href="/user/chat/bot"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block w-full"
+                  >
                     <div className="px-6 py-3 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white rounded-xl font-medium text-center hover:from-[#7A1235] hover:to-[#E64A19] transition-all duration-300 shadow-lg relative group overflow-hidden">
-                      <span className="relative z-10">{t('navigation.contact')}</span>
+                      <span className="relative z-10">
+                        {t("navigation.contact")}
+                      </span>
                       <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
                     </div>
                   </Link>
                 </div>
               </div>
               <div className="absolute top-4 right-4">
-                <button onClick={toggleMobileMenu} className="p-2 hover:bg-accent/50 rounded-lg transition-colors">
+                <button
+                  onClick={toggleMobileMenu}
+                  className="p-2 hover:bg-accent/50 rounded-lg transition-colors"
+                >
                   <X className="h-5 w-5" />
                   <span className="sr-only">Close menu</span>
                 </button>

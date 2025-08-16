@@ -44,7 +44,7 @@ export default function DepartmentSidebar() {
         <Menu className="w-5 h-5 text-foreground" />
       </button>
 
-      <div className={`fixed lg:sticky top-0 h-screen bg-gradient-to-b from-[#008060] via-[#FFC72C] to-[#FF5722] border-r border-border/50 backdrop-blur-md flex flex-col transition-all duration-300 ease-in-out shadow-2xl modern-card z-40 overflow-hidden ${isCollapsed ? "w-16" : "w-64"} ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
+      <div className={`fixed lg:sticky top-0 h-screen bg-gradient-to-b from-[#008060] via-[#FFC72C] to-[#FF5722] border-r border-border/50 backdrop-blur-md flex flex-col transition-all duration-300 ease-in-out shadow-2xl modern-card z-40 overflow-hidden ${isCollapsed ? "w-16" : "w-64 min-w-64"} ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 opacity-25 dark:opacity-15 bg-center bg-no-repeat bg-cover transition-opacity duration-1000" style={{ backgroundImage: 'url("/2.png")', filter: 'saturate(1.1) brightness(1.05)' }}></div>
           <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-transparent to-background/30 dark:from-background/70 dark:via-background/50 dark:to-background/80"></div>
