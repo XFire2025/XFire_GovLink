@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import ProfileForm from './ProfileForm';
 import PasswordChangeForm from './PasswordChangeForm';
+import { useAgentAuth } from '@/lib/auth/useAgentAuthUtils';
 
 // Types
 type Language = 'en' | 'si' | 'ta';
@@ -96,7 +97,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({
   agent 
 }) => {
   const [activeTab, setActiveTab] = useState<'personal' | 'security'>('personal');
-  const [isLoading, setIsLoading] = useState(false);
+  const { updateProfile, isLoading } = useAgentAuth();
   const [lastSaved, setLastSaved] = useState<Date | null>(new Date());
   const [profileData, setProfileData] = useState<ProfileFormData | null>(null);
   const [updateStatus, setUpdateStatus] = useState<{
@@ -107,64 +108,46 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({
   const t = settingsTranslations[language];
 
   const handleSave = async (formData?: ProfileFormData) => {
-    setIsLoading(true);
     setUpdateStatus({ type: null, message: '' });
     
-    try {
-      // Use either passed formData or stored profileData
-      const dataToSend = formData || profileData;
+    const dataToSend = formData || profileData;
       
-      if (!dataToSend) {
-        setUpdateStatus({
-          type: 'error',
-          message: 'No data to update'
-        });
-        return;
-      }
-      
-      // Call the profile update API
-      const response = await fetch('/api/auth/agent/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          fullName: dataToSend.fullName,
-          phoneNumber: dataToSend.phone,
-          // Add other fields that can be updated
-        })
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setLastSaved(new Date());
-        setUpdateStatus({
-          type: 'success',
-          message: 'Profile updated successfully!'
-        });
-        
-        // Clear success message after 3 seconds
-        setTimeout(() => {
-          setUpdateStatus({ type: null, message: '' });
-        }, 3000);
-      } else {
-        console.error('Profile update failed:', result.message);
-        setUpdateStatus({
-          type: 'error',
-          message: result.message || 'Failed to update profile'
-        });
-      }
-    } catch (error) {
-      console.error('Profile update error:', error);
+    if (!dataToSend) {
       setUpdateStatus({
         type: 'error',
-        message: 'Network error: Unable to update profile'
+        message: 'No data to update'
       });
-    } finally {
-      setIsLoading(false);
+      return;
     }
+
+    const result = await updateProfile({
+      fullName: dataToSend.fullName,
+      phoneNumber: dataToSend.phone,
+    });
+      
+    if (result.success) {
+      setLastSaved(new Date());
+      setUpdateStatus({
+        type: 'success',
+        message: 'Profile updated successfully!'
+      });
+      
+      setTimeout(() => {
+        setUpdateStatus({ type: null, message: '' });
+      }, 3000);
+    } else {
+      console.error('Profile update failed:', result.message);
+      setUpdateStatus({
+        type: 'error',
+        message: result.message || 'Failed to update profile'
+      });
+    }
+  };
+
+  const handlePasswordSave = async () => {
+    // This is a placeholder for the password change logic.
+    // You would typically call a different API endpoint for this.
+    console.log("Password change form submitted");
   };
 
   // Function to receive form data from ProfileForm
@@ -363,7 +346,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({
                 </div>
               </div>
               
-              <PasswordChangeForm language={language} onSave={handleSave} isLoading={isLoading} />
+              <PasswordChangeForm language={language} onSave={handlePasswordSave} isLoading={isLoading} />
             </div>
           </div>
         )}
