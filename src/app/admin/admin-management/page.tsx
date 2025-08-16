@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -82,7 +82,7 @@ export default function AdminManagement() {
   }, [admin, router]);
 
   // Fetch admins
-  const fetchAdmins = async () => {
+  const fetchAdmins = useCallback(async () => {
     try {
       const response = await fetch("/api/admin/admins", {
         method: "GET",
@@ -101,7 +101,7 @@ export default function AdminManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getAuthHeaders]);
 
   // Fetch admins only when authenticated
   useEffect(() => {

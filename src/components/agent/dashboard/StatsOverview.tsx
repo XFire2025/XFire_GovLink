@@ -63,6 +63,37 @@ interface StatCard {
   bgColor: string;
 }
 
+interface DashboardData {
+  pendingAppointments: {
+    value: string;
+    trend: {
+      value: string;
+      isPositive: boolean;
+    };
+  };
+  newSubmissions: {
+    value: string;
+    trend: {
+      value: string;
+      isPositive: boolean;
+    };
+  };
+  confirmedAppointments: {
+    value: string;
+    trend: {
+      value: string;
+      isPositive: boolean;
+    };
+  };
+  todayProcessed: {
+    value: string;
+    trend: {
+      value: string;
+      isPositive: boolean;
+    };
+  };
+}
+
 interface StatsOverviewProps {
   language?: Language;
 }
@@ -70,7 +101,7 @@ interface StatsOverviewProps {
 const StatsOverview: React.FC<StatsOverviewProps> = ({ language = 'en' }) => {
   const t = statsTranslations[language];
   const [loading, setLoading] = useState(true);
-  const [dashboardData, setDashboardData] = useState<any>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
 
   const fetchStats = async () => {
     try {
