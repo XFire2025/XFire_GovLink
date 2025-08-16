@@ -1,10 +1,10 @@
 // components/Header.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, ChevronDown } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { CompactLanguageSwitcher } from "./LanguageSwitcher";
 import { useTranslation } from "@/lib/i18n/hooks/useTranslation";
@@ -51,9 +51,25 @@ const smoothScrollTo = (id: string) => {
 
 export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const { t } = useTranslation('home');
+  const loginDropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (loginDropdownRef.current && !loginDropdownRef.current.contains(event.target as Node)) {
+        setLoginDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <motion.header 
@@ -94,6 +110,7 @@ export const Header: React.FC = () => {
               <span className="relative z-10">{t('navigation.contact')}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-[#FFC72C]/0 to-[#FF5722]/0 group-hover:from-[#FFC72C]/5 group-hover:to-[#FF5722]/5 rounded-lg transition-all duration-300"></div>
             </button>
+            
           </div>
 
           {/* CTA Button - Desktop */}
@@ -102,11 +119,64 @@ export const Header: React.FC = () => {
               <span className="relative z-10">{t('navigation.contact')}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
             </Link>
+
             <div className="w-px h-6 bg-border/50"></div>
             {/* Language Selector */}
             <CompactLanguageSwitcher className="text-xs sm:text-sm" />
             <div className="w-px h-6 bg-border/50"></div>
             <ThemeToggle />
+
+            {/* Right-most Login Dropdown (after ThemeToggle) */}
+            <div className="relative ml-2" ref={loginDropdownRef}>
+              <button
+                onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-300 relative group"
+              >
+                <User className="w-4 h-4" />
+                <span className="relative z-10">{t('navigation.login')}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${loginDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              <AnimatePresence>
+                {loginDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-full right-0 mt-2 w-48 bg-background/95 backdrop-blur-md border border-border/50 rounded-lg shadow-lg overflow-hidden z-50"
+                  >
+                    <div className="py-2">
+                      <Link
+                        href="/user/auth/login"
+                        onClick={() => setLoginDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>{t('navigation.userLogin')}</span>
+                      </Link>
+                      <Link
+                        href="/agent/login"
+                        onClick={() => setLoginDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>{t('navigation.agentLogin')}</span>
+                      </Link>
+                      <Link
+                        href="/department/login"
+                        onClick={() => setLoginDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>{t('navigation.departmentLogin')}</span>
+                      </Link>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -142,6 +212,26 @@ export const Header: React.FC = () => {
                   <button onClick={() => { smoothScrollTo('contact'); setMobileMenuOpen(false); }} className="text-left px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200">
                     {t('navigation.contact')}
                   </button>
+                  
+                  {/* Mobile Login Options */}
+                  <div className="border-t border-border/30 pt-3 mt-3">
+                    <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      {t('navigation.loginOptions')}
+                    </div>
+                    <Link href="/user/auth/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200">
+                      <User className="w-4 h-4" />
+                      <span>{t('navigation.userLogin')}</span>
+                    </Link>
+                    <Link href="/agent/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200">
+                      <User className="w-4 h-4" />
+                      <span>{t('navigation.agentLogin')}</span>
+                    </Link>
+                    <Link href="/department/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-lg transition-all duration-200">
+                      <User className="w-4 h-4" />
+                      <span>{t('navigation.departmentLogin')}</span>
+                    </Link>
+                  </div>
+                  
                   <Link href="/User/Chat/Bot" onClick={() => setMobileMenuOpen(false)} className="block w-full">
                     <div className="px-6 py-3 bg-gradient-to-r from-[#8D153A] to-[#FF5722] text-white rounded-xl font-medium text-center hover:from-[#7A1235] hover:to-[#E64A19] transition-all duration-300 shadow-lg relative group overflow-hidden">
                       <span className="relative z-10">{t('navigation.contact')}</span>

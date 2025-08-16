@@ -1331,8 +1331,8 @@ export default function Home() {
       
       {/* Content */}
       <div className="relative z-10 theme-transition-fast">
-        <Header />
-        <main className="theme-transition-fast">
+  <Header />
+  <main className="theme-transition-fast pt-16 sm:pt-20">
           <Hero language={currentLanguage as Language} />
           <Features language={currentLanguage as Language} />
           <About language={currentLanguage as Language} />
