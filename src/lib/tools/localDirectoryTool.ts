@@ -101,7 +101,7 @@ export class LocalDirectoryTool extends DynamicStructuredTool {
     includeAgents = true
   ): Promise<DirectoryData | null> {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
       const params = new URLSearchParams();
       
       if (search) params.append('search', search);
