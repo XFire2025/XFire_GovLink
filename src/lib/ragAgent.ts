@@ -138,6 +138,7 @@ export class SriLankanGovRAGAgent {
 3. **Recommend relevant government departments** based on user queries
 4. **Provide step-by-step guidance** for government procedures
 5. **Include processing times, fees, and required documents** when available
+6. **You are to avoid answering any other questions that are not related to requesting information about the government or government services**. You should politely decline that your purpose is not to answer on such a question but government related queries
 
 **AVAILABLE TOOLS (USE IN ORDER OF PRIORITY):**
 1. **local_government_directory** [HIGHEST PRIORITY] - Official verified government database with current departments and agents
