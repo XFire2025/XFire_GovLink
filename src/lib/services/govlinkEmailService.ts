@@ -399,6 +399,45 @@ export const govLinkEmailTemplates = {
       </div>
     `,
   }),
+  // Appointment reminder (used for reminders sent before appointment)
+  appointmentReminder: (name: string, appointmentDetails: { service: string; date: string; time: string; agent: string; location?: string }) => ({
+    subject: `Appointment Reminder - ${appointmentDetails.service} | ${process.env.GOV_SERVICE_NAME}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #FFC72C; border-radius: 10px;">
+        <div style="background: linear-gradient(135deg, #1B365D 0%, #2E5F8A 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="margin: 0; font-size: 24px;">⏰ Appointment Reminder</h1>
+          <p style="margin: 10px 0 0 0; opacity: 0.9;">${process.env.GOV_SERVICE_NAME}</p>
+        </div>
+        <div style="padding: 30px;">
+          <p>Dear <strong>${name}</strong>,</p>
+          <p>This is a reminder for your upcoming appointment. Please find the details below:</p>
+
+          <div style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1976d2;">
+            <h3 style="color: #0f172a; margin-top: 0;">Appointment Details:</h3>
+            <table style="width: 100%; color: #0f172a;">
+              <tr><td style="padding: 5px 0; font-weight: bold;">Service:</td><td style="padding: 5px 0;">${appointmentDetails.service}</td></tr>
+              <tr><td style="padding: 5px 0; font-weight: bold;">Date:</td><td style="padding: 5px 0;">${appointmentDetails.date}</td></tr>
+              <tr><td style="padding: 5px 0; font-weight: bold;">Time:</td><td style="padding: 5px 0;">${appointmentDetails.time}</td></tr>
+              <tr><td style="padding: 5px 0; font-weight: bold;">Agent:</td><td style="padding: 5px 0;">${appointmentDetails.agent}</td></tr>
+              ${appointmentDetails.location ? `<tr><td style="padding: 5px 0; font-weight: bold;">Location:</td><td style="padding: 5px 0;">${appointmentDetails.location}</td></tr>` : ''}
+            </table>
+          </div>
+
+          <div style="background-color: #fff7ed; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #ffb300;">
+            <p style="margin: 0; color: #92400e; font-size: 14px;">
+              <strong>Reminder:</strong> Please arrive 15 minutes early and bring all required documents. If you need to reschedule, you can do so up to 24 hours before the appointment.
+            </p>
+          </div>
+
+          <hr style="border: none; height: 1px; background: #ddd; margin: 20px 0;">
+          <p style="font-size: 12px; color: #999; text-align: center; margin: 0;">
+           
+            <a href="${process.env.GOV_WEBSITE}" style="color: #1B365D;">${process.env.GOV_WEBSITE}</a>
+          </p>
+        </div>
+      </div>
+    `,
+  }),
 };
 
 // Specialized functions for common GovLink email scenarios
